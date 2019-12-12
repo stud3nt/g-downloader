@@ -1,0 +1,24 @@
+<div class="btn-group" *ngIf="loadMore === false">
+    <button type="button" class="btn btn-default" (click)="selectPage(previousPage)">
+        « PREVIOUS ({{ previousPage }})
+    </button>
+    <div class="btn-group">
+        <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+            {{ currentPage}} <span class="caret"></span>
+        </button>
+        <ul class="dropdown-menu">
+            <li *ngFor="let page of pages">
+                <a [routerLink]="null" (click)="selectPage(page)">
+                    {{ page }}
+                </a>
+            </li>
+        </ul>
+    </div>
+    <button type="button" class="btn btn-default" (click)="selectPage(nextPage)">
+        NEXT ({{ nextPage }}) »
+    </button>
+</div>
+
+<button type="button" *ngIf="loadMore === true" (click)="toggleLoadMore()">
+    <i class="fa fa-cloud-download"></i> &nbsp; LOAD MORE
+</button>

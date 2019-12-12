@@ -1,0 +1,245 @@
+/* You can add global styles to this file, and also import other style files */
+
+.page-loader-wrapper {
+    position: fixed;
+    background: none;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 9999999;
+    text-align: center;
+}
+
+.page-loader-wrapper > .page-loader-window {
+    display: inline-block;
+    min-width: 560px;
+    min-height: 10px;
+    padding: 32px;
+    border: 2px #eeeeee solid;
+    background: #fcfcfc;
+    margin-top: 300px;
+}
+
+.page-loader-window .progress-bar-wrapper {
+    display: inline-block;
+    width: 100%;
+    padding: 0 40px;
+}
+
+span.progress-percentage {
+    font-size: 13px;
+    font-weight: 400;
+    display: block;
+}
+
+div.progress-bar-container {
+    max-width: 400px;
+    width: 100%;
+    display: inline-block;
+    height: 4px;
+    text-align: left;
+    background: #eee;
+    padding: 1px 2px;
+    overflow: hidden;
+}
+
+div.progress-bar-container > div.progress-bar {
+    display: block;
+    width: 10%;
+    height: 2px;
+    background: #303030;
+}
+
+tr.data-row {
+    cursor: pointer;
+}
+
+tr.data-row:hover {
+    background: #f2f2f2;
+}
+
+div.active-tile {
+    margin-bottom: 12px;
+    cursor: pointer;
+    padding: 6px;
+    font-size: 13px;
+    -webkit-border-radius: 4px;
+    -moz-border-radius: 4px;
+    border-radius: 4px;
+    border: 1px #e6e5ed solid;
+}
+
+div.active-tile:hover {
+    border: 1px #818E96 solid;
+}
+
+div.active-tile .image-container {
+    height: 200px;
+    overflow: hidden;
+    text-align: center;
+}
+
+.image-container img {
+    min-height: 100%;
+}
+
+
+
+/* hover styles */
+.grid-container {
+    display: grid;
+    grid-gap: 1em;
+}
+
+.grid-200 {
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+}
+
+.grid-container .tile {
+    position: relative;
+    border: 1px #ccc solid;
+    /*-webkit-border-radius: 4px;
+    -moz-border-radius: 4px;
+    border-radius: 4px;*/
+}
+
+.grid-container .tile:hover {
+    cursor: pointer;
+    border: 1px #3D3D3D solid;
+}
+
+.tile-header {
+    width: 100%;
+    min-height: 32px;
+    padding: 6px;
+    border-bottom: 1px #ccc solid;
+    text-align: center;
+    font-size: 13px;
+    font-weight: bold;
+}
+
+.tile-header-image {
+    width: 100%;
+    min-height: 44px;
+    padding: 0;
+    border-bottom: 1px #ccc solid;
+    text-align: left;
+    font-size: 13px;
+}
+
+.tile-header-image i {
+    float: left;
+    width: 44px;
+    height: 44px;
+    border-right: 1px #ccc solid;
+    text-align: center;
+    font-size: 18px;
+    line-height: 44px;
+}
+
+i.bg-success {
+    background: #32b643;
+    color: #ffffff;
+    border-right: 1px #2faa3f solid;
+}
+
+i.bg-primary {
+    background: #3498db;
+    color: #ffffff;
+}
+
+i.bg-default {
+    background: #eeeeee;
+    color: #212529;
+    border-right: 1px #dcdbdb solid;
+}
+
+i.bg-danger {
+    background: #d92550;
+    color: #ffffff;
+    border-right: 1px #d90069 solid;
+}
+
+i.bg-warning {
+    background: #e0a008;
+    color: #ffffff;
+    border-right: 1px #d49808 solid;
+}
+
+.tile-header-image span {
+    margin: 0 0 0 auto;
+    float: right;
+    text-align: right;
+    padding: 2px 6px auto auto;
+}
+
+.tile-header-image span > p {
+    padding: 3px 0 0 0;
+    margin: 0;
+    display: block;
+}
+
+.tile-labels {
+    width: 96%;
+    height: auto;
+    z-index: 999;
+    position: absolute;
+    top: 4%;
+    left: 4%;
+    right: 4%;
+}
+
+.tile-image, .tile-image-fit {
+    line-height: 0;
+    width:100%;
+    height: 230px;
+    overflow: hidden;
+    text-align: center;
+}
+
+.tile-image > div, .tile-image-fit > div {
+    height: inherit;
+}
+
+.tile-image > .tile-image-data {
+    height: auto;
+    position: absolute;
+    width: 100%;
+    text-align: center;
+}
+
+
+
+.tile-image img {
+    height: 100%;
+}
+
+.tile-image-fit img {
+    max-width: 100%;
+    max-height: 100%;
+}
+
+.tile-data {
+    font-size: 13px;
+}
+
+.tile-data .single-row {
+    text-align: center;
+}
+
+.tile-data table {
+    margin: 0;
+}
+
+.tile-footer {
+    width: 100%;
+    padding: 6px;
+    border-top: 1px #ccc solid;
+    text-align: center;
+}
+
+.tile-footer button {
+    margin-left: 4px; margin-right: 4px;
+}
+

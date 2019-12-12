@@ -1,0 +1,60 @@
+<div *ngIf="parserRequest.files.length > 0">
+    <div class="grid-container grid-200">
+        <article id="{{ file.identifier }}" [ngClass]="determineFileClass(file)" *ngFor="let file of parserRequest.files" (click)="toggleFileQueue(file)">
+            <div class="tile-header-image">
+                <div class="tile-header-icon bg-primary" *ngIf="file.type === FileType.Video">
+                    <i class="fa fa-video-camera"></i>
+                </div>
+                <div class="tile-header-icon bg-success" *ngIf="file.type === FileType.Image">
+                    <i class="fa fa-image"></i>
+                </div>
+                <div class="tile-header-icon bg-info" *ngIf="file.hasStatus(FileStatus.Queued)">
+                    <i class="fa fa-database"></i>
+                </div>
+                <div class="tile-header-icon bg-info" *ngIf="file.hasStatus(FileStatus.Downloading)">
+                    <i class="fa fa-cloud-download"></i>
+                </div>
+                <div class="tile-header-icon bg-info" *ngIf="file.hasStatus(FileStatus.Downloaded)">
+                    <i class="fa fa-file-archive-o"></i>
+                </div>
+                <div class="tile-header-icon bg-default" *ngIf="file.hasStatus(FileStatus.Waiting)">
+                    <i class="fa fa-spinner fa-spin fa-fw"></i>
+                </div>
+                <span>
+                    <p *ngIf="file.title" [innerHTML]="file.title | truncateString: 20"></p>
+                    <p *ngIf="!file.title" [innerHTML]="(file.name | truncateString: 15) + '.' + file.extension"></p>
+                </span>
+            </div>
+            <div class="tile-image">
+                <img *ngIf="file.thumbnail !== null" [src]="file.thumbnail" />
+                <img *ngIf="file.localThumbnail !== null" [src]="file.localThumbnail" />
+                <img *ngIf="file.thumbnail === null && !file.localThumbnail === null" src="/app/assets/img/no-image.png" />
+            </div>
+            <div class="tile-data">
+                <span class="data-label bg-success" *ngIf="file.hasStatus(FileStatus.Queued)">
+                    <i class="fa fa-tasks"></i> &nbsp; Queued
+                </span>
+                <span class="data-label bg-primary" *ngIf="file.hasStatus(FileStatus.Downloaded)">
+                    <i class="fa fa-cloud-download"></i> &nbsp; Downloaded
+                </span>
+                <span class="data-label" *ngIf="file.width && file.height">
+                    <i class="fa fa-arrows-alt"></i> &nbsp; {{ file.width }}x{{ file.height }}px
+                </span>
+                <span class="data-label" *ngIf="file.length > 0">
+                    <i class="fa fa-play-circle-o"></i> &nbsp; {{ file.length | movieLength }}
+                </span>
+                <span class="data-label" *ngIf="file.size || file.textSize">
+                    <i class="fa fa-database"></i> &nbsp; {{ file.textSize ? file.textSize : file.size + ' bytes' }}
+                </span>
+                <span class="data-label" *ngIf="file.uploadedAt">
+                    <i class="fa fa-upload"></i> &nbsp; {{ file.uploadedAt }}
+                </span>
+            </div>
+            <div class="tile-footer">
+                <button type="button" (mouseenter)="lockTiles=true" (mouseleave)="lockTiles=false" (click)="openFilePreview(file)" class="btn btn-sm btn-default">
+                    <i class="fa fa-search"></i>
+                </button>
+            </div>
+        </article>
+    </div>
+</div>

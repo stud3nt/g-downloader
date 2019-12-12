@@ -1,0 +1,37 @@
+
+<div class="modal fade in" tabindex="-1" role="dialog" aria-labelledby="custom-modal" [ngStyle]="modalStyle" (click)="closeOutline()">
+    <div [ngClass]="modalDialogClass" (mouseover)="modalMouseover = true" (mouseout)="modalMouseover = false">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close" (click)="close()">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+                <h4 class="modal-title">
+                    {{ modalTitle }}
+                </h4>
+            </div>
+            <div [ngClass]="modalBodyClass" *ngIf="loaderVisible">
+                <div class="modal-loader-wrapper">
+                    <i class="fa fa-3x fa-spinner fa-spin"></i>
+                    <br/><br/>
+                    <p>LOADING...</p>
+                </div>
+            </div>
+            <div [ngClass]="modalBodyClass" *ngIf="!loaderVisible" [innerHTML]="modalBody" (click)="toggleEnlargement()"></div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" (click)="close()" *ngIf="modalButtons.ok">
+                    <i class="fa fa-check-circle"></i> &nbsp; OK
+                </button>
+                <button type="button" class="btn btn-primary" (click)="save()" *ngIf="modalButtons.save">
+                    <i class="fa fa-save"></i> &nbsp; Save
+                </button>
+                <button type="button" class="btn btn-default" (click)="close()" *ngIf="modalButtons.cancel">
+                    <i class="fa fa-remove"></i> &nbsp; Cancel
+                </button>
+                <button type="button" class="btn btn-default" (click)="close()" *ngIf="modalButtons.close">
+                    <i class="fa fa-times-circle"></i> &nbsp; Close
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

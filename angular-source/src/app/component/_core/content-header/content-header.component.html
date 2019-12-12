@@ -1,0 +1,16 @@
+<section class="content-header">
+    <h1>
+        {{ headerData.title1 }}
+
+        <small *ngIf="headerData.title2 !== null">
+            {{ headerData.title2 }}
+        </small>
+    </h1>
+    <ol class="breadcrumb" *ngIf="headerData.breadcrumbs">
+        <li *ngFor="let breadcrumb of headerData.breadcrumbs">
+            <a [routerLink]="breadcrumb.route ? router.generateUrl(breadcrumb.route, (breadcrumb.routeParams ? breadcrumb.routeParams : null)) : null">
+                <i *ngIf="breadcrumb.icon" [ngClass]="'fa '+breadcrumb.icon"></i> {{ breadcrumb.label }}
+            </a>
+        </li>
+    </ol>
+</section>

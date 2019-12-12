@@ -1,0 +1,61 @@
+<div class="row">
+    <div class="col-md-12">
+        <ol class="breadcrumb">
+            <li *ngFor="let breadcrumb of parserBreadcrumbs">
+                <a *ngIf="breadcrumb && breadcrumb.node.level" [routerLink]="null" (click)="setAndOpenCurrentNode(breadcrumb.node, breadcrumb.pagination)" [ngStyle]="{'font-weight': (breadcrumb.final === true) ? 'bold' : 'normal'}">
+                    {{ nodeLevelEnum.getLevelLabel(breadcrumb.node.level).toUpperCase() }} {{ breadcrumb.node.name ? '('+breadcrumb.node.name+')' : '' }}
+                </a>
+            </li>
+        </ol>
+    </div>
+</div>
+
+<div class="row" style="padding-bottom:8px;">
+    <div class="col-md-12">
+        <div class="input-group">
+            <div class="input-group-btn">
+                <button type="button" class="btn btn-default" (click)="openCurrentNode(true)">
+                    <i class="fa fa-refresh"></i>
+                </button>
+                <app-saved-nodes class="btn component-btn-group-button"></app-saved-nodes>
+                <button type="button" class="btn btn-default" (click)="toggleSettingsModal()">
+                    <i class="fa fa-cogs"></i>
+                </button>
+            </div>
+
+            <input [(ngModel)]="parserRequest.currentNode.url" type="text" class="form-control">
+
+            <div class="input-group-btn" [ngStyle]="{'display': (parserRequest.jumpNext || parserRequest.jumpPrevious) ? 'table-cell' : 'none'}">
+                <button type="button" *ngIf="parserRequest.jumpPrevious === true" class="btn btn-default" (click)="jumpBetweenNodes('previous')">
+                    <i class="fa fa-long-arrow-left"></i> &nbsp; PREVIOUS NODE
+                </button>
+                <button type="button" *ngIf="parserRequest.jumpNext === true" class="btn btn-default" (click)="jumpBetweenNodes('next')">
+                    NEXT NODE &nbsp; <i class="fa fa-long-arrow-right"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="box no-border">
+            <div class="box-header with-border">
+                <h3 class="box-title">
+                    {{ parserRequest.currentNode.name }}
+                </h3>
+                <div class="box-tools" *ngIf="parserRequest.pagination.active">
+                    <app-paginator (onPaginate)="changeNodePage($event)" [pagination]="parserRequest.pagination"></app-paginator>
+                </div>
+            </div>
+            <div class="box-body">
+                <app-nodes-list [parserRequest]="parserRequest" (openChildNode)="setAndOpenCurrentNode($event)"></app-nodes-list>
+                <app-files-list [parserRequest]="parserRequest"></app-files-list>
+            </div>
+
+            <div class="box-footer clearfix" *ngIf="parserRequest.pagination.active">
+                <app-paginator class="pull-right" (onPaginate)="changeNodePage($event)" [pagination]="parserRequest.pagination"></app-paginator>
+            </div>
+        </div>
+    </div>
+</div>

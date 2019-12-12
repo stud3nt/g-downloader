@@ -1,0 +1,19 @@
+
+<li [ngClass]="level === 1 ? 'treeview' : ''">
+    <a [routerLink]="menuNode.route ? routing.generateUrl(menuNode.route, menuNode.routeParams) : null">
+        <i [ngClass]="'fa '+menuNode.icon"></i>
+        <span>
+            {{ menuNode.label }}
+        </span>
+        <span class="pull-right-container" *ngIf="menuNode.childs.length > 0">
+            <i class="fa fa-angle-left pull-right"></i>
+        </span>
+    </a>
+    <ul class="treeview-menu" *ngIf="menuNode.childs && menuNode.childs.length > 0">
+        <li *ngFor="let menuSubnode of menuNode.childs">
+            <a [routerLink]="menuSubnode.route ? routing.generateUrl(menuSubnode.route, menuSubnode.routeParams) : null">
+                <i class="fa fa-circle-o"></i> {{ menuSubnode.label }}
+            </a>
+        </li>
+    </ul>
+</li>

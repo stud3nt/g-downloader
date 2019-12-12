@@ -1,0 +1,50 @@
+<body class="hold-transition skin-black-light {{ sidebarClass }}">
+    <div class="wrapper">
+
+        <!-- BEGIN preloader -->
+        <app-page-loader></app-page-loader>
+        <!-- END preloader -->
+
+        <!-- BEGIN modal -->
+        <app-modal></app-modal>
+        <!-- END modal -->
+
+        <!-- BEGIN header -->
+        <header class="main-header">
+            <app-navbar></app-navbar>
+        </header>
+        <!-- END header -->
+
+        <!-- BEGIN left column -->
+        <aside class="main-sidebar">
+            <section class="sidebar">
+                <app-menu></app-menu>
+            </section>
+        </aside>
+        <!-- END left column -->
+
+        <!-- Content Wrapper. Contains page content -->
+        <div class="content-wrapper">
+            <!-- Content Header (Page header) -->
+            <app-content-header></app-content-header>
+
+            <!-- Main content -->
+            <section class="content">
+                <router-outlet></router-outlet>
+            </section>
+            <!-- /.content -->
+        </div>
+        <!-- /.content-wrapper -->
+
+        <footer class="main-footer">
+            <div class="pull-right hidden-xs">
+                <b>Version</b> 0.1.2
+            </div>
+
+            <strong>
+
+            </strong>
+        </footer>
+    </div>
+</body>
+

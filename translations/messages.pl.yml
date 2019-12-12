@@ -1,0 +1,29 @@
+label:
+    settings:
+        groups:
+            system:
+                name: Ustawienia systemowe
+            common:
+                name: Ustawienia ogólne
+            reddit:
+                name: Reddit
+                api_key: Klucz API
+                app_secret: Token
+                username: Nazwa użytkownika
+                password: Hasło
+                user_agent: User Agent
+                endpoint: Endpoint
+            boards_4chan:
+                name: Boards4Chan
+            hentai_foundry:
+                name: Hentai-Foundry.com
+            imagefap:
+                name: ImageFap
+            imgur:
+                name: Imgur
+                client_id: Client ID
+                client_secret: Client secret
+        levels:
+            start_level: Poziom startowy
+            parameters: Parametry i dane połączeniowe
+            initial: Ustawienia startowe

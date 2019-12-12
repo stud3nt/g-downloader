@@ -1,0 +1,52 @@
+@import "../../../../variables";
+
+.page-loader-wrapper {
+    position: fixed;
+    background: none;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 9999999;
+    text-align: center;
+
+    .page-loader-window {
+        display: inline-block;
+        min-width: 560px;
+        min-height: 10px;
+        padding: 32px;
+        border: 2px $border-light-grey solid;
+        background: $background-light-grey;
+        margin-top: 300px;
+
+        .progress-bar-wrapper {
+            display: inline-block;
+            width: 100%;
+            padding: 0 40px;
+        }
+    }
+}
+
+span.progress-percentage {
+    font-size: 13px;
+    font-weight: 400;
+    display: block;
+}
+
+div.progress-bar-container {
+    max-width: 400px;
+    width: 100%;
+    display: inline-block;
+    height: 4px;
+    text-align: left;
+    background: #eee;
+    padding: 1px 2px;
+    overflow: hidden;
+
+    .progress-bar {
+        display: block;
+        width: 10%;
+        height: 2px;
+        background: #303030;
+    }
+}

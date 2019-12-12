@@ -1,0 +1,46 @@
+/* You can add global styles to this file, and also import other style files */
+
+@import "variables";
+@import "app/component/_core/page-loader/page-loader.component";
+@import "app/component/_core/modal/modal.component";
+@import "app/component/parser/parser.component";
+
+.component-btn-group-button {
+    padding: 0 !important;
+}
+
+.bg-success {
+    background: $background-green !important;
+    color: #ffffff !important;
+    border-right: 1px $border-green solid !important;
+}
+
+.bg-primary {
+    background: $background-blue !important;
+    color: #ffffff !important;
+    border-right: 1px $border-blue solid !important;
+}
+
+.bg-default {
+    background: $background-grey !important;
+    color: #212529 !important;
+    border-right: 1px $border-grey solid !important;
+}
+
+.bg-danger {
+    background: $background-red !important;
+    color: #ffffff !important;
+    border-right: 1px $border-red solid !important;
+}
+
+.bg-warning {
+    background: $background-yellow !important;
+    color: #ffffff !important;
+    border-right: 1px $border-yellow solid !important;
+}
+
+.bg-info {
+    background: $background-info !important;
+    color: #ffffff !important;
+    border-right: 1px $border-info solid !important;
+}

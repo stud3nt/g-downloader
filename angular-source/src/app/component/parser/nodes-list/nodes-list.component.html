@@ -1,0 +1,62 @@
+<div *ngIf="parserRequest.parsedNodes.length > 0">
+    <div class="grid-container grid-200">
+        <article id="{{ node.identifier }}" [ngClass]="determineNodeClass(node)" *ngFor="let node of parserRequest.parsedNodes" (click)="openNode(node)">
+            <div class="tile-header-image">
+                <div class="tile-header-icon bg-default" *ngIf="node.hasStatus(nodeStatus.Waiting)">
+                    <i class="fa fa-spinner fa-spin fa-fw"></i>
+                </div>
+                <div class="tile-header-icon bg-info" *ngIf="node.hasStatus(nodeStatus.Saved)">
+                    <i class="fa fa-database"></i>
+                </div>
+                <div class="tile-header-icon bg-success" *ngIf="node.hasStatus(nodeStatus.Finished)">
+                    <i class="fa fa-cloud-download"></i>
+                </div>
+
+                <span>
+                    <p [innerHTML]="node.name | truncateString : 35"></p>
+                </span>
+            </div>
+            <div class="tile-image" *ngIf="node.thumbnails.length > 0 || node.localThumbnails.length > 0">
+                <div *ngIf="node.thumbnails && node.thumbnails.length > 0">
+                    <img *ngFor="let thumbnail of node.thumbnails" [src]="thumbnail" />
+                </div>
+                <div *ngIf="node.localThumbnails && node.localThumbnails.length > 0">
+                    <img *ngFor="let localThumbnail of node.localThumbnails" [src]="localThumbnail" />
+                </div>
+                <div *ngIf="!node.thumbnails && !node.localThumbnails">
+                    <img src="/app/assets/img/no-image.png" />
+                </div>
+            </div>
+            <div class="tile-data">
+                <table class="table table-hover">
+                    <tbody>
+                        <tr *ngIf="node.imagesNo && node.imagesNo > 0">
+                            <th>Images</th>
+                            <td>
+                                {{ node.imagesNo }}
+                            </td>
+                        </tr>
+                        <tr *ngIf="!node.imagesNo && node.ratio">
+                            <th>Ratio</th>
+                            <td>
+                                {{ node.ratio }}
+                            </td>
+                        </tr>
+                        <tr *ngIf="node.commentsNo">
+                            <th>Comments</th>
+                            <td>{{ node.commentsNo ? node.commentsNo : '----' }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="tile-footer">
+                <button type="button" (mouseenter)="lockTiles=true" (mouseleave)="lockTiles=false" (click)="markNode(node, )" class="btn btn-sm btn-success" *ngIf="!node.hasStatus(nodeStatus.Saved)">
+                    <i class="fa fa-save" *ngIf="node.hasStatus(NodeStatus.Queued)"></i>
+                </button>
+                <button type="button" (mouseenter)="lockTiles=true" (mouseleave)="lockTiles=false" (click)="markAs(node)" class="btn btn-sm btn-success" *ngIf="!node.hasStatus(nodeStatus.Saved)">
+                    <i class="fa fa-star"></i>
+                </button>
+            </div>
+        </article>
+    </div>
+</div>

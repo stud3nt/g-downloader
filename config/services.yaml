@@ -1,0 +1,62 @@
+# This file is the entry point to configure your own services.
+# Files in the packages/ subdirectory configure your dependencies.
+
+# Put parameters here that don't need to change on each machine where the app is deployed
+# https://symfony.com/doc/current/best_practices/configuration.html#application-related-configuration
+parameters:
+    locale: 'pl'
+    json_cache_refresh_time: '120 seconds'
+
+services:
+    # default configuration for services in *this* file
+    _defaults:
+        autowire: true      # Automatically injects dependencies in your services.
+        autoconfigure: true # Automatically registers your services as commands, event subscribers, etc.
+
+    # makes classes in src/ available to be used as services
+    # this creates a service per class whose id is the fully-qualified class name
+    App\:
+        resource: '../src/*'
+        autowire: true
+        public: true
+        exclude: '../src/{DependencyInjection,Entity,Migrations,Tests,Kernel.php}'
+
+    # controllers are imported separately to make sure services can be injected
+    # as action arguments even if you don't extend any base controller class
+    App\Controller\:
+        resource: '../src/Controller'
+        tags: ['controller.service_arguments']
+
+    App\Parser\:
+        resource: '../src/Parser/*'
+        autowire: true
+        public: true
+        arguments: ['@settings_manager']
+
+    settings_manager:
+        class: App\Manager\SettingsManager
+        autowire: true
+        public: true
+
+    parser_boards_4chan:
+        class: App\Parser\Boards4ChanParser
+        autowire: true
+        public: true
+
+    parser_imagefap:
+        class: App\Parser\ImagefapParser
+        autowire: true
+        public: true
+
+    parser_reddit:
+        class: App\Parser\RedditParser
+        autowire: true
+        public: true
+
+    parser_hentai_foundry:
+        class: App\Parser\HentaiFoundryParser
+        autowire: true
+        public: true
+
+    # add more service definitions when explicit configuration is needed
+    # please note that last definitions always *replace* previous ones
