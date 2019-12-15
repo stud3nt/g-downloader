@@ -58,8 +58,15 @@ class NodeManager extends EntityManager
                 foreach ($savedNodes as $savedNodeKey => $savedNode) { // update statuses
                     foreach ($parsedNodes as $parsedNodeKey => $parsedNode) {
                         if ($savedNode->getIdentifier() == $parsedNode['identifier']) {
-                            $parsedNodes[$parsedNodeKey]['statuses'][] = NodeStatus::Queued;
                             $savedNode->refreshLastViewedAt();
+
+                            if ($savedNode->getImagesNo() !== $parsedNode['imagesNo']) {
+                                $savedNode->setImagesNo($parsedNode['imagesNo']);
+                                $savedNode->setRatio($parsedNode['ratio']);
+                                $savedNode->setCommentsNo($parsedNode['commentsNo']);
+
+                                $parsedNodes[$parsedNodeKey]['statuses'][] = NodeStatus::NewContent;
+                            }
 
                             $this->em->persist($savedNode);
                         }
@@ -75,7 +82,7 @@ class NodeManager extends EntityManager
                 }
 
                 usort($parsedNodes, function($node1, $node2) : int { // sorting nodes - favorites on top
-                    if ($node1['favorited'] === $node2['favorited']) {
+                    if (!array_key_exists('favorited', $node1) || !array_key_exists('favorited', $node2) || $node1['favorited'] === $node2['favorited']) {
                         return 0;
                     }
 
@@ -92,37 +99,25 @@ class NodeManager extends EntityManager
     }
 
     /**
-     * Saves Node in database;
+     * Updates node in database. If node does'nt exists - creates them;
      *
-     * @param ParsedNode $node
-     * @return ParsedNode
+     * @param array $nodeData
+     * @return bool
      * @throws \ReflectionException
-     * @throws ORMException
      */
-    public function toggleNodeDatabase(ParsedNode &$node) : ?ParsedNode
+    public function updateNodeInDatabase(array $nodeData): bool
     {
-        $dbNode = $this->findNode($node);
+        $dbNode = $this->repository->findOneBy([
+            'identifier' => $nodeData['identifier'],
+            'parser' => $nodeData['parser'],
+            'level' => $nodeData['level']
+        ]);
 
         if (!$dbNode) {
             $dbNode = new Node();
-
-            $this->entityConverter->setData($node, $dbNode);
-            $this->save($dbNode);
-
-            return $node;
-        } else {
-            $this->remove($dbNode);
         }
 
-        return null;
-    }
-
-    public function findNode(ParsedNode $node) : ?Node
-    {
-        return $this->repository->findOneBy([
-            'identifier' => $node->identifier,
-            'parser' => $node->parser,
-            'level' => $node->level
-        ]);
+        $this->entityConverter->setData($nodeData, $dbNode);
+        $this->save($dbNode);
     }
 }

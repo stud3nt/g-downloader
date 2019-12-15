@@ -12,6 +12,7 @@ use App\Model\ParserRequestModel;
 use App\Parser\Base\ParserInterface;
 use App\Utils\StringHelper;
 use Doctrine\ORM\ORMException;
+use Psr\Container\ContainerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
@@ -27,8 +28,10 @@ class ParserController extends Controller
     /** @var FileManager */
     protected $fileManager;
 
-    public function __construct()
+    public function __construct(ContainerInterface $container)
     {
+        parent::__construct($container);
+
         $this->modelConverter = $this->get(ModelConverter::class);
         $this->nodeManager = $this->get(NodeManager::class);
         $this->fileManager = $this->get(FileManager::class);
@@ -79,22 +82,23 @@ class ParserController extends Controller
     }
 
     /**
-     * Mark node as;
+     * Marks node statuses;
      *
      * @Route("/api/parsers/mark_node", name="api_parsers_mark_node", options={"expose"=true}, methods={"POST"})
      * @param Request $request
      * @return JsonResponse
      * @throws \ReflectionException
+     * @throws ORMException
      */
     public function markNode(Request $request) : JsonResponse
     {
         $nodeModel = new ParsedNode();
-        $nodeStatus = $request->request->get('status');
-
         $this->modelConverter->setData($request->request->all(), $nodeModel);
+        $nodeModel->setStatusesFromArray();
 
-        if ($nodeModel->emptyStatuses())
-
+        $this->nodeManager->updateNodeInDatabase(
+            $this->modelConverter->convert($nodeModel)
+        );
 
         return $this->json(
             $this->modelConverter->convert($nodeModel)

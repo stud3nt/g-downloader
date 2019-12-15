@@ -3,10 +3,7 @@
 namespace App\Controller\Api\Base;
 
 use App\Converter\ModelConverter;
-use App\Manager\DownloadManager;
-use App\Manager\Object\BoardManager;
 use App\Manager\Object\FileManager;
-use App\Manager\Object\GalleryManager;
 use App\Manager\Object\NodeManager;
 use App\Manager\SettingsManager;
 use App\Parser\Boards4chanParser;
@@ -16,11 +13,23 @@ use App\Parser\RedditParser;
 use App\Service\FileCache;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController as BaseController;
 use Symfony\Component\HttpFoundation\Request;
+use Psr\Container\ContainerInterface;
 
 class Controller extends BaseController
 {
     /** @var SettingsManager */
     protected $settingsManager;
+
+    /** @var ContainerInterface */
+    protected $container;
+
+    /**
+     * @param ContainerInterface $container
+     */
+    public function __construct(ContainerInterface $container)
+    {
+        $this->container = $container;
+    }
 
     /** @required */
     public function setSettingsManager(SettingsManager $settingsManager)

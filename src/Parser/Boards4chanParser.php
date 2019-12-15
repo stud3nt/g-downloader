@@ -251,6 +251,8 @@ class Boards4chanParser extends AbstractParser implements ParserInterface
 
     public function getFilePreview(ParsedFile &$parsedFile) : ParsedFile
     {
+        $this->clearCache();
+
         $previewFilePath = $this->previewTempDir.$parsedFile->getFullFilename();
         $previewWebPath = $this->previewTempFolder.$parsedFile->getFullFilename();
 

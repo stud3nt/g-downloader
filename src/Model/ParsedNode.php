@@ -3,6 +3,7 @@
 namespace App\Model;
 
 use App\Annotation\ModelVariable;
+use App\Enum\NodeStatus;
 
 class ParsedNode extends AbstractModel
 {
@@ -97,7 +98,10 @@ class ParsedNode extends AbstractModel
     protected $finished;
 
     private $statusesNames = [
-        'queued', 'blocked', 'favorited', 'finished'
+        NodeStatus::Queued,
+        NodeStatus::Blocked,
+        NodeStatus::Favorited,
+        NodeStatus::Finished
     ];
 
     public function __construct(string $parser = null, string $level = null)
@@ -126,6 +130,22 @@ class ParsedNode extends AbstractModel
         }
 
         return false;
+    }
+
+    public function setStatusesFromArray() : self
+    {
+        if ($this->getStatuses()) {
+            foreach ($this->statusesNames as $statusName) {
+                $statusSetter = 'set'.ucfirst($statusName);
+
+                if (method_exists($this, $statusSetter))
+                    $this->$statusSetter(
+                        in_array($statusName, $this->statuses)
+                    );
+            }
+        }
+
+        return $this;
     }
 
     /**

@@ -6,4 +6,5 @@ export class NodeStatus {
 	public static Queued: string = 'queued'; // added to download queue;
 	public static Saved: string = 'saved'; // saved in database;
 	public static Downloaded: string = 'downloaded'; // downloaded;
+	public static NewContent: string = 'new_content'; // new content available
 }

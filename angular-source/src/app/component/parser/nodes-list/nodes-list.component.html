@@ -2,13 +2,13 @@
     <div class="grid-container grid-200">
         <article id="{{ node.identifier }}" [ngClass]="determineNodeClass(node)" *ngFor="let node of parserRequest.parsedNodes" (click)="openNode(node)">
             <div class="tile-header-image">
-                <div class="tile-header-icon bg-default" *ngIf="node.hasStatus(nodeStatus.Waiting)">
+                <div class="tile-header-icon bg-default" *ngIf="node.hasStatus(NodeStatus.Waiting)">
                     <i class="fa fa-spinner fa-spin fa-fw"></i>
                 </div>
-                <div class="tile-header-icon bg-info" *ngIf="node.hasStatus(nodeStatus.Saved)">
+                <div class="tile-header-icon bg-info" *ngIf="node.hasStatus(NodeStatus.Saved)">
                     <i class="fa fa-database"></i>
                 </div>
-                <div class="tile-header-icon bg-success" *ngIf="node.hasStatus(nodeStatus.Finished)">
+                <div class="tile-header-icon bg-success" *ngIf="node.hasStatus(NodeStatus.Finished)">
                     <i class="fa fa-cloud-download"></i>
                 </div>
 
@@ -50,11 +50,17 @@
                 </table>
             </div>
             <div class="tile-footer">
-                <button type="button" (mouseenter)="lockTiles=true" (mouseleave)="lockTiles=false" (click)="markNode(node, )" class="btn btn-sm btn-success" *ngIf="!node.hasStatus(nodeStatus.Saved)">
-                    <i class="fa fa-save" *ngIf="node.hasStatus(NodeStatus.Queued)"></i>
+                <button type="button" (mouseenter)="lockTiles=true" (mouseleave)="lockTiles=false" (click)="markNode(node, NodeStatus.Queued)" class="btn btn-sm btn-success" *ngIf="!node.hasStatus(NodeStatus.Saved)">
+                    <i class="fa fa-remove" *ngIf="node.hasStatus(NodeStatus.Queued)"></i>
+                    <i class="fa fa-save" *ngIf="!node.hasStatus(NodeStatus.Queued)"></i>
                 </button>
-                <button type="button" (mouseenter)="lockTiles=true" (mouseleave)="lockTiles=false" (click)="markAs(node)" class="btn btn-sm btn-success" *ngIf="!node.hasStatus(nodeStatus.Saved)">
-                    <i class="fa fa-star"></i>
+                <button type="button" (mouseenter)="lockTiles=true" (mouseleave)="lockTiles=false" (click)="markNode(node, NodeStatus.Favorited)" class="btn btn-sm btn-primary" *ngIf="!node.hasStatus(NodeStatus.Favorited)">
+                    <i class="fa fa-star-o" *ngIf="node.hasStatus(NodeStatus.Favorited)"></i>
+                    <i class="fa fa-star" *ngIf="!node.hasStatus(NodeStatus.Favorited)"></i>
+                </button>
+                <button type="button" (mouseenter)="lockTiles=true" (mouseleave)="lockTiles=false" (click)="markNode(node, NodeStatus.Blocked)" class="btn btn-sm btn-default" *ngIf="!node.hasStatus(NodeStatus.Favorited)">
+                    <i class="fa fa-unlock" *ngIf="node.hasStatus(NodeStatus.Blocked)"></i>
+                    <i class="fa fa-lock" *ngIf="!node.hasStatus(NodeStatus.Blocked)"></i>
                 </button>
             </div>
         </article>

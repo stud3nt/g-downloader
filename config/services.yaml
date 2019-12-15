@@ -24,39 +24,12 @@ services:
     # controllers are imported separately to make sure services can be injected
     # as action arguments even if you don't extend any base controller class
     App\Controller\:
-        resource: '../src/Controller'
+        resource: '../src/Controller/**'
         tags: ['controller.service_arguments']
-
-    App\Parser\:
-        resource: '../src/Parser/*'
-        autowire: true
         public: true
-        arguments: ['@settings_manager']
-
-    settings_manager:
-        class: App\Manager\SettingsManager
         autowire: true
-        public: true
-
-    parser_boards_4chan:
-        class: App\Parser\Boards4ChanParser
-        autowire: true
-        public: true
-
-    parser_imagefap:
-        class: App\Parser\ImagefapParser
-        autowire: true
-        public: true
-
-    parser_reddit:
-        class: App\Parser\RedditParser
-        autowire: true
-        public: true
-
-    parser_hentai_foundry:
-        class: App\Parser\HentaiFoundryParser
-        autowire: true
-        public: true
+        calls:
+            - [setContainer, ["@service_container"]]
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones

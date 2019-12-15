@@ -246,6 +246,34 @@ class EntityConverter extends BaseConverter
             if ($value === 'null') {
                 $value = null;
             }
+
+            switch ($variableConfig->type) {
+                case 'array':
+                    $value = (!is_array($value)) ? json_decode($value, true) : $value;
+                    break;
+
+                case 'boolean':
+                    if (is_string($value)) {
+                        $value = ($value === 'true' || $value === true);
+                    } elseif (is_numeric($value)) {
+                        $value = ($value === 1 || $value === '1');
+                    } elseif (!is_bool($value)) {
+                        $value = (bool)$value;
+                    }
+                    break;
+
+                case 'integer':
+                    $value = (int)trim($value);
+                    break;
+
+                case 'stdClass':
+                    if (is_array($value)) {
+                        $value = json_decode(json_encode($value), false);
+                    } elseif (is_string($value) && StringHelper::isJson($value)) {
+                        $value = json_decode($value, false);
+                    }
+                    break;
+            }
         }
 
         $this->entity->$entitySetter($value);

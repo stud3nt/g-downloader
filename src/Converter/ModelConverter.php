@@ -3,11 +3,7 @@
 namespace App\Converter;
 
 use App\Annotation\ModelVariable;
-use App\Enum\EntityAnnotationVariables;
-use App\Enum\EntityConvertType;
 use App\Model\AbstractModel;
-use App\Utils\AppHelper;
-use App\Utils\FilesHelper;
 use App\Utils\StringHelper;
 use Doctrine\Common\Annotations\AnnotationReader;
 use Symfony\Component\Intl\Exception\MethodNotImplementedException;
@@ -85,6 +81,10 @@ class ModelConverter
 
                             case 'stdClass':
                                 $variableValue = new \stdClass();
+                                break;
+
+                            case 'boolean':
+                                $variableValue = false;
                                 break;
                         }
                     }
@@ -201,6 +201,8 @@ class ModelConverter
                         $value = ($value === 'true' || $value === true);
                     } elseif (is_numeric($value)) {
                         $value = ($value === 1 || $value === '1');
+                    } elseif (!is_bool($value)) {
+                        $value = (bool)$value;
                     }
                     break;
 

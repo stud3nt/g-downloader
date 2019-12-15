@@ -219,6 +219,8 @@ class RedditParser extends AbstractParser implements ParserInterface
 
     public function getFilePreview(ParsedFile &$parsedFile) : ParsedFile
     {
+        $this->clearCache();
+
         if (!$parsedFile->getFileUrl() || !$parsedFile->getName() || $parsedFile->getExtension()) {
             $this->getFileData($parsedFile);
         }

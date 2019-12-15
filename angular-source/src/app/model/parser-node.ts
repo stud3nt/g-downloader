@@ -66,9 +66,9 @@ export class ParserNode {
 	 */
 	public removeStatus(removedStatus: string): ParserNode {
 		if (this.statuses.length > 0) {
-			for (let statusKey in this.statuses) {
-				if (this.statuses[statusKey] === removedStatus) {
-					delete this.statuses[statusKey];
+			for (let index in this.statuses) {
+				if (this.statuses[index] === removedStatus) {
+					this.statuses.splice(parseInt(index), 1);
 				}
 			}
 		}

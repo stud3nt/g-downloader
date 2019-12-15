@@ -468,6 +468,8 @@ class ImagefapParser extends AbstractParser implements ParserInterface
      */
     public function getFilePreview(ParsedFile &$parsedFile) : ParsedFile
     {
+        $this->clearCache();
+
         if (empty($parsedFile->getFileUrl()) || empty($parsedFile->getName()) || empty($parsedFile->getExtension())) {
             $this->getFileData($parsedFile);
         }

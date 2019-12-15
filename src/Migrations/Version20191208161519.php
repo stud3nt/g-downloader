@@ -23,6 +23,8 @@ final class Version20191208161519 extends AbstractMigration
         $this->addSql('ALTER TABLE parsed_nodes ADD COLUMN blocked TINYINT(1) UNSIGNED DEFAULT 0 AFTER queued');
         $this->addSql('ALTER TABLE parsed_nodes ADD COLUMN favorited TINYINT(1) UNSIGNED DEFAULT 0 AFTER blocked');
         $this->addSql('ALTER TABLE parsed_nodes ADD COLUMN finished TINYINT(1) UNSIGNED DEFAULT 0 AFTER favorited');
+
+        $this->addSql('ALTER TABLE users ADD COLUMN token VARCHAR(64) NOT NULL AFTER role');
     }
 
     public function down(Schema $schema) : void
@@ -31,5 +33,7 @@ final class Version20191208161519 extends AbstractMigration
         $this->addSql('ALTER TABLE parsed_nodes DROP COLUMN blocked');
         $this->addSql('ALTER TABLE parsed_nodes DROP COLUMN favorited');
         $this->addSql('ALTER TABLE parsed_nodes DROP COLUMN finished');
+
+        $this->addSql('ALTER TABLE users DROP COLUMN token');
     }
 }

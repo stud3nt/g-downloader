@@ -16,11 +16,15 @@ class FileCache
 
     protected $expirationData = [];
 
-    public function __construct()
+    public function __construct(string $userToken = null)
     {
         $this->fs = new Filesystem();
 
-        $userToken = AppHelper::getUserToken();
+        if (!$userToken) {
+            $userToken = AppHelper::getUserToken();
+            // return;
+        }
+
         $this->cacheDirectory = AppHelper::getDataDir().'user-cache'.DIRECTORY_SEPARATOR.$userToken;
 
         if (!file_exists($this->cacheDirectory)) {
@@ -99,7 +103,7 @@ class FileCache
      * @deprecated - removed since version 1.0
      * @param string $key
      */
-    public function clear(string $key) : void
+    public function clear(string $key): void
     {
         $this->clearCacheData($key);
     }
@@ -109,9 +113,20 @@ class FileCache
      *
      * @param string $key
      */
-    public function remove(string $key) : void
+    public function remove(string $key): void
     {
         $this->clearCacheData($key);
+    }
+
+    public function removeAll(): void
+    {
+        if ($this->expirationData) {
+            foreach ($this->expirationData as $key => $timestamp) {
+                $this->clearCacheData($key);
+            }
+        }
+
+        $this->expirationData = [];
     }
 
     /**
@@ -231,8 +246,8 @@ class FileCache
     {
         $cacheFilePath = $this->cacheFilePath($key);
 
-        if (file_exists($cacheFilePath)) {
-            unlink($cacheFilePath);
+        if ($this->fs->exists($cacheFilePath)) {
+            $this->fs->remove($cacheFilePath);
         }
 
         $this->updateExpiration($key, -1);

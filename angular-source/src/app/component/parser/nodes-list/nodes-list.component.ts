@@ -14,7 +14,7 @@ export class NodesListComponent implements OnInit {
 	@Input() parserRequest: ParserRequest;
 	@Output() openChildNode = new EventEmitter<ParserNode>();
 
-	public nodeStatus = NodeStatus;
+	public NodeStatus = NodeStatus;
 
 	public lockTiles = false;
 
@@ -65,7 +65,6 @@ export class NodesListComponent implements OnInit {
 		}
 
 		this.parserRequest.actionNode = node;
-
 		this.parserService.markNode(node).subscribe((response) => {
 			node.removeStatus(NodeStatus.Waiting);
 		}, (error) => {

@@ -31,6 +31,10 @@ class AppHelper
         return PUBLIC_DIR.DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR.'data'.DIRECTORY_SEPARATOR;
     }
 
+    /**
+     * @deprecated - temporary replacer for user entity;
+     * @return string
+     */
     public static function getUserToken()
     {
         return 'xb466AkZ8TaDBBWJuYdsysm';

@@ -76,25 +76,25 @@ class Node extends AbstractEntity
 
     /**
      * @ORM\Column(name="queued", type="boolean")
-     * @EntityVariable(convertable=true, writable=true, readable=true)
+     * @EntityVariable(convertable=true, writable=true, readable=true, type="boolean")
      */
     protected $queued = false;
 
     /**
      * @ORM\Column(name="blocked", type="boolean")
-     * @EntityVariable(convertable=true, writable=true, readable=true)
+     * @EntityVariable(convertable=true, writable=true, readable=true, type="boolean")
      */
     protected $blocked = false;
 
     /**
      * @ORM\Column(name="favorited", type="boolean")
-     * @EntityVariable(convertable=true, writable=true, readable=true)
+     * @EntityVariable(convertable=true, writable=true, readable=true, type="boolean")
      */
     protected $favorited;
 
     /**
      * @ORM\Column(name="finished", type="boolean")
-     * @EntityVariable(convertable=true, writable=true, readable=true)
+     * @EntityVariable(convertable=true, writable=true, readable=true, type="boolean")
      */
     protected $finished;
 
