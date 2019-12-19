@@ -6,13 +6,9 @@ use App\Converter\EntityConverter;
 use App\Entity\Parser\Node;
 use App\Enum\NodeStatus;
 use App\Manager\Base\EntityManager;
-use App\Model\ParsedNode;
 use App\Model\ParserRequestModel;
 use App\Repository\NodeRepository;
 use Doctrine\Common\Persistence\ObjectManager;
-use Doctrine\Common\Util\Debug;
-use Doctrine\ORM\ORMException;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 
 class NodeManager extends EntityManager
@@ -55,8 +51,8 @@ class NodeManager extends EntityManager
 
             if ($savedNodes) {
                 /** @var Node $savedNode */
-                foreach ($savedNodes as $savedNodeKey => $savedNode) { // update statuses
-                    foreach ($parsedNodes as $parsedNodeKey => $parsedNode) {
+                foreach ($parsedNodes as $parsedNodeKey => $parsedNode) {
+                    foreach ($savedNodes as $savedNodeKey => $savedNode) { // update statuses
                         if ($savedNode->getIdentifier() == $parsedNode['identifier']) {
                             $savedNode->refreshLastViewedAt();
 
@@ -69,20 +65,21 @@ class NodeManager extends EntityManager
                             }
 
                             $this->em->persist($savedNode);
-                        }
 
-                        foreach (NodeStatus::getData() as $status) {
-                            $statusGetter = 'get'.ucfirst($status);
+                            foreach (NodeStatus::getData() as $status) {
+                                $statusGetter = 'get'.ucfirst($status);
 
-                            if (method_exists($savedNode, $statusGetter) && $savedNode->$statusGetter()) {
-                                $parsedNodes[$parsedNodeKey]['statuses'][] = $status;
+                                if (method_exists($savedNode, $statusGetter) && $savedNode->$statusGetter()) {
+                                    $parsedNodes[$parsedNodeKey]['statuses'][] = $status;
+                                    $parsedNodes[$parsedNodeKey][$status] = $status;
+                                }
                             }
                         }
                     }
                 }
 
                 usort($parsedNodes, function($node1, $node2) : int { // sorting nodes - favorites on top
-                    if (!array_key_exists('favorited', $node1) || !array_key_exists('favorited', $node2) || $node1['favorited'] === $node2['favorited']) {
+                    if ($node1['favorited'] === $node2['favorited']) {
                         return 0;
                     }
 
@@ -105,7 +102,7 @@ class NodeManager extends EntityManager
      * @return bool
      * @throws \ReflectionException
      */
-    public function updateNodeInDatabase(array $nodeData): bool
+    public function updateNodeInDatabase(array $nodeData): void
     {
         $dbNode = $this->repository->findOneBy([
             'identifier' => $nodeData['identifier'],

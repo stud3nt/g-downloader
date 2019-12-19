@@ -10,7 +10,14 @@ export class ParserRequest {
 		this.files = [];
 		this.parsedNodes = [];
 
+		this.jumpPrevious = (obj && (obj.jumpPrevious === 'true' || obj.jumpPrevious === true));
+		this.jumpNext = (obj && (obj.jumpNext === 'true' || obj.jumpNext === true));
+
 		if (obj) {
+			if (obj.currentNode) {
+				this.currentNode = new ParserNode(obj.currentNode);
+			}
+
 			if (obj.files) {
 				for (let parsedFile of obj.files) {
 					this.files.push(new ParsedFile(parsedFile));

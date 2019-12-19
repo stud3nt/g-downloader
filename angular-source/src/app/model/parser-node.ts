@@ -24,7 +24,7 @@ export class ParserNode {
 
 	ratio: number = 0;
 
-	noImage: boolean = false
+	noImage: boolean = false;
 
 	singleFile: boolean = false;
 

@@ -4,7 +4,7 @@ namespace App\Controller\Api;
 
 use App\Controller\Api\Base\Controller;
 use App\Converter\ModelConverter;
-use App\Enum\{NodeLevel, NodeStatus};
+use App\Enum\{NodeLevel};
 use App\Manager\Object\FileManager;
 use App\Manager\Object\NodeManager;
 use App\Model\ParsedNode;

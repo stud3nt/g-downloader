@@ -1,9 +1,12 @@
 /* You can add global styles to this file, and also import other style files */
 
 @import "variables";
+
 @import "app/component/_core/page-loader/page-loader.component";
 @import "app/component/_core/modal/modal.component";
+
 @import "app/component/parser/parser.component";
+@import "app/component/parser/saved-nodes/saved-nodes.component";
 
 .component-btn-group-button {
     padding: 0 !important;

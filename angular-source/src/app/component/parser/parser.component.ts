@@ -11,6 +11,8 @@ import { PageLoaderDataService } from "../../service/data/page-loader-data.servi
 import { ParserOperationStatus } from "../../enum/parser-operation-status";
 import { PaginationMode } from "../../enum/pagination-mode";
 import { Pagination } from "../../model/pagination";
+import { NodesListComponent } from "./nodes-list/nodes-list.component";
+import { NodeStatus } from "../../enum/node-status";
 
 @Component({
 	selector: 'app-parser',
@@ -32,11 +34,21 @@ export class ParserComponent implements OnInit {
 
 	public parserRequest: ParserRequest = new ParserRequest();
 
-	public parserOperationStatuses = ParserOperationStatus;
-	public nodeLevelEnum = NodeLevel;
+	public ParserOperationStatus = ParserOperationStatus;
+	public NodeLevel = NodeLevel;
+	public NodeStatus = NodeStatus;
 
 	public highestLevel = true;
 	public parserBreadcrumbs = [];
+
+	protected scrollY = 0;
+
+	/** Template variables **/
+	public actionBeltClass: string = '';
+	public actionBeltMaskClass: string = '';
+	public previousNodeAvailable: boolean = false;
+
+	public nodesListComponent: NodesListComponent = new NodesListComponent(this.parserService);
 
 	constructor(
 		private headerData: ContentHeaderDataService,
@@ -56,13 +68,25 @@ export class ParserComponent implements OnInit {
 		});
 	};
 
+	ngOnDestroy() {
+		window.removeEventListener('scroll', this.scrollEvent, true);
+	}
+
+	public scrollEvent = (event: any = null): void => {
+		this.scrollY = window.scrollY;
+		this.determineActionBeltClass();
+	};
+
 	/**
 	 * Initialization function.
 	 * Sets node data, names and sends initialize data request;
 	 */
 	public run() : void {
+		window.addEventListener('scroll', this.scrollEvent, true);
+
 		this.parserBreadcrumbs = [];
 
+		this.scrollEvent();
 		this.determineParserName();
 		this.setHeaderData();
 
@@ -98,19 +122,51 @@ export class ParserComponent implements OnInit {
 	 *
 	 * @param forceReload (boolean) - omnit cache and force reload data
 	 */
-	public openCurrentNode(forceReload: boolean = false) : void {
+	public openCurrentNode(forceReload: boolean = false): void {
 		if (!this.parserRequest.currentNode || !this.parserRequest.currentNode.level) {
 			this.parserRequest.currentNode = this.initializeParserNodeObject();
 		}
 
+		console.log(this.parserRequest.currentNode.hasStatus(NodeStatus.Queued));
+
 		this.parserRequest.clearParsedData();
-		this.generateCacheKeys();
 
 		if (forceReload) {
 			this.parserRequest.ignoreCache = true;
 		}
 
 		this.sendParserRequest();
+	}
+
+	/**
+	 * 	Checks and opens previous node;
+	 *
+	 * 	@return number - index of previous index;
+	 */
+	public openPreviousNode(): void {
+		let currentNodeIndex = this.getCurrentNodeIndex();
+
+		if (currentNodeIndex > 0) {
+			this.setAndOpenCurrentNode(this.parserBreadcrumbs[(currentNodeIndex - 1)].node);
+		}
+	}
+
+	/**
+	 *
+	 * 	@return number - index of previous index;
+	 */
+	private getCurrentNodeIndex(): number {
+		if (this.parserBreadcrumbs.length > 1) {
+			for (let x in this.parserBreadcrumbs) {
+				let index = parseInt(x);
+
+				if (this.parserBreadcrumbs[index].node === this.parserRequest.currentNode) {
+					return index;
+				}
+			}
+		}
+
+		return 0;
 	}
 
 	/**
@@ -135,8 +191,16 @@ export class ParserComponent implements OnInit {
 	/**
 	 * Shows/hides modal with node settings;
 	 */
-	public toggleSettingsModal() {
+	public toggleSettingsModal(): void {
 
+	};
+
+	/**
+	 * Determine action belt classes based on current scroll value;
+	 */
+	public determineActionBeltClass(): void {
+		this.actionBeltClass = 'actionbelt_container' + ((this.scrollY > 80) ? ' fixed' : '');
+		this.actionBeltMaskClass = 'actionbelt_mask' + ((this.scrollY > 80) ? ' visible' : '');
 	}
 
 	/**
@@ -190,6 +254,7 @@ export class ParserComponent implements OnInit {
 			this.parserRequest = response;
 			this.highestLevel = (this.parserRequest.currentNode.level === this.parserSettings[this.parserName+'_initial_level']);
 			this.setBreadcrumb(response.currentNode, response.pagination);
+			this.previousNodeAvailable = (this.getCurrentNodeIndex() > 0);
 		}, () => {
 			this.pageLoaderDataService.disableRefreshingFromApi().setProgress(100).hide();
 		}, () => {

@@ -80,22 +80,22 @@ class ParsedNode extends AbstractModel
     /**
      * @ModelVariable(type="boolean")
      */
-    protected $queued = false;
+    public $queued = false;
 
     /**
      * @ModelVariable(type="boolean")
      */
-    protected $blocked = false;
+    public $blocked = false;
 
     /**
      * @ModelVariable(type="boolean")
      */
-    protected $favorited;
+    public $favorited;
 
     /**
      * @ModelVariable(type="boolean")
      */
-    protected $finished;
+    public $finished;
 
     private $statusesNames = [
         NodeStatus::Queued,

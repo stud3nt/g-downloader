@@ -139,7 +139,7 @@ class AbstractParser
             if ($cacheDir && file_exists($cacheDir)) {
                 foreach (scandir($cacheDir) as $file) {
                     if (!in_array($file, ['.', '..'])) {
-                        $filePath = $this->thumbnailTempDir.DIRECTORY_SEPARATOR.$file;
+                        $filePath = preg_replace('/\?v=[\d]+$/', '', $cacheDir.$file);
                         $fileTime = filemtime($filePath);
 
                         if ($fileTime + $this->localThumbnailsLifetime <= $currentTimestamp) {

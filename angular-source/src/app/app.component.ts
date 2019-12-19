@@ -1,4 +1,5 @@
 import {Component, ViewEncapsulation} from '@angular/core';
+import {WindowDataService} from "./service/data/window-data.service";
 
 @Component({
 	selector: 'app-root',
