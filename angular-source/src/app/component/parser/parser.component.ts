@@ -13,6 +13,7 @@ import { PaginationMode } from "../../enum/pagination-mode";
 import { Pagination } from "../../model/pagination";
 import { NodesListComponent } from "./nodes-list/nodes-list.component";
 import { NodeStatus } from "../../enum/node-status";
+import {current} from "codelyzer/util/syntaxKind";
 
 @Component({
 	selector: 'app-parser',
@@ -44,11 +45,12 @@ export class ParserComponent implements OnInit {
 	protected scrollY = 0;
 
 	/** Template variables **/
-	public actionBeltClass: string = '';
-	public actionBeltMaskClass: string = '';
-	public previousNodeAvailable: boolean = false;
+	public actionBeltClass: string = ''; // classes for action belt
+	public actionBeltMaskClass: string = ''; // classes for action belt mask
+	public scrollTopVisible: boolean = false; // is 'scroll top' button visible?
+	public previousNodeAvailable: boolean = false; // is previous node button enabled/available?
 
-	public nodesListComponent: NodesListComponent = new NodesListComponent(this.parserService);
+	public nodesListComponent: NodesListComponent;
 
 	constructor(
 		private headerData: ContentHeaderDataService,
@@ -99,20 +101,22 @@ export class ParserComponent implements OnInit {
 	 *
 	 * @param node
 	 * @param pagination
+	 * @param scrollY
 	 */
-	public setAndOpenCurrentNode(node: ParserNode = null, pagination: Pagination = null) : void {
+	public setAndOpenCurrentNode(node: ParserNode = null, pagination: Pagination = null, scrollY: number = 0) : void {
 		this.parserRequest.currentNode = node;
 		this.parserRequest.clearParsedData();
 
-		if (node.nextLevel && this.parserRequest.level !== node.nextLevel) { // change level if necessary
+		if (node.nextLevel && this.parserRequest.level !== node.nextLevel) // change level if necessary
 			this.parserRequest.level = node.nextLevel;
-		} else if (!node.nextLevel) {
+		else if (!node.nextLevel)
 			this.parserRequest.level = node.level;
-		}
 
-		if (pagination) {
+		if (pagination)
 			this.parserRequest.pagination = pagination;
-		}
+
+		if (scrollY)
+			window.scroll(0, scrollY);
 
 		this.openCurrentNode();
 	}
@@ -126,8 +130,6 @@ export class ParserComponent implements OnInit {
 		if (!this.parserRequest.currentNode || !this.parserRequest.currentNode.level) {
 			this.parserRequest.currentNode = this.initializeParserNodeObject();
 		}
-
-		console.log(this.parserRequest.currentNode.hasStatus(NodeStatus.Queued));
 
 		this.parserRequest.clearParsedData();
 
@@ -144,10 +146,10 @@ export class ParserComponent implements OnInit {
 	 * 	@return number - index of previous index;
 	 */
 	public openPreviousNode(): void {
-		let currentNodeIndex = this.getCurrentNodeIndex();
+		let currentBreadcrumbIndex = this.getCurrentBreadcrumbIndex();
 
-		if (currentNodeIndex > 0) {
-			this.setAndOpenCurrentNode(this.parserBreadcrumbs[(currentNodeIndex - 1)].node);
+		if (currentBreadcrumbIndex > 0) { // gets previous index from breadcrumbs and opens node
+			this.setAndOpenCurrentNode(this.parserBreadcrumbs[(currentBreadcrumbIndex - 1)].node);
 		}
 	}
 
@@ -155,7 +157,7 @@ export class ParserComponent implements OnInit {
 	 *
 	 * 	@return number - index of previous index;
 	 */
-	private getCurrentNodeIndex(): number {
+	private getCurrentBreadcrumbIndex(): number {
 		if (this.parserBreadcrumbs.length > 1) {
 			for (let x in this.parserBreadcrumbs) {
 				let index = parseInt(x);
@@ -166,7 +168,7 @@ export class ParserComponent implements OnInit {
 			}
 		}
 
-		return 0;
+		return -1;
 	}
 
 	/**
@@ -181,7 +183,7 @@ export class ParserComponent implements OnInit {
 	/**
 	 * Changes page of currently viewed node.
 	 *
-	 * @param pagination
+	 * @param pagination - pagination settings;
 	 */
 	public changeNodePage(pagination: Pagination) {
 		this.parserRequest.pagination = pagination;
@@ -194,6 +196,21 @@ export class ParserComponent implements OnInit {
 	public toggleSettingsModal(): void {
 
 	};
+
+	public markCurrentNode(status: string): void {
+		this.nodesListComponent = new NodesListComponent(this.parserService);
+		this.nodesListComponent.parserRequest = this.parserRequest;
+		this.nodesListComponent.markNode(this.parserRequest.currentNode, status);
+		this.parserRequest = this.nodesListComponent.parserRequest;
+	}
+
+	public getCurrentNodeButtonClass(status: string): string {
+		this.nodesListComponent = new NodesListComponent(this.parserService);
+
+		return this.nodesListComponent.getNodeButtonClass(
+			this.parserRequest.currentNode, status
+		);
+	}
 
 	/**
 	 * Determine action belt classes based on current scroll value;
@@ -249,12 +266,18 @@ export class ParserComponent implements OnInit {
 	 * Sends data to parser API
 	 */
 	private sendParserRequest() {
+		let currentBreadcrumbIndex = this.getCurrentBreadcrumbIndex();
+
+		if (currentBreadcrumbIndex >= 0)  // save current scroll position;
+			this.parserBreadcrumbs[currentBreadcrumbIndex].scrollY = this.scrollY;
+
 		this.pageLoaderDataService.setProgress(1).show().enableRefreshingFromApi();
+
 		this.parserService.executeAction(this.parserRequest).subscribe((response : ParserRequest) => {
 			this.parserRequest = response;
 			this.highestLevel = (this.parserRequest.currentNode.level === this.parserSettings[this.parserName+'_initial_level']);
 			this.setBreadcrumb(response.currentNode, response.pagination);
-			this.previousNodeAvailable = (this.getCurrentNodeIndex() > 0);
+			this.previousNodeAvailable = (this.getCurrentBreadcrumbIndex() > 0);
 		}, () => {
 			this.pageLoaderDataService.disableRefreshingFromApi().setProgress(100).hide();
 		}, () => {
@@ -267,6 +290,7 @@ export class ParserComponent implements OnInit {
 		let previousBreadcrumbs = this.parserBreadcrumbs;
 		let newBreadcrumbEntry = {
 			node: node,
+			scrollY: 0,
 			pagination: (new Pagination(pagination)),
 			final: true // final breadcrumb -> font-weight: bold;
 		};

@@ -4,7 +4,7 @@
     <div class="actionbelt_container__breadcrumb">
         <ol class="breadcrumb">
             <li *ngFor="let breadcrumb of parserBreadcrumbs">
-                <a *ngIf="breadcrumb && breadcrumb.node.level" [routerLink]="null" (click)="setAndOpenCurrentNode(breadcrumb.node, breadcrumb.pagination)" [ngStyle]="{'font-weight': (breadcrumb.final === true) ? 'bold' : 'normal'}">
+                <a *ngIf="breadcrumb && breadcrumb.node.level" [routerLink]="null" (click)="setAndOpenCurrentNode(breadcrumb.node, breadcrumb.pagination, breadcrumb.scrollY)" [ngStyle]="{'font-weight': (breadcrumb.final === true) ? 'bold' : 'normal'}">
                     {{ NodeLevel.getLevelLabel(breadcrumb.node.level).toUpperCase() }} {{ breadcrumb.node.name ? '('+breadcrumb.node.name+')' : '' }}
                 </a>
             </li>
@@ -14,7 +14,7 @@
     <div class="actionbelt_container__navigation">
         <div class="input-group">
             <div class="input-group-btn">
-                <button type="button" class="btn btn-default" (click)="openPreviousNode()" [disabled]="previousNodeAvailable">
+                <button type="button" class="btn btn-default" (click)="openPreviousNode()" [disabled]="!previousNodeAvailable">
                     <i class="fa fa-arrow-left"></i>
                 </button>
                 <button type="button" class="btn btn-default" (click)="openCurrentNode(true)">
@@ -29,15 +29,15 @@
             <input [(ngModel)]="parserRequest.currentNode.url" type="text" class="form-control">
 
             <div class="input-group-btn">
-                <button type="button" (click)="nodesListComponent.markNode(parserRequest.currentNode, NodeStatus.Queued)" [ngClass]="nodesListComponent.getNodeButtonClass(parserRequest.currentNode, NodeStatus.Queued)">
+                <button type="button" [disabled]="parserRequest.currentNode.identifier === null" (click)="markCurrentNode(NodeStatus.Queued)" [ngClass]="getCurrentNodeButtonClass(NodeStatus.Queued)">
                     <i class="fa fa-remove" *ngIf="parserRequest.currentNode.hasStatus(NodeStatus.Queued)"></i>
                     <i class="fa fa-save" *ngIf="!parserRequest.currentNode.hasStatus(NodeStatus.Queued)"></i>
                 </button>
-                <button type="button" (click)="nodesListComponent.markNode(parserRequest.currentNode, NodeStatus.Favorited)" [ngClass]="nodesListComponent.getNodeButtonClass(parserRequest.currentNode, NodeStatus.Favorited)">
+                <button type="button" [disabled]="parserRequest.currentNode.identifier === null" (click)="markCurrentNode(NodeStatus.Favorited)" [ngClass]="getCurrentNodeButtonClass(NodeStatus.Favorited)">
                     <i class="fa fa-star-o" *ngIf="parserRequest.currentNode.hasStatus(NodeStatus.Favorited)"></i>
                     <i class="fa fa-star" *ngIf="!parserRequest.currentNode.hasStatus(NodeStatus.Favorited)"></i>
                 </button>
-                <button type="button" (click)="nodesListComponent.markNode(parserRequest.currentNode, NodeStatus.Blocked)" [ngClass]="nodesListComponent.getNodeButtonClass(parserRequest.currentNode, NodeStatus.Blocked)">
+                <button type="button" [disabled]="parserRequest.currentNode.identifier === null" (click)="markCurrentNode(NodeStatus.Blocked)" [ngClass]="getCurrentNodeButtonClass(NodeStatus.Blocked)">
                     <i class="fa fa-unlock" *ngIf="parserRequest.currentNode.hasStatus(NodeStatus.Blocked)"></i>
                     <i class="fa fa-lock" *ngIf="!parserRequest.currentNode.hasStatus(NodeStatus.Blocked)"></i>
                 </button>

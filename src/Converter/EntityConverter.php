@@ -168,31 +168,34 @@ class EntityConverter extends BaseConverter
             foreach ($entityMethods as $methodKey => $methodName) {
                 if (substr($methodName, 0, 3) === 'get') {
                     $variableName = lcfirst(substr($methodName, 3));
-                    $variableProperty = $reflectionClass->getProperty($variableName);
-                    $variableAnnotations = $this->annotationReader->getPropertyAnnotation(
-                        $variableProperty,
-                        EntityVariable::class
-                    );
 
-                    if (is_object($variableAnnotations)) {
-                        if ($annotationsFilter) {
-                            foreach ($annotationsFilter as $annotationName => $expectedAnnotationValue) {
-                                if (!method_exists($variableAnnotations, $annotationName)) {
-                                    continue;
-                                }
+                    if ($reflectionClass->hasProperty($variableName)) {
+                        $variableProperty = $reflectionClass->getProperty($variableName);
+                        $variableAnnotations = $this->annotationReader->getPropertyAnnotation(
+                            $variableProperty,
+                            EntityVariable::class
+                        );
 
-                                $annotationValue = $variableAnnotations->{$annotationName};
+                        if (is_object($variableAnnotations)) {
+                            if ($annotationsFilter) {
+                                foreach ($annotationsFilter as $annotationName => $expectedAnnotationValue) {
+                                    if (!method_exists($variableAnnotations, $annotationName)) {
+                                        continue;
+                                    }
 
-                                if ((is_array($annotationValue) && !in_array($expectedAnnotationValue, $annotationValue) && !in_array('default', $annotationValue))
+                                    $annotationValue = $variableAnnotations->{$annotationName};
+
+                                    if ((is_array($annotationValue) && !in_array($expectedAnnotationValue, $annotationValue) && !in_array('default', $annotationValue))
                                         ||
-                                    (!is_array($annotationValue) && $annotationValue != $expectedAnnotationValue && $annotationValue !== 'default')
-                                ) {
-                                    continue;
+                                        (!is_array($annotationValue) && $annotationValue != $expectedAnnotationValue && $annotationValue !== 'default')
+                                    ) {
+                                        continue;
+                                    }
                                 }
                             }
-                        }
 
-                        $convertVariablesArray[$variableName] = json_decode(json_encode($variableAnnotations));
+                            $convertVariablesArray[$variableName] = json_decode(json_encode($variableAnnotations));
+                        }
                     }
                 }
             }

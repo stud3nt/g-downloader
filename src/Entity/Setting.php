@@ -32,7 +32,7 @@ class Setting extends AbstractEntity
     protected $group = SettingsGroups::Common;
 
     /**
-     * @ORM\Column(name="level", type="integer", nullable=false)
+     * @ORM\Column(name="level", type="smallint", length=2, options={"unsigned":true, "default":0}, nullable=false)
      * @EntityVariable(convertable=true, convertNames={"full_settings_data"}, inAllConvertNames=false, writable=true, readable=true)
      */
     protected $level = SettingsLevels::System;

@@ -1,0 +1,19 @@
+
+<li [ngClass]="((level === 1) ? 'treeview' : '') + ((menuNode.open) ? ' active menu-open' : '')">
+    <a [routerLink]="menuNode.route ? routing.generateUrl(menuNode.route, menuNode.routeParams) : null" (click)="toggleMenu()">
+        <i [ngClass]="'fa '+menuNode.icon"></i>
+        <span>
+            {{ menuNode.label }}
+        </span>
+        <span class="pull-right-container" *ngIf="menuNode.childs.length > 0">
+            <i [ngClass]="'fa fa-angle-'+((menuNode.open ? 'down' : 'left'))+' pull-right'"></i>
+        </span>
+    </a>
+    <ul [ngClass]="'treeview-menu' + ((menuNode.open) ? ' treeview-menu-open' : '')" *ngIf="menuNode.childs && menuNode.childs.length > 0">
+        <li *ngFor="let menuSubnode of menuNode.childs" [ngClass]="(menuSubnode.active ? 'active' : null)" (click)="menuSubnode.active = !menuSubnode.active">
+            <a [routerLink]="menuSubnode.route ? routing.generateUrl(menuSubnode.route, menuSubnode.routeParams) : null">
+                <i class="fa fa-circle-o"></i> {{ menuSubnode.label }}
+            </a>
+        </li>
+    </ul>
+</li>

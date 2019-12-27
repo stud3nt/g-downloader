@@ -13,7 +13,7 @@ final class EntityVariable
     // if true, variable will be converted in all model names.
     public $inAllConvertNames = true;
 
-    // property is used in convert action
+    // if true, property should be converted for properly display
     public $convertable = false;
 
     // property can be read from entity;

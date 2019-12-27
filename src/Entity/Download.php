@@ -28,9 +28,9 @@ class Download extends AbstractEntity
     protected $endsAt;
 
     /**
-     * @ORM\Column(name="downloaded_files", type="integer", nullable=true)
+     * @ORM\Column(name="downloaded_files", type="integer", nullable=true, length=8, options={"unsigned"=true, "default":0})
      */
-    protected $downloadedFiles;
+    protected $downloadedFiles = 0;
 
     public function getStartsAt(): ?\DateTimeInterface
     {

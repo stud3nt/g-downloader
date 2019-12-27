@@ -3,50 +3,48 @@ import { HttpClient } from "@angular/common/http";
 import { User } from "../model/user";
 import { CookieService } from "ngx-cookie-service";
 import { RouterService } from "./router.service";
+import { Router } from "@angular/router";
+import { LoginForm } from "../model/form/login-form";
+import { HttpService } from "./http.service";
+import { JsonResponse } from "../model/json-response";
 
 @Injectable({
   providedIn: 'root'
 })
 
-export class AuthService
+export class AuthService extends HttpService
 {
-	// user token
-	token: string = null;
-
 	// logged user model
-	user: User = null;
+	public user: User = null;
+
+	// is user logged in?
+	public isLoggedIn: boolean = false;
 
 	/**
 	 * Retrieve user and token from cookies (if exists);
 	 *
 	 * @param http
 	 * @param cookie
-	 * @param router
+	 * @param routerService
 	 */
 	constructor(
 		protected http: HttpClient,
 		protected cookie: CookieService,
-		protected router: RouterService
+		protected routerService: RouterService
 	) {
-		this.getToken();
+		super(http);
+		this.checkStatus();
 	}
 
-	getToken() {
-		this.http.get(this.router.generateUrl('api_user_auth')).subscribe((response) => {
-			if (typeof response['token'] !== 'undefined') {
-				this.token = response['token'];
-			} else {
-				// go to login page
-			}
-		});
+	public checkStatus() {
+		return this.get(this.routerService.generateUrl('api_user_status'));
 	}
 
-	login() {
-
+	public login(form: LoginForm) {
+		return this.post(this.routerService.generateUrl('api_login_check'), form);
 	}
 
-	logout() {
-		this.token = null;
-		this.user = null;
+	public logout() {
+		return this.http.get(this.routerService.generateUrl('api_logout'));
 	}
 }

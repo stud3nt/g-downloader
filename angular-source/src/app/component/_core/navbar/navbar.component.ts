@@ -1,4 +1,7 @@
-import { Component, OnInit } from '@angular/core';
+import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
+import { AuthService } from "../../../service/auth.service";
+import { User } from "../../../model/user";
+import { CookieService } from "ngx-cookie-service";
 
 @Component({
   selector: 'app-navbar',
@@ -6,13 +9,27 @@ import { Component, OnInit } from '@angular/core';
 })
 export class NavbarComponent implements OnInit {
 
-  constructor() { }
+	@Input() user: User = null;
 
-  ngOnInit() {
-  }
+	@Output() onLogout = new EventEmitter<boolean>();
 
-  toggleNavbar() {
-  	return true;
+	constructor(
+		public auth: AuthService,
+		protected cookie: CookieService
+	) { }
+
+	ngOnInit(): void {}
+
+	public logout(): void {
+		this.auth.logout().subscribe((response) => {
+			this.onLogout.emit(true);
+		}, (error) => {
+
+		})
+	}
+
+	toggleNavbar() {
+		return true;
 	}
 
 }

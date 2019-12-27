@@ -1,50 +1,58 @@
-<body class="hold-transition skin-black-light {{ sidebarClass }}">
-    <div class="wrapper">
 
-        <!-- BEGIN preloader -->
-        <app-page-loader></app-page-loader>
-        <!-- END preloader -->
-
-        <!-- BEGIN modal -->
-        <app-modal></app-modal>
-        <!-- END modal -->
-
-        <!-- BEGIN header -->
-        <header class="main-header">
-            <app-navbar></app-navbar>
-        </header>
-        <!-- END header -->
-
-        <!-- BEGIN left column -->
-        <aside class="main-sidebar">
-            <section class="sidebar">
-                <app-menu></app-menu>
-            </section>
-        </aside>
-        <!-- END left column -->
-
-        <!-- Content Wrapper. Contains page content -->
-        <div class="content-wrapper">
-            <!-- Content Header (Page header) -->
-            <app-content-header></app-content-header>
-
-            <!-- Main content -->
-            <section class="content">
-                <router-outlet></router-outlet>
-            </section>
-            <!-- /.content -->
-        </div>
-        <!-- /.content-wrapper -->
-
-        <footer class="main-footer">
-            <div class="pull-right hidden-xs">
-                <b>Version</b> 0.1.2
-            </div>
-
-            <strong>
-
-            </strong>
-        </footer>
+<!-- BEGIN main page preloader -->
+<div class="wrapper" *ngIf="authenticated === 0">
+    <div class="main-page-loader">
+        <i class="fa fa-spin fa-spinner fa-3x"></i>
     </div>
-</body>
+</div>
+<!-- END main page preloader -->
+
+<!-- BEGIN login panel -->
+<app-login *ngIf="authenticated === -1" (onLogin)="checkAuthentication()"></app-login>
+<!-- END login panel -->
+
+<div class="wrapper" *ngIf="authenticated === 1">
+    <!-- BEGIN preloader -->
+    <app-page-loader></app-page-loader>
+    <!-- END preloader -->
+
+    <!-- BEGIN modal -->
+    <app-modal></app-modal>
+    <!-- END modal -->
+
+    <!-- BEGIN header -->
+    <header class="main-header">
+        <app-navbar [user]="user" (onLogout)="checkAuthentication()"></app-navbar>
+    </header>
+    <!-- END header -->
+
+    <!-- BEGIN left column -->
+    <aside class="main-sidebar">
+        <section class="sidebar">
+            <app-menu [user]="user"></app-menu>
+        </section>
+    </aside>
+    <!-- END left column -->
+
+    <!-- Content Wrapper. Contains page content -->
+    <div class="content-wrapper">
+        <!-- Content Header (Page header) -->
+        <app-content-header></app-content-header>
+
+        <!-- Main content -->
+        <section class="content">
+            <router-outlet></router-outlet>
+        </section>
+        <!-- /.content -->
+    </div>
+    <!-- /.content-wrapper -->
+
+    <footer class="main-footer">
+        <div class="pull-right hidden-xs">
+            <b>Version</b> 0.1.4
+        </div>
+
+        <strong></strong>
+    </footer>
+</div>
 

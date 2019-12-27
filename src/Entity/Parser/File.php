@@ -67,25 +67,25 @@ class File extends AbstractEntity
     protected $type;
 
     /**
-     * @ORM\Column(name="width", type="integer", nullable=true)
+     * @ORM\Column(name="width", type="integer", nullable=true, length=4, options={"unsigned"=true, "default":0})
      * @EntityVariable(convertable=true, writable=true, readable=true)
      */
     protected $width = 0;
 
     /**
-     * @ORM\Column(name="height", type="integer", nullable=true)
+     * @ORM\Column(name="height", type="integer", nullable=true, length=4, options={"unsigned"=true, "default":0})
      * @EntityVariable(convertable=true, writable=true, readable=true)
      */
     protected $height = 0;
 
     /**
-     * @ORM\Column(name="length", type="integer", nullable=true)
+     * @ORM\Column(name="length", type="integer", nullable=true, length=8, options={"unsigned"=true, "default":0})
      * @EntityVariable(convertable=true, writable=true, readable=true)
      */
     protected $length = 0;
 
     /**
-     * @ORM\Column(type="integer", nullable=false)
+     * @ORM\Column(type="integer", nullable=false, length=11, options={"unsigned"=true, "default":0})
      * @EntityVariable(convertable=true, writable=true, readable=true)
      */
     protected $size = 0;

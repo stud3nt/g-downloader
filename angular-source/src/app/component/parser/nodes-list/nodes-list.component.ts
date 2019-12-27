@@ -83,7 +83,7 @@ export class NodesListComponent {
 	 * @param status
 	 * @return string
 	 */
-	public getNodeButtonClass(node: ParserNode, status: string = ''): string {
+	public getNodeButtonClass(node: ParserNode, status: string): string {
 		return 'btn ' + ((node.hasStatus(status)) ? 'btn-success' : 'btn-default');
 	}
 }

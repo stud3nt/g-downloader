@@ -32,13 +32,13 @@ class NodeDataStorage extends AbstractEntity
     protected $parser;
 
     /**
-     * @ORM\Column(name="images_no", type="integer")
+     * @ORM\Column(name="images_no", type="integer", length=6, options={"unsigned"=true, "default":0})
      * @EntityVariable(convertable=true, writable=true, readable=true)
      */
     protected $imagesNo = 0;
 
     /**
-     * @ORM\Column(name="comments_no", type="integer")
+     * @ORM\Column(name="comments_no", type="integer", length=6, options={"unsigned"=true, "default":0})
      * @EntityVariable(convertable=true, writable=true, readable=true)
      */
     protected $commentsNo = 0;

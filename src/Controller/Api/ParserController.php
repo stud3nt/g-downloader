@@ -13,10 +13,15 @@ use App\Parser\Base\ParserInterface;
 use App\Utils\StringHelper;
 use Doctrine\ORM\ORMException;
 use Psr\Container\ContainerInterface;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 
+/**
+ * Class ParserController
+ * @package App\Controller\Api
+ */
 class ParserController extends Controller
 {
     /** @var ModelConverter */
@@ -41,6 +46,7 @@ class ParserController extends Controller
      * Execute parser action
      *
      * @Route("/api/parsers/parsing_action", name="api_parsers_action", options={"expose"=true}, methods={"POST"})
+     * @IsGranted("ROLE_ADMIN")
      * @throws \Exception
      */
     public function parsingAction(Request $request) : JsonResponse
@@ -85,6 +91,7 @@ class ParserController extends Controller
      * Marks node statuses;
      *
      * @Route("/api/parsers/mark_node", name="api_parsers_mark_node", options={"expose"=true}, methods={"POST"})
+     * @IsGranted("ROLE_ADMIN")
      * @param Request $request
      * @return JsonResponse
      * @throws \ReflectionException

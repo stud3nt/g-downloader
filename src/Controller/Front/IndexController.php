@@ -7,11 +7,14 @@ use App\Service\AngularConfigService;
 use App\Utils\AppHelper;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 
 class IndexController extends Controller
 {
     /**
      * @Route("/", name="app_index", options={"expose"=true})
+     * @Route("/login", name="app_login", options={"expose"=true})
+     * @Route("/logout", name="app_logout", options={"expose"=true})
      * @Route("/parsers/{parserName}", name="app_parser", defaults={"parserName":null}, options={"expose"=true})
      * @Route("/settings", name="app_settings", options={"expose"=true})
      * @Route("/users/list", name="app_users_list", options={"expose"=true})
@@ -20,13 +23,8 @@ class IndexController extends Controller
      *
      * @throws \Exception
      */
-    public function start()
+    public function start(UserPasswordEncoderInterface $encoder)
     {
-        /*if ($this->isGranted('ROLE_USER')) {
-            return $this->redirectToRoute('app_login');
-        }*/
-
-
         $this->get(AngularConfigService::class)->generateInitialJsonConfigFile();
 
         return $this->render('index.html.twig');

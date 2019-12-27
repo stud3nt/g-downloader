@@ -12,6 +12,7 @@ use App\Parser\ImagefapParser;
 use App\Parser\RedditParser;
 use App\Service\FileCache;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController as BaseController;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Psr\Container\ContainerInterface;
 
@@ -55,7 +56,7 @@ class Controller extends BaseController
         return null;
     }
 
-    protected function getAllRequestContent(Request $request, bool $assoc = false) : array
+    protected function getAllRequestContent(Request $request, bool $assoc = false): array
     {
         $requestContent = $request->getContent();
 
@@ -64,6 +65,22 @@ class Controller extends BaseController
         }
 
         return [];
+    }
+
+    protected function jsonError($data = null): JsonResponse
+    {
+        return $this->json([
+            'status' => -1,
+            'data' => $data
+        ]);
+    }
+
+    protected function jsonSuccess($data = null): JsonResponse
+    {
+        return $this->json([
+            'status' => 1,
+            'data' => $data
+        ]);
     }
 
     public static function getSubscribedServices(): array

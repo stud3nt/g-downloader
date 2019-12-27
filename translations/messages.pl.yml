@@ -1,4 +1,14 @@
 label:
+    error:
+        login:
+            invalid_password: Błędne hasło
+            user_not_found: Nie znaleziono podanego użytkownika
+    login:
+        log_in_message: Zaloguj się do panelu
+        log_in_button: Zaloguj się
+    user:
+        username: Nazwa użytkownika
+        password: Hasło
     settings:
         groups:
             system:

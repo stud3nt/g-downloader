@@ -3,7 +3,7 @@
     <div class="pull-left image">
         <img [src]="(user && user.thumbnail) ? user.thumbnail : '/app/assets/img/user2-160x160.jpg'" class="img-circle" alt="User Image">
     </div>
-    <div class="pull-left info">
+    <div class="pull-left info" *ngIf="user !== null">
         <p>
             {{ user ? user.name : null }} {{ user ? user.surname : null }}
         </p>
@@ -16,5 +16,5 @@
 <!-- sidebar menu: : style can be found in sidebar.less -->
 <ul class="sidebar-menu" data-widget="tree">
     <li class="header">Menu główne</li>
-    <app-menu-node *ngFor="let element of menu" [menuNode]="element"></app-menu-node>
+    <app-menu-node *ngFor="let element of menu" [menuNode]="element" [level]="1"></app-menu-node>
 </ul>

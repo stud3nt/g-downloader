@@ -4,12 +4,11 @@
     "require": {
         "php": "^7.2.3",
         "ext-ctype": "*",
+        "ext-curl": "*",
         "ext-dom": "*",
-        "ext-http": "*",
         "ext-iconv": "*",
         "ext-json": "*",
         "ext-libxml": "*",
-        "ext-curl": "*",
         "doctrine/annotations": "^1.6",
         "guzzlehttp/guzzle": "^6.3",
         "paquettg/php-html-parser": "^2.0",

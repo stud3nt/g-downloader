@@ -12,4 +12,22 @@ class UsersRepository extends ServiceEntityRepository
     {
         parent::__construct($registry, User::class);
     }
+
+    /**
+     * @param string $usernameEmail
+     * @return mixed
+     * @throws \Doctrine\ORM\NonUniqueResultException
+     */
+    public function findOneByUsernameOrEmail(string $usernameEmail)
+    {
+        return $this->_em->createQueryBuilder()
+            ->select('u')
+            ->from('App:User', 'u')
+            ->where('u.username = :usernameEmail')
+            ->orWhere('u.email = :usernameEmail')
+            ->setParameter('usernameEmail', $usernameEmail)
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
 }

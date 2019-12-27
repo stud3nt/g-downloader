@@ -17,19 +17,19 @@ final class Version20190825083054 extends AbstractMigration
         SettingsGroups::Reddit => [
             [
                 'name' => 'APP_ID',
-                'value' => 'UT44_uCaSogELA',
+                'value' => 'wqZk8wMDLM2pyw',
                 'label' => 'label.settings.groups.reddit.api_key',
                 'group_name' => SettingsGroups::Reddit
             ],
             [
                 'name' => 'API_KEY',
-                'value' => 'UT44_uCaSogELA',
+                'value' => 'wqZk8wMDLM2pyw',
                 'label' => 'label.settings.groups.reddit.api_key',
                 'group_name' => SettingsGroups::Reddit
             ],
             [
                 'name' => 'APP_SECRET',
-                'value' => 'JJYhJjSIzfIJAqX8zybFCfKzbR8',
+                'value' => 'b4CRnQ9vtg8UWmmvf9ue0Dc5EsI',
                 'label' => 'label.settings.groups.reddit.app_secret',
                 'group_name' => SettingsGroups::Reddit
             ],
@@ -53,7 +53,7 @@ final class Version20190825083054 extends AbstractMigration
             ],
             [
                 'name' => 'ENDPOINT',
-                'value' => '4710bbb',
+                'value' => 'https://oauth.reddit.com',
                 'label' => 'label.settings.groups.reddit.endpoint',
                 'group_name' => SettingsGroups::Reddit
             ],

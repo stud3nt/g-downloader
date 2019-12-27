@@ -38,19 +38,19 @@ class Node extends AbstractEntity
     protected $description;
 
     /**
-     * @ORM\Column(name="ratio", type="integer")
+     * @ORM\Column(name="ratio", type="integer", length=6, options={"unsigned"=true, "default":0})
      * @EntityVariable(convertable=true, writable=true, readable=true)
      */
     protected $ratio = 0;
 
     /**
-     * @ORM\Column(name="images_no", type="integer")
+     * @ORM\Column(name="images_no", type="integer", options={"unsigned"=true, "default":0}, length=6)
      * @EntityVariable(convertable=true, writable=true, readable=true)
      */
     protected $imagesNo = 0;
 
     /**
-     * @ORM\Column(name="comments_no", type="integer")
+     * @ORM\Column(name="comments_no", type="integer", options={"unsigned"=true, "default":0}, length=4)
      * @EntityVariable(convertable=true, writable=true, readable=true)
      */
     protected $commentsNo = 0;
@@ -75,28 +75,28 @@ class Node extends AbstractEntity
     protected $lastViewedAt;
 
     /**
-     * @ORM\Column(name="queued", type="boolean")
+     * @ORM\Column(name="queued", type="boolean", length=1, options={"unsigned"=true, "default":0})
      * @EntityVariable(convertable=true, writable=true, readable=true, type="boolean")
      */
     protected $queued = false;
 
     /**
-     * @ORM\Column(name="blocked", type="boolean")
+     * @ORM\Column(name="blocked", type="boolean", length=1, options={"unsigned"=true, "default":0})
      * @EntityVariable(convertable=true, writable=true, readable=true, type="boolean")
      */
     protected $blocked = false;
 
     /**
-     * @ORM\Column(name="favorited", type="boolean")
+     * @ORM\Column(name="favorited", type="boolean", length=1, options={"unsigned"=true, "default":0})
      * @EntityVariable(convertable=true, writable=true, readable=true, type="boolean")
      */
-    protected $favorited;
+    protected $favorited = false;
 
     /**
-     * @ORM\Column(name="finished", type="boolean")
+     * @ORM\Column(name="finished", type="boolean", length=1, options={"unsigned"=true, "default":0})
      * @EntityVariable(convertable=true, writable=true, readable=true, type="boolean")
      */
-    protected $finished;
+    protected $finished = false;
 
     public function __construct()
     {

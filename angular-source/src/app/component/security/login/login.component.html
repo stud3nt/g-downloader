@@ -1,0 +1,35 @@
+<div class="wrapper login-wrapper">
+    <div class="login-box">
+        <div class="login-logo">
+            <a href=""><b>G</b>Downloader</a>
+        </div>
+        <div class="login-box-body">
+            <p class="login-box-msg">
+                Zaloguj się, aby rozpocząć sesję
+            </p>
+            <form action="" method="post">
+                <div class="form-group has-feedback">
+                    <input type="username" class="form-control" name="username" [(ngModel)]="loginForm.username" placeholder="Nazwa użytkownika">
+                    <span class="glyphicon glyphicon-envelope form-control-feedback"></span>
+                </div>
+                <div class="form-group has-feedback">
+                    <input type="password" class="form-control" name="password" [(ngModel)]="loginForm.password" placeholder="Hasło">
+                    <span class="glyphicon glyphicon-lock form-control-feedback"></span>
+                </div>
+                <div class="form-group has-feedback" *ngIf="loginError.length !== ''">
+                    <p class="login-error">
+                        {{ loginError }}
+                    </p>
+                </div>
+                <div class="row">
+                    <div class="col-xs-8"></div>
+                    <div class="col-xs-4">
+                        <button type="button" (click)="login()" class="btn btn-primary btn-block btn-flat">
+                            Zaloguj się
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

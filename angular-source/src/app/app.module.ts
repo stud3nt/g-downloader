@@ -6,11 +6,10 @@ import { IndexComponent } from './app.component';
 import { AppRoutingModule } from './app-routing.module';
 import { RouterModule } from "@angular/router";
 import { routes } from "./app-routing.module";
-import { HttpClientModule } from "@angular/common/http";
+import {HttpClientModule, HttpClientXsrfModule} from "@angular/common/http";
 import { DashboardComponent } from './component/dashboard/dashboard.component';
 import { ParserComponent } from './component/parser/parser.component';
 import { MenuComponent } from './component/_core/menu/menu.component';
-import { NodeComponent } from './component/_core/menu/node/node.component';
 import { NavbarComponent } from './component/_core/navbar/navbar.component';
 import { DownloadPanelComponent } from './component/_core/navbar/download-panel/download-panel.component';
 import { CookieService } from "ngx-cookie-service";
@@ -25,8 +24,10 @@ import { NodesListComponent } from './component/parser/nodes-list/nodes-list.com
 import { FilesListComponent } from './component/parser/files-list/files-list.component';
 import { SavedNodesComponent } from './component/parser/saved-nodes/saved-nodes.component';
 import { ModalComponent } from './component/_core/modal/modal.component';
-import {MovieLengthPipe} from "./pipe/movie-length.pipe";
-import {TruncateStringPipe} from "./pipe/truncate-string.pipe";
+import { MovieLengthPipe } from "./pipe/movie-length.pipe";
+import { TruncateStringPipe } from "./pipe/truncate-string.pipe";
+import { LoginComponent } from './component/security/login/login.component';
+import { MenuNodeComponent } from "./component/_core/menu/menu-node/menu-node.component";
 
 @NgModule({
 	declarations: [
@@ -36,7 +37,7 @@ import {TruncateStringPipe} from "./pipe/truncate-string.pipe";
 		ParserComponent,
 		MenuComponent,
 		NavbarComponent,
-		NodeComponent,
+		MenuNodeComponent,
 		DownloadPanelComponent,
 		SettingsComponent,
 		ListComponent,
@@ -52,14 +53,19 @@ import {TruncateStringPipe} from "./pipe/truncate-string.pipe";
 
 		// pipes
 		MovieLengthPipe,
-		TruncateStringPipe
+		TruncateStringPipe,
+		LoginComponent
 	],
 	imports: [
 		BrowserModule,
 		FormsModule,
 		AppRoutingModule,
 		RouterModule.forRoot(routes),
-		HttpClientModule
+		HttpClientModule,
+		HttpClientXsrfModule.withOptions({
+			cookieName: 'XSRF-TOKEN',
+			headerName: 'X-XSRF-TOKEN'
+		}),
 	],
 	providers: [
 		CookieService
@@ -70,5 +76,5 @@ import {TruncateStringPipe} from "./pipe/truncate-string.pipe";
 })
 
 export class AppModule {
-	title = 'G-App'
+	title = 'G-Downloader'
 }

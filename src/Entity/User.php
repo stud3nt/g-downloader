@@ -2,10 +2,13 @@
 
 namespace App\Entity;
 
+use App\Annotation\EntityVariable;
+use App\Entity\Base\AbstractEntity;
+use App\Entity\Traits\CreatedAtTrait;
+use App\Entity\Traits\UpdatedAtTrait;
 use App\Enum\UserRole;
-use App\Manager\UserManager;
 use Doctrine\ORM\Mapping as ORM;
-use App\Entity\Base\Entity;
+use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /**
@@ -13,19 +16,16 @@ use Symfony\Component\Validator\Constraints as Assert;
  * @ORM\Entity(repositoryClass="App\Repository\UsersRepository")
  * @ORM\HasLifecycleCallbacks()
  */
-class User extends Entity implements \Serializable
+class User extends AbstractEntity implements UserInterface, \Serializable
 {
-    /**
-     * @ORM\Column(type="integer")
-     * @ORM\Id
-     * @ORM\GeneratedValue(strategy="AUTO")
-     */
-    private $id;
+    use CreatedAtTrait,
+        UpdatedAtTrait;
 
     /**
      * @var string
      *
-     * @ORM\Column(name="email", type="string", length=60, nullable=false, unique=true)
+     * @ORM\Column(name="email", type="string", length=255, nullable=false, unique=true)
+     * @EntityVariable(writable=true, readable=true)
      * @Assert\NotBlank()
      * @Assert\Email()
      */
@@ -34,7 +34,31 @@ class User extends Entity implements \Serializable
     /**
      * @var string
      *
-     * @ORM\Column(name="password", type="string", nullable=false)
+     * @ORM\Column(name="username", type="string", length=40, nullable=false, unique=true)
+     * @EntityVariable(writable=true, readable=true)
+     */
+    protected $username;
+
+    /**
+     * @var string
+     *
+     * @ORM\Column(name="name", type="string", length=40, nullable=false, unique=true)
+     * @EntityVariable(writable=true, readable=true)
+     */
+    protected $name;
+
+    /**
+     * @var string
+     *
+     * @ORM\Column(name="surname", type="string", length=60, nullable=false, unique=true)
+     * @EntityVariable(writable=true, readable=true)
+     */
+    protected $surname;
+
+    /**
+     * @var string
+     *
+     * @ORM\Column(name="password", type="string", length=255, nullable=false)
      * @Assert\Length(min="6")
      */
     protected $password;
@@ -49,16 +73,16 @@ class User extends Entity implements \Serializable
     /**
      * @var string
      *
-     * @ORM\Column(name="username", type="string", nullable=false)
+     * @ORM\Column(name="salt", type="string", nullable=false, length=64)
      */
-    protected $username;
+    protected $salt;
 
     /**
-     * @var bool
+     * @var array
      *
-     * @ORM\Column(name="role", type="string")
+     * @ORM\Column(name="roles", type="array", nullable=false)
      */
-    protected $role = UserRole::Admin;
+    protected $roles = [UserRole::Admin];
 
     /**
      * @var bool
@@ -69,18 +93,9 @@ class User extends Entity implements \Serializable
 
     /**
      * @var \DateTime
-     *
-     * @ORM\Column(name="created_at", type="datetime")
+     * @ORM\Column(name="last_logged_at", type="datetime", nullable=true)
      */
-    protected $createdAt;
-
-    /**
-     * @ORM\PrePersist
-     */
-    public function setCreatedAtValue()
-    {
-        $this->createdAt = new \DateTime();
-    }
+    protected $lastLoggedAt;
 
     public function __toString()
     {
@@ -97,34 +112,48 @@ class User extends Entity implements \Serializable
         return in_array('ROLE_ADMIN', $this->getRoles());
     }
 
-    /** @inheritDoc */
+    public function setRoles(array $roles): self
+    {
+        $this->roles = $roles;
+
+        return $this;
+    }
+
+    public function getRoles(): ?array
+    {
+        return $this->roles;
+    }
+
+    public function setSalt(string $salt): self
+    {
+        $this->salt = $salt;
+
+        return $this;
+    }
+
     public function getSalt()
     {
-        return sprintf(sprintf('%s-%d', UserManager::Secret, $this->getId()));
+        return sprintf(sprintf('%s-%d', $this->salt, $this->getId()));
     }
 
-    /** @inheritDoc */
-    public function getRoles()
+    public function eraseCredentials(): self
     {
-        $roles = [sprintf('ROLE_%s', strtoupper($this->getRole()))];
+        $this->roles = [];
 
-        return $roles;
-    }
-
-    /** @inheritDoc */
-    public function eraseCredentials()
-    {
-
+        return $this;
     }
 
     public function serialize()
     {
-        return serialize(array($this->id, $this->email, $this->password, $this->isActive));
+        return serialize(array(
+            $this->id, $this->username, $this->password, $this->salt,
+        ));
     }
 
     public function unserialize($serialized)
     {
-        list($this->id, $this->email, $this->password, $this->isActive) = unserialize($serialized);
+        list ($this->id, $this->username, $this->password, $this->salt)
+            = unserialize($serialized, array('allowed_classes' => false));
     }
 
     public function isAccountNonExpired(): bool
@@ -159,9 +188,9 @@ class User extends Entity implements \Serializable
         return $this;
     }
 
-    public function getId(): ?int
+    public function getTokenId(): string
     {
-        return $this->id;
+        return sprintf(sprintf('%s-%d', sha1('user_token'), $this->getId()));
     }
 
     public function getEmail(): ?string
@@ -200,18 +229,6 @@ class User extends Entity implements \Serializable
         return $this;
     }
 
-    public function getRole(): ?string
-    {
-        return $this->role;
-    }
-
-    public function setRole(string $role): self
-    {
-        $this->role = $role;
-
-        return $this;
-    }
-
     public function getIsActive(): ?bool
     {
         return $this->isActive;
@@ -232,6 +249,49 @@ class User extends Entity implements \Serializable
     public function setCreatedAt(\DateTimeInterface $createdAt): self
     {
         $this->createdAt = $createdAt;
+
+        return $this;
+    }
+
+    public function getLastLoggedAt(): ?\DateTimeInterface
+    {
+        return $this->lastLoggedAt;
+    }
+
+    public function setLastLoggedAt(?\DateTimeInterface $lastLoggedAt): self
+    {
+        $this->lastLoggedAt = $lastLoggedAt;
+
+        return $this;
+    }
+
+    public function getName(): ?string
+    {
+        return $this->name;
+    }
+
+    public function setName(string $name): self
+    {
+        $this->name = $name;
+
+        return $this;
+    }
+
+    public function getSurname(): ?string
+    {
+        return $this->surname;
+    }
+
+    public function setSurname(string $surname): self
+    {
+        $this->surname = $surname;
+
+        return $this;
+    }
+
+    public function refreshLastLoggedAt(): self
+    {
+        $this->lastLoggedAt = new \DateTime('now');
 
         return $this;
     }
