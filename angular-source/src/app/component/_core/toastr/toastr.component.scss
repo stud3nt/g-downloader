@@ -1,0 +1,27 @@
+@import "../../../../variables";
+
+.toastr-container {
+    position: absolute;
+    background: transparent;
+    z-index: 999999;
+    top: 12px;
+    right: 12px;
+    height: auto;
+    width: 480px;
+
+    @media screen and (max-width: $desktop-break) {
+        width: 400px;
+    }
+
+    @media screen and (max-width: $tablet-break) {
+        width: 280px;
+    }
+
+    @media screen and (max-width: $mobile-break) {
+        width: 96%;
+        top: 2%;
+        left: 2%;
+        right: 2%;
+    }
+
+}

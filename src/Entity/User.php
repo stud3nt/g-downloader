@@ -67,6 +67,7 @@ class User extends AbstractEntity implements UserInterface, \Serializable
      * @var string
      *
      * @ORM\Column(name="token", type="string", nullable=false, length=64)
+     * @EntityVariable(writable=false, readable=true)
      */
     protected $token;
 

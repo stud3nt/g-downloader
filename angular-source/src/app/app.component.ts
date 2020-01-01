@@ -33,15 +33,17 @@ export class IndexComponent implements OnInit{
 		this.determineBodyClasses();
 		this.authService.checkStatus().subscribe((response: JsonResponse) => {
 			if (response.success()) { // user is logged in - creating objects and cookie;
-				let user = new User(response.data['user']);
+				let user = new User(response.data);
 
 				this.authenticated = 1;
 				this.user = user;
 				this.authService.user = user;
 				this.authService.isLoggedIn = true;
 
-				this.cookie.set('X-CSRF-TOKEN', response.data['token'], 0);
-				this.router.navigate(['/']);
+				if (!this.cookie.get('X-CSRF-TOKEN')) {
+					this.cookie.set('X-CSRF-TOKEN', user.token, 0);
+					this.router.navigate(['/']);
+				}
 			} else { // used is logged out - deleting objects and clearing cookie;
 				this.authenticated = -1;
 				this.user = null;

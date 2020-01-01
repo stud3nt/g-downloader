@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import {Component, OnInit, ViewChildren} from '@angular/core';
 import { NavigationEnd, Router } from "@angular/router";
 import { ContentHeaderDataService } from "../../service/data/content-header-data.service";
 import { ParserService } from "../../service/parser.service";
@@ -14,6 +14,7 @@ import { Pagination } from "../../model/pagination";
 import { NodesListComponent } from "./nodes-list/nodes-list.component";
 import { NodeStatus } from "../../enum/node-status";
 import {current} from "codelyzer/util/syntaxKind";
+import {last} from "rxjs/operators";
 
 @Component({
 	selector: 'app-parser',
@@ -49,6 +50,7 @@ export class ParserComponent implements OnInit {
 	public actionBeltMaskClass: string = ''; // classes for action belt mask
 	public scrollTopVisible: boolean = false; // is 'scroll top' button visible?
 	public previousNodeAvailable: boolean = false; // is previous node button enabled/available?
+	public scrollValue = 0; // scroll value after loads nodes;
 
 	public nodesListComponent: NodesListComponent;
 
@@ -93,51 +95,38 @@ export class ParserComponent implements OnInit {
 		this.setHeaderData();
 
 		this.initializeParserRequestObject();
-		this.openCurrentNode();
+		this.prepareParserRequest();
+		this.sendParserRequest();
 	}
 
 	/**
 	 * Sets specified node as 'current' and opens it.
 	 *
 	 * @param node
-	 * @param pagination
-	 * @param scrollY
 	 */
-	public setAndOpenCurrentNode(node: ParserNode = null, pagination: Pagination = null, scrollY: number = 0) : void {
-		this.parserRequest.currentNode = node;
-		this.parserRequest.clearParsedData();
-
-		if (node.nextLevel && this.parserRequest.level !== node.nextLevel) // change level if necessary
-			this.parserRequest.level = node.nextLevel;
-		else if (!node.nextLevel)
-			this.parserRequest.level = node.level;
-
-		if (pagination)
-			this.parserRequest.pagination = pagination;
-
-		if (scrollY)
-			window.scroll(0, scrollY);
-
-		this.openCurrentNode();
+	public openNode(node: ParserNode = null) : void {
+		this.prepareParserRequest(node);
+		this.sendParserRequest(() => {
+			window.scrollTo(0, 0);
+		});
 	}
 
-	/**
-	 * Open current node storages in parserRequest
-	 *
-	 * @param forceReload (boolean) - omnit cache and force reload data
-	 */
-	public openCurrentNode(forceReload: boolean = false): void {
-		if (!this.parserRequest.currentNode || !this.parserRequest.currentNode.level) {
-			this.parserRequest.currentNode = this.initializeParserNodeObject();
-		}
+	public openNodeFromBreadcrumb(breadcrumb: any): void {
+		this.prepareParserRequest();
+		this.parserRequest.currentNode = breadcrumb.node;
+		this.parserRequest.level = breadcrumb.node.level;
+		this.parserRequest.pagination = breadcrumb.pagination;
+		this.sendParserRequest(() => {
+			window.scrollTo(0, 0);
+		});
+	}
 
-		this.parserRequest.clearParsedData();
-
-		if (forceReload) {
-			this.parserRequest.ignoreCache = true;
-		}
-
-		this.sendParserRequest();
+	public reopenCurrentNode(): void {
+		this.prepareParserRequest();
+		this.parserRequest.ignoreCache = true;
+		this.sendParserRequest(() => {
+			window.scrollTo(0, 0);
+		});
 	}
 
 	/**
@@ -146,11 +135,39 @@ export class ParserComponent implements OnInit {
 	 * 	@return number - index of previous index;
 	 */
 	public openPreviousNode(): void {
-		let currentBreadcrumbIndex = this.getCurrentBreadcrumbIndex();
+		let lastBreadcrumbKey = Object.keys(this.parserBreadcrumbs).pop();
+		let lastBreadcrumbIndex = parseInt(lastBreadcrumbKey);
 
-		if (currentBreadcrumbIndex > 0) { // gets previous index from breadcrumbs and opens node
-			this.setAndOpenCurrentNode(this.parserBreadcrumbs[(currentBreadcrumbIndex - 1)].node);
+		if (lastBreadcrumbKey && lastBreadcrumbIndex > 0) {
+			let previousBreadcrumb = this.parserBreadcrumbs[(lastBreadcrumbIndex - 1)];
+
+			this.prepareParserRequest(previousBreadcrumb.node);
+			this.sendParserRequest(() => {
+				setTimeout(function() { // simple delay for ngfor executing. @ViewChildren usage is too complicated for this case.
+					window.scrollTo(0, previousBreadcrumb.scrollY);
+				}, 250);
+			});
 		}
+	}
+
+	/**
+	 * Open current node storages in parserRequest
+	 */
+	public prepareParserRequest(node: ParserNode = null): void {
+		if (!this.parserRequest.currentNode || !this.parserRequest.currentNode.level) {
+			this.parserRequest.currentNode = this.initializeParserNodeObject();
+		}
+
+		if (node) {
+			this.parserRequest.currentNode = node;
+
+			if (node.nextLevel && this.parserRequest.level !== node.nextLevel) // change level if necessary
+				this.parserRequest.level = node.nextLevel;
+			else if (!node.nextLevel)
+				this.parserRequest.level = node.level;
+		}
+
+		this.parserRequest.clearParsedData();
 	}
 
 	/**
@@ -187,7 +204,8 @@ export class ParserComponent implements OnInit {
 	 */
 	public changeNodePage(pagination: Pagination) {
 		this.parserRequest.pagination = pagination;
-		this.openCurrentNode();
+		this.prepareParserRequest();
+		this.sendParserRequest()
 	}
 
 	/**
@@ -265,24 +283,37 @@ export class ParserComponent implements OnInit {
 	/**
 	 * Sends data to parser API
 	 */
-	private sendParserRequest() {
-		let currentBreadcrumbIndex = this.getCurrentBreadcrumbIndex();
-
-		if (currentBreadcrumbIndex >= 0)  // save current scroll position;
-			this.parserBreadcrumbs[currentBreadcrumbIndex].scrollY = this.scrollY;
-
+	private sendParserRequest(successFunction: () => any = null, errorFunction: () => any = null, completeFunction: () => any = null) {
 		this.pageLoaderDataService.setProgress(1).show().enableRefreshingFromApi();
+		this.saveScrollForLastBreadcrumb();
 
 		this.parserService.executeAction(this.parserRequest).subscribe((response : ParserRequest) => {
 			this.parserRequest = response;
 			this.highestLevel = (this.parserRequest.currentNode.level === this.parserSettings[this.parserName+'_initial_level']);
 			this.setBreadcrumb(response.currentNode, response.pagination);
 			this.previousNodeAvailable = (this.getCurrentBreadcrumbIndex() > 0);
+
+			if (successFunction)
+				successFunction();
 		}, () => {
 			this.pageLoaderDataService.disableRefreshingFromApi().setProgress(100).hide();
+
+			if (errorFunction)
+				errorFunction();
 		}, () => {
 			this.pageLoaderDataService.disableRefreshingFromApi().setProgress(100).hide();
+
+			if (completeFunction)
+				completeFunction();
 		});
+	}
+
+	private saveScrollForLastBreadcrumb(): void {
+		let lastBreadcrumbKey = Object.keys(this.parserBreadcrumbs).pop();
+
+		if (lastBreadcrumbKey) {
+			this.parserBreadcrumbs[lastBreadcrumbKey].scrollY = window.scrollY;
+		}
 	}
 
 	private setBreadcrumb(node: ParserNode, pagination = null): void {

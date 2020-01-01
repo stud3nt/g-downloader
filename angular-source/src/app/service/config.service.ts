@@ -11,6 +11,12 @@ export class ConfigService {
 	// base site URL
 	public baseUrl = 'http://test.g-downloader.com';
 
+	public urls = {
+		base: '',
+		api: '',
+		download: ''
+	};
+
 	// routing array;
 	public routing;
 
@@ -24,6 +30,7 @@ export class ConfigService {
 		this.routing = angularConfig.default.routing;
 		this.menu = <Node[]>angularConfig.default.menu;
 		this.parsers = angularConfig.default.parsers;
+		this.urls = angularConfig.default.urls;
 
 		if (this.baseUrl.substr(this.baseUrl.length - 1, 1) === '/') {
 			this.baseUrl = this.baseUrl.substr(0, (this.baseUrl.length - 1));

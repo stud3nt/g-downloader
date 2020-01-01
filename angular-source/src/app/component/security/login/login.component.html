@@ -16,11 +16,6 @@
                     <input type="password" class="form-control" name="password" [(ngModel)]="loginForm.password" placeholder="Hasło">
                     <span class="glyphicon glyphicon-lock form-control-feedback"></span>
                 </div>
-                <div class="form-group has-feedback" *ngIf="loginError.length !== ''">
-                    <p class="login-error">
-                        {{ loginError }}
-                    </p>
-                </div>
                 <div class="row">
                     <div class="col-xs-8"></div>
                     <div class="col-xs-4">

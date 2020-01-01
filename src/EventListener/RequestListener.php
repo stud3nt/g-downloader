@@ -11,6 +11,17 @@ class RequestListener
     /** @var TokenStorage */
     protected $tokenStorage;
 
+    private $openApiRoutes = [
+        'api_login_check',
+        'api_logout',
+        'api_user_status'
+    ];
+
+    private $sessionUnlockRoutes = [
+        'api_parsers_action',
+        'api_parsers_mark_node'
+    ];
+
     public function setTokenStorage(TokenStorage $tokenStorage)
     {
         $this->tokenStorage = $tokenStorage;
@@ -25,10 +36,9 @@ class RequestListener
     {
         $request = $event->getRequest();
         $routeName = $request->attributes->get('_route');
-        $openApiRoutes = ['api_login_check', 'api_logout', 'api_user_status'];
 
         // checking csrf token for non-open api requests
-        if ($event->isMasterRequest() && substr($routeName, 4) === 'api_' && !in_array($routeName, $openApiRoutes)) {
+        if ($event->isMasterRequest() && substr($routeName, 4) === 'api_' && !in_array($routeName, $this->openApiRoutes)) {
             if ($token = $this->tokenStorage->getToken()) {
                 /** @var User $user */
                 if ($user = $token->getUser()) {
@@ -40,6 +50,12 @@ class RequestListener
                     }
                 }
             }
+        }
+
+        // prevent session lock for long-timed AJAX requests
+        if ($request->isXmlHttpRequest() && in_array($routeName, $this->sessionUnlockRoutes)) {
+            $session = $request->getSession();
+            $session->save();
         }
 
         return $event;

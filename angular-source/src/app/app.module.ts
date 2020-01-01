@@ -6,7 +6,7 @@ import { IndexComponent } from './app.component';
 import { AppRoutingModule } from './app-routing.module';
 import { RouterModule } from "@angular/router";
 import { routes } from "./app-routing.module";
-import {HttpClientModule, HttpClientXsrfModule} from "@angular/common/http";
+import { HttpClientModule, HttpClientXsrfModule } from "@angular/common/http";
 import { DashboardComponent } from './component/dashboard/dashboard.component';
 import { ParserComponent } from './component/parser/parser.component';
 import { MenuComponent } from './component/_core/menu/menu.component';
@@ -28,6 +28,7 @@ import { MovieLengthPipe } from "./pipe/movie-length.pipe";
 import { TruncateStringPipe } from "./pipe/truncate-string.pipe";
 import { LoginComponent } from './component/security/login/login.component';
 import { MenuNodeComponent } from "./component/_core/menu/menu-node/menu-node.component";
+import { ToastrComponent } from './component/_core/toastr/toastr.component';
 
 @NgModule({
 	declarations: [
@@ -54,7 +55,8 @@ import { MenuNodeComponent } from "./component/_core/menu/menu-node/menu-node.co
 		// pipes
 		MovieLengthPipe,
 		TruncateStringPipe,
-		LoginComponent
+		LoginComponent,
+		ToastrComponent
 	],
 	imports: [
 		BrowserModule,

@@ -9,7 +9,7 @@
                     <i class="fa fa-database"></i>
                 </div>
                 <div class="tile-header-icon bg-success" *ngIf="node.hasStatus(NodeStatus.Finished)">
-                    <i class="fa fa-cloud-download"></i>
+                    <i class="fa fa-check-circle"></i>
                 </div>
 
                 <span>
@@ -61,6 +61,10 @@
                 <button type="button" (mouseenter)="lockTiles=true" (mouseleave)="lockTiles=false" (click)="markNode(node, NodeStatus.Blocked)" [ngClass]="getNodeButtonClass(node, NodeStatus.Blocked)">
                     <i class="fa fa-unlock" *ngIf="node.hasStatus(NodeStatus.Blocked)"></i>
                     <i class="fa fa-lock" *ngIf="!node.hasStatus(NodeStatus.Blocked)"></i>
+                </button>
+                <button type="button" (mouseenter)="lockTiles=true" (mouseleave)="lockTiles=false" (click)="markNode(node, NodeStatus.Finished)" [ngClass]="getNodeButtonClass(node, NodeStatus.Finished)">
+                    <i class="fa fa-check-circle" *ngIf="node.hasStatus(NodeStatus.Finished)"></i>
+                    <i class="fa fa-check-circle-o" *ngIf="!node.hasStatus(NodeStatus.Finished)"></i>
                 </button>
             </div>
         </article>

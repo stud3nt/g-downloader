@@ -4,14 +4,16 @@ export class User {
 		Object.assign(this, obj);
 	}
 
-	username: string;
+	username: string = null;
 
-	name: string;
+	name: string = null;
 
-	surname: string;
+	surname: string = null;
 
-	email: string;
+	email: string = null;
 
-	thumbnail: string;
+	thumbnail: string = null;
+
+	token: string = null;
 
 }

@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject } from "rxjs";
-import {ModalSize} from "../../enum/modal-size";
-import {ModalType} from "../../enum/modal-type";
+import { ModalSize } from "../../enum/modal-size";
+import { ModalType } from "../../enum/modal-type";
 
 @Injectable({
 	providedIn: 'root'

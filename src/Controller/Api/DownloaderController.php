@@ -3,7 +3,6 @@
 namespace App\Controller\Api;
 
 use App\Controller\Api\Base\Controller;
-use App\Enum\DownloaderStatusType;
 use App\Manager\DownloadManager;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;

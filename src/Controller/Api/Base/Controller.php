@@ -83,6 +83,11 @@ class Controller extends BaseController
         ]);
     }
 
+    protected function translate(string $message): string
+    {
+        return $this->get('translator')->trans($message);
+    }
+
     public static function getSubscribedServices(): array
     {
         return array_merge(parent::getSubscribedServices(), [

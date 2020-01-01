@@ -64,11 +64,16 @@ class FileCache
      * @param string $key - cache key
      * @param $value - stored value
      * @param int $expirationTime - cache expiration time (0 - never expires)
+     * @param boolean $public - cache in public folder
+     *
      * @return FileCache
      */
-    public function set(string $key, $value, int $expirationTime = 0) : FileCache
+    public function set(string $key, $value, int $expirationTime = 0, bool $public = false) : FileCache
     {
         file_put_contents($this->cacheFilePath($key), json_encode($value));
+
+        if ($public)
+            file_put_contents($this->publicCacheFilePath($key), json_encode($value));
 
         $this->updateExpiration($key, $expirationTime);
 
@@ -172,7 +177,7 @@ class FileCache
      * @param int $expirationTime - cache expiration time (0 - never expires)
      * @return FileCache
      */
-    public function saveSessionData(string $keyString, $value) : void
+    public function saveSessionData(string $keyString, $value): void
     {
         $this->set($keyString, $value);
     }
@@ -182,7 +187,7 @@ class FileCache
      *
      * @param int $progress - page progress in percent (0-100)
      */
-    public function savePageLoaderProgress(int $progress = 0) : void
+    public function savePageLoaderProgress(int $progress = 0): void
     {
         $pageLoaderData = $this->get('page_loader_status');
 
@@ -203,7 +208,7 @@ class FileCache
      *
      * @param string $description
      */
-    public function savePageLoaderDescription(string $description = '') : void
+    public function savePageLoaderDescription(string $description = ''): void
     {
         $pageLoaderData = $this->get('page_loader_status');
 
@@ -237,7 +242,7 @@ class FileCache
         return null;
     }
 
-    protected function cacheFilePath(string $key) : string
+    protected function cacheFilePath(string $key): string
     {
         return $this->cacheDirectory.DIRECTORY_SEPARATOR.'c-'.str_replace('/[^a-zA-Z0-9\_\.\-\=]/', '_', $key).'.json';
     }
@@ -253,12 +258,12 @@ class FileCache
         $this->updateExpiration($key, -1);
     }
 
-    protected function getExpirationTimestamp(string $key) : int
+    protected function getExpirationTimestamp(string $key): int
     {
         return $this->expirationData[$key] ?? 0;
     }
 
-    protected function updateExpiration(string $key, int $expirationTime = 0) : void
+    protected function updateExpiration(string $key, int $expirationTime = 0): void
     {
         if ($expirationTime > 0) {
             $expirationTime = (new \DateTime())->modify('+' . $expirationTime . ' seconds');

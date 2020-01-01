@@ -92,7 +92,7 @@ class AngularConfigService
         ], true);
     }
 
-    protected function getMenuStructure() : array
+    protected function getMenuStructure(): array
     {
         return [
             [

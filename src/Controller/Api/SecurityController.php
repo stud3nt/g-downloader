@@ -7,7 +7,6 @@ use App\Converter\EntityConverter;
 use App\Entity\User;
 use App\Manager\UserManager;
 use App\Utils\StringHelper;
-use Doctrine\Common\Util\Debug;
 use Doctrine\ORM\NonUniqueResultException;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -28,10 +27,9 @@ class SecurityController extends Controller
     {
         /** @var User $user */
         if ($user = $this->getUser()) {
-            return $this->jsonSuccess([
-                'token' => $user->getToken(),
-                'user' => $this->get(EntityConverter::class)->convert($user)
-            ]);
+            $userArray = $this->get(EntityConverter::class)->convert($user);
+
+            return $this->jsonSuccess($userArray);
         }
 
         return $this->jsonError();
@@ -72,10 +70,14 @@ class SecurityController extends Controller
                         'user' => $this->get(EntityConverter::class)->convert($user)
                     ]);
                 } else {
-                    return $this->jsonError('label.error.login.invalid_password');
+                    return $this->jsonError(
+                        $this->translate('label.error.login.invalid_password')
+                    );
                 }
             } else {
-                return $this->jsonError('label.error.login.user_not_found');
+                return $this->jsonError(
+                    $this->translate('label.error.login.user_not_found')
+                );
             }
         } catch (\Exception $e) {
             return $this->jsonError(

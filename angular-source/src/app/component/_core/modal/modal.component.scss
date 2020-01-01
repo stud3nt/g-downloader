@@ -1,5 +1,9 @@
 @import "../../../../variables";
 
+.modal {
+    z-index: 999999;
+}
+
 .modal-dialog {
     width: 768px;
 

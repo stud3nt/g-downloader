@@ -2,39 +2,45 @@ import { Injectable } from '@angular/core';
 import { ConfigService } from "./config.service";
 
 @Injectable({
-  providedIn: 'root'
+  	providedIn: 'root'
 })
+
 export class RouterService {
-	constructor(protected config: ConfigService) { }
+	constructor(
+		protected config: ConfigService
+	) { }
 
 	/**
 	 *
 	 * @param routeName
 	 * @param routeParameters
+	 * @param baseUrl
 	 */
-	public generateUrl(routeName: string, routeParameters: object = {}) : any {
+	public generateUrl(routeName: string, routeParameters: object = null, baseUrl: string = '') : any {
 		let routeUrl = null;
 
 		for (let configRouteName in this.config.routing) {
 			if (configRouteName === routeName) {
-				let routeConfig = this.config.routing[configRouteName];
-				let routeUrl = routeConfig.path;
-				let routeUrlParamsReplacers = this.prepareParamsReplacersForUrl(routeUrl, routeConfig.defaults, routeParameters);
+				if (this.config.routing.hasOwnProperty(configRouteName)) {
+					let routeConfig = this.config.routing[configRouteName];
+					let routeUrl = routeConfig.path;
+					let routeUrlParamsReplacers = this.prepareParamsReplacersForUrl(routeUrl, routeConfig.defaults, routeParameters);
 
-				if (routeUrlParamsReplacers) {
-					for (let paramName in routeUrlParamsReplacers) {
-						routeUrl = routeUrl.replace('{' + paramName + '}', routeUrlParamsReplacers[paramName]);
+					if (routeUrlParamsReplacers) {
+						for (let paramName in routeUrlParamsReplacers) {
+							routeUrl = routeUrl.replace('{' + paramName + '}', routeUrlParamsReplacers[paramName]);
+						}
 					}
-				}
 
-				return routeUrl;
+					return baseUrl+routeUrl;
+				}
 			}
 		}
 
-		return routeUrl;
+		return baseUrl+routeUrl;
 	}
 
-	private prepareParamsReplacersForUrl(url: string, defaultParams: object = {}, externalParams: object = {}) {
+	private prepareParamsReplacersForUrl(url: string, defaultParams: object = {}, externalParams: object = null) {
 		let urlArray = url.split('/');
 		let urlParams = [];
 		let paramsReplacers = [];

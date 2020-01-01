@@ -4,7 +4,7 @@
     <div class="actionbelt_container__breadcrumb">
         <ol class="breadcrumb">
             <li *ngFor="let breadcrumb of parserBreadcrumbs">
-                <a *ngIf="breadcrumb && breadcrumb.node.level" [routerLink]="null" (click)="setAndOpenCurrentNode(breadcrumb.node, breadcrumb.pagination, breadcrumb.scrollY)" [ngStyle]="{'font-weight': (breadcrumb.final === true) ? 'bold' : 'normal'}">
+                <a *ngIf="breadcrumb && breadcrumb.node.level" [routerLink]="null" (click)="openNodeFromBreadcrumb(breadcrumb)" [ngStyle]="{'font-weight': (breadcrumb.final === true) ? 'bold' : 'normal'}">
                     {{ NodeLevel.getLevelLabel(breadcrumb.node.level).toUpperCase() }} {{ breadcrumb.node.name ? '('+breadcrumb.node.name+')' : '' }}
                 </a>
             </li>
@@ -17,7 +17,7 @@
                 <button type="button" class="btn btn-default" (click)="openPreviousNode()" [disabled]="!previousNodeAvailable">
                     <i class="fa fa-arrow-left"></i>
                 </button>
-                <button type="button" class="btn btn-default" (click)="openCurrentNode(true)">
+                <button type="button" class="btn btn-default" (click)="reopenCurrentNode()">
                     <i class="fa fa-refresh"></i>
                 </button>
                 <app-saved-nodes class="btn component-btn-group-button"></app-saved-nodes>
@@ -64,7 +64,7 @@
                 </div>
             </div>
             <div class="box-body">
-                <app-nodes-list [parserRequest]="parserRequest" (openChildNode)="setAndOpenCurrentNode($event)"></app-nodes-list>
+                <app-nodes-list [parserRequest]="parserRequest" (openChildNode)="openNode($event)"></app-nodes-list>
                 <app-files-list [parserRequest]="parserRequest"></app-files-list>
             </div>
 

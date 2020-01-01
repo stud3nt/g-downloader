@@ -31,14 +31,15 @@
         position: fixed;
         z-index: 9999;
         top: 0;
-        right: 15px;
+        right: 0;
+        left: 0;
+        width: auto;
+        -webkit-box-shadow: 0 0 10px 0 rgba(120,120,120,1);
+        -moz-box-shadow: 0 0 10px 0 rgba(120,120,120,1);
+        box-shadow: 0 0 10px 0 rgba(120,120,120,1);
 
         .actionbelt_container__breadcrumb {
             border-top: 0;
-        }
-
-        @media only screen and (max-width: 768px) {
-            left: 0;
         }
     }
 }

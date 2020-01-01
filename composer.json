@@ -6,6 +6,7 @@
         "ext-ctype": "*",
         "ext-curl": "*",
         "ext-dom": "*",
+        "ext-http": "*",
         "ext-iconv": "*",
         "ext-json": "*",
         "ext-libxml": "*",

@@ -36,7 +36,7 @@ export class ParserRequest {
 		}
 	}
 
-	public actionName: string = null;
+	public scrollY: number = 0;
 
 	public actionNode: ParserNode = null;
 
