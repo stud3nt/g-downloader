@@ -4,22 +4,13 @@ namespace App\Repository;
 
 use App\Entity\Setting;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
-use Symfony\Bridge\Doctrine\RegistryInterface;
+use Doctrine\Persistence\ManagerRegistry;
 
 class SettingsRepository extends ServiceEntityRepository
 {
-    public function __construct(RegistryInterface $registry)
+    public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, Setting::class);
-    }
-
-    public function getParserSettingsQb(string $parserName)
-    {
-        return $this->_em->createQueryBuilder()
-            ->select('s')
-            ->from('App\Entity\Setting', 's')
-            ->where('s.group = :group')
-            ->setParameter('group', $parserName);
     }
 
     public function getQb(array $searchParameters = [])
@@ -30,8 +21,10 @@ class SettingsRepository extends ServiceEntityRepository
 
         if ($searchParameters) {
             foreach ($searchParameters as $paramName => $paramValue) {
-                $qb->andWhere('s.'.$paramName.' = :'.$paramName)
-                    ->setParameter($paramName, $paramValue);
+                if (is_array($paramValue))
+                    $qb->andWhere('s.'.$paramName.' IN (:'.$paramName.')')->setParameter($paramName, $paramValue);
+                else
+                    $qb->andWhere('s.'.$paramName.' = :'.$paramName)->setParameter($paramName, $paramValue);
             }
         }
 

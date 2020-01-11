@@ -52,13 +52,15 @@ final class Version20191222125002 extends AbstractMigration
         $this->addSql('CREATE INDEX identifier_idx ON parsed_nodes_data (identifier)');
         $this->addSql('
             ALTER TABLE users 
-                ADD salt VARCHAR(64) NOT NULL AFTER token, 
+                ADD salt VARCHAR(64) NOT NULL AFTER token,
+                ADD file_token VARCHAR(32) NOT NULL AFTER token,
                 ADD last_logged_at DATETIME DEFAULT NULL AFTER created_at,
                 ADD updated_at DATETIME DEFAULT NULL AFTER last_logged_at, 
                 ADD name VARCHAR(40) DEFAULT NULL AFTER username,
                 ADD surname VARCHAR(60) DEFAULT NULL after name,
                 CHANGE role roles LONGTEXT NOT NULL COMMENT \'(DC2Type:array)\', 
-                CHANGE created_at created_at DATETIME DEFAULT CURRENT_TIMESTAMP');
+                CHANGE created_at created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+                CHANGE token api_token VARCHAR(32) NOT NULL');
         $this->addSql('CREATE UNIQUE INDEX UNIQ_1483A5E9F85E0677 ON users (username)');
     }
 
@@ -101,7 +103,9 @@ final class Version20191222125002 extends AbstractMigration
                 DROP name,
                 DROP surname,
                 DROP last_logged_at,
-                CHANGE role role VARCHAR(255) NOT NULL COLLATE utf8_unicode_ci, 
+                DROP file_token,
+                CHANGE role role VARCHAR(255) NOT NULL COLLATE utf8_unicode_ci,
+                CHANGE api_token token VARCHAR(64) NOT NULL, 
                 CHANGE created_at created_at DATETIME NOT NULL
         ');
     }

@@ -2,7 +2,7 @@ import { Component, Input, OnInit, Output} from '@angular/core';
 import { ParserRequest } from "../../../model/parser-request";
 import { NodeStatus } from "../../../enum/node-status";
 import { ParsedFile } from "../../../model/parsed-file";
-import { DownloaderService } from "../../../service/downloader.service";
+import { NodeFileService } from "../../../service/node-file.service";
 import { FileStatus } from "../../../enum/file-status";
 import { FileType } from "../../../enum/file-type";
 import { ModalDataService } from "../../../service/data/modal-data.service";
@@ -25,7 +25,7 @@ export class FilesListComponent implements OnInit {
 	public lockTiles = false;
 
 	constructor(
-		protected downloaderService: DownloaderService,
+		protected nodeFileService: NodeFileService,
 		protected modal: ModalDataService
 	) { }
 
@@ -57,7 +57,7 @@ export class FilesListComponent implements OnInit {
 
 		file.addStatus(FileStatus.Waiting);
 
-		this.downloaderService.toggleFileQueue(file).subscribe((result: ParsedFile) => {
+		this.nodeFileService.toggleFileQueue(file).subscribe((result: ParsedFile) => {
 			file.removeStatus(FileStatus.Waiting);
 
 			if (result.hasStatus(FileStatus.Queued)) {
@@ -75,7 +75,7 @@ export class FilesListComponent implements OnInit {
 
 		this.modal.open(ModalType.Preview, modalTitle).showLoader();
 
-		this.downloaderService.toggleFilePreview(file).subscribe((result: ParsedFile) => {
+		this.nodeFileService.toggleFilePreview(file).subscribe((result: ParsedFile) => {
 			if (result.width < 600) {
 				this.modal.setSize(ModalSize.Small);
 			} else if (result.width > 600 && result.width < 1000) {

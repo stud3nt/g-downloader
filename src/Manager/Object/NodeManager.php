@@ -8,7 +8,7 @@ use App\Enum\NodeStatus;
 use App\Manager\Base\EntityManager;
 use App\Model\ParserRequestModel;
 use App\Repository\NodeRepository;
-use Doctrine\Common\Persistence\ObjectManager;
+use Doctrine\Persistence\ObjectManager;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 
 class NodeManager extends EntityManager

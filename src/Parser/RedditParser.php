@@ -2,15 +2,14 @@
 
 namespace App\Parser;
 
-use App\Converter\ModelConverter;
+use App\Entity\User;
 use App\Enum\FileType;
 use App\Enum\NodeLevel;
 use App\Enum\ParserType;
-use App\Enum\SettingsGroups;
-use App\Manager\SettingsManager;
 use App\Model\ParsedFile;
 use App\Model\ParsedNode;
 use App\Model\ParserRequestModel;
+use App\Model\SettingsModel;
 use App\Parser\Base\AbstractParser;
 use App\Parser\Base\ParserInterface;
 use App\Service\Reddit\RedditApi;
@@ -28,20 +27,16 @@ class RedditParser extends AbstractParser implements ParserInterface
 
     /**
      * RedditParser constructor.
-     *
-     * @throws \ReflectionException
-     * @throws \Exception
+     * @param SettingsModel $settings
+     * @param User $user
      * @throws \Psr\Cache\InvalidArgumentException
+     * @throws \Exception
      */
-    public function __construct(SettingsManager $settingsManager, ModelConverter $modelConverter)
+    public function __construct(SettingsModel $settings, User $user)
     {
-        parent::__construct($settingsManager, $modelConverter);
+        parent::__construct($settings, $user);
 
-        $redditSettings = $this->settingsManager->getSettings([
-            'group' => SettingsGroups::Reddit
-        ], true);
-
-        $this->redditApi = (new RedditApi())->init($redditSettings);
+        $this->redditApi = (new RedditApi())->init($this->settings);
     }
 
     /**

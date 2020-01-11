@@ -12,6 +12,13 @@ trait PageLoaderTrait
     /** @var FileCache */
     protected $cache;
 
+    /**
+     * @param string $progressName
+     * @param int $totalValue
+     * @param int $startPercent
+     * @param int $endPercent
+     * @throws \Exception
+     */
     public function startProgress(string $progressName, int $totalValue, int $startPercent = 10, int $endPercent = 100): void
     {
         $this->pageLoaderProgressData[$progressName] = [
@@ -25,6 +32,10 @@ trait PageLoaderTrait
         $this->setPageLoaderProgress($startPercent);
     }
 
+    /**
+     * @param string $progressName
+     * @throws \Exception
+     */
     public function endProgress(string $progressName) : void
     {
         $this->setPageLoaderProgress(
@@ -34,6 +45,10 @@ trait PageLoaderTrait
         unset($this->pageLoaderProgressData[$progressName]);
     }
 
+    /**
+     * @param string $progressName
+     * @throws \Exception
+     */
     public function progressStep(string $progressName) : void
     {
         $progressData = $this->pageLoaderProgressData[$progressName];
@@ -53,6 +68,7 @@ trait PageLoaderTrait
      *
      * @param int $stepSize
      * @param int $limit
+     * @throws \Exception
      */
     public function makeBlindStep(int $stepSize, int $limit = 50) : void
     {
@@ -64,11 +80,19 @@ trait PageLoaderTrait
         );
     }
 
+    /**
+     * @param int $progress
+     * @throws \Exception
+     */
     public function setPageLoaderProgress(int $progress = 0) : void
     {
         $this->cache->savePageLoaderProgress($progress);
     }
 
+    /**
+     * @param string $description
+     * @throws \Exception
+     */
     public function setPageLoaderDescription(string $description = '') : void
     {
         $this->cache->savePageLoaderDescription($description);

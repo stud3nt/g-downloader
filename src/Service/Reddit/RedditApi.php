@@ -3,6 +3,7 @@
 namespace App\Service\Reddit;
 
 use App\Model\ParserRequestModel;
+use App\Model\SettingsModel;
 use GuzzleHttp\Client;
 use Symfony\Component\Cache\CacheItem;
 
@@ -18,15 +19,15 @@ class RedditApi
     protected $beforeToken;
 
     /**
-     * @param array $redditSettings
+     * @param SettingsModel $redditSettings
      * @return $this
      * @throws \Exception
      * @throws \Psr\Cache\InvalidArgumentException
      */
-    public function init(array $redditSettings)
+    public function init(SettingsModel $settings)
     {
         $this->http = new Client();
-        $this->oauth = (new RedditOauth())->init($redditSettings);
+        $this->oauth = (new RedditOauth())->init($settings);
 
         return $this;
     }

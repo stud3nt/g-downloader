@@ -181,7 +181,7 @@ class ParsedNode extends AbstractModel
      */
     public function setIdentifier($identifier): self
     {
-        $this->identifier = $identifier;
+        $this->identifier = preg_replace('/[^a-zA-Z0-9\-\_]/', '_', $identifier);
 
         return $this;
     }

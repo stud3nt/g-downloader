@@ -11,7 +11,6 @@ import { DashboardComponent } from './component/dashboard/dashboard.component';
 import { ParserComponent } from './component/parser/parser.component';
 import { MenuComponent } from './component/_core/menu/menu.component';
 import { NavbarComponent } from './component/_core/navbar/navbar.component';
-import { DownloadPanelComponent } from './component/_core/navbar/download-panel/download-panel.component';
 import { CookieService } from "ngx-cookie-service";
 import { SettingsComponent } from './component/settings/settings.component';
 import { ListComponent } from './component/users/list/list.component';
@@ -29,6 +28,8 @@ import { TruncateStringPipe } from "./pipe/truncate-string.pipe";
 import { LoginComponent } from './component/security/login/login.component';
 import { MenuNodeComponent } from "./component/_core/menu/menu-node/menu-node.component";
 import { ToastrComponent } from './component/_core/toastr/toastr.component';
+import { DownloadMiniPanelComponent } from "./component/_core/navbar/download-mini-panel/download-mini-panel.component";
+import { DownloaderComponent } from './component/tools/downloader/downloader.component';
 
 @NgModule({
 	declarations: [
@@ -39,7 +40,7 @@ import { ToastrComponent } from './component/_core/toastr/toastr.component';
 		MenuComponent,
 		NavbarComponent,
 		MenuNodeComponent,
-		DownloadPanelComponent,
+		DownloadMiniPanelComponent,
 		SettingsComponent,
 		ListComponent,
 		GroupsComponent,
@@ -56,7 +57,8 @@ import { ToastrComponent } from './component/_core/toastr/toastr.component';
 		MovieLengthPipe,
 		TruncateStringPipe,
 		LoginComponent,
-		ToastrComponent
+		ToastrComponent,
+		DownloaderComponent
 	],
 	imports: [
 		BrowserModule,

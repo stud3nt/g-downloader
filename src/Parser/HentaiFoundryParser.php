@@ -4,7 +4,6 @@ namespace App\Parser;
 
 use App\Enum\FileType;
 use App\Enum\NodeLevel;
-use App\Enum\PaginationMode;
 use App\Enum\ParserType;
 use App\Model\ParsedFile;
 use App\Model\ParsedNode;
@@ -12,7 +11,6 @@ use App\Model\ParserRequestModel;
 use App\Parser\Base\AbstractParser;
 use App\Parser\Base\ParserInterface;
 use App\Utils\FilesHelper;
-use App\Utils\UrlHelper;
 use PHPHtmlParser\Dom;
 use PHPHtmlParser\Dom\HtmlNode;
 
@@ -73,7 +71,7 @@ class HentaiFoundryParser extends AbstractParser implements ParserInterface
 
                 if ($limit > 1) {
                     for ($pageNo = 2; $pageNo <= $limit; $pageNo++) {
-                        $this->curlRequest->addRequest($this->mainBoardUrl.'users/byletter/'.$letter.'/page/'.$pageNo);
+                        $this->curlRequest->addRequestFromUrl($this->mainBoardUrl.'users/byletter/'.$letter.'/page/'.$pageNo);
 
                         if ($pageNo % 20 === 0) {
                             $results = $this->curlRequest->executeRequests();
@@ -186,7 +184,7 @@ class HentaiFoundryParser extends AbstractParser implements ParserInterface
                 }
 
                 foreach ($rawFiles as $rawFileIndex => $rawFile) {
-                    $this->curlRequest->addRequest($this->mainBoardUrl.$rawFile['url'], [
+                    $this->curlRequest->addRequestFromUrl($this->mainBoardUrl.$rawFile['url'], [
                         'customKey' => $rawFileIndex
                     ]);
 

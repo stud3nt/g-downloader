@@ -66,10 +66,18 @@ class User extends AbstractEntity implements UserInterface, \Serializable
     /**
      * @var string
      *
-     * @ORM\Column(name="token", type="string", nullable=false, length=64)
+     * @ORM\Column(name="file_token", type="string", nullable=false, length=32)
+     * @EntityVariable(writable=false, readable=false)
+     */
+    protected $fileToken;
+
+    /**
+     * @var string
+     *
+     * @ORM\Column(name="api_token", type="string", nullable=false, length=32)
      * @EntityVariable(writable=false, readable=true)
      */
-    protected $token;
+    protected $apiToken;
 
     /**
      * @var string
@@ -177,18 +185,6 @@ class User extends AbstractEntity implements UserInterface, \Serializable
         return $this->isActive;
     }
 
-    public function getToken(): ?string
-    {
-        return $this->token;
-    }
-
-    public function setToken(string $token): self
-    {
-        $this->token = $token;
-
-        return $this;
-    }
-
     public function getTokenId(): string
     {
         return sprintf(sprintf('%s-%d', sha1('user_token'), $this->getId()));
@@ -293,6 +289,30 @@ class User extends AbstractEntity implements UserInterface, \Serializable
     public function refreshLastLoggedAt(): self
     {
         $this->lastLoggedAt = new \DateTime('now');
+
+        return $this;
+    }
+
+    public function getFileToken(): ?string
+    {
+        return $this->fileToken;
+    }
+
+    public function setFileToken(string $fileToken): self
+    {
+        $this->fileToken = $fileToken;
+
+        return $this;
+    }
+
+    public function getApiToken(): ?string
+    {
+        return $this->apiToken;
+    }
+
+    public function setApiToken(string $apiToken): self
+    {
+        $this->apiToken = $apiToken;
 
         return $this;
     }

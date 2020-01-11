@@ -132,7 +132,7 @@ class FilesHelper
      * @param int $precision
      * @return string
      */
-    public static function bytesToSize(int $bytes = 0, $precision = 2) : string
+    public static function bytesToSize(int $bytes = null, $precision = 2) : string
     {
         if ($bytes > 0) {
             $bytes = max($bytes, 0);

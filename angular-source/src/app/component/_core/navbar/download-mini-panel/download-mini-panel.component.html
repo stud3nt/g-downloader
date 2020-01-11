@@ -1,0 +1,36 @@
+<li class="dropdown download-menu">
+    <a [ngClass]="mainButtonClass" data-toggle="dropdown">
+        <i class="fa fa-fw fa-cloud-download"></i>
+        <span class="label label-info">
+            {{ queuedFilesCount > 999 ? '999+' : queuedFilesCount }}
+        </span>
+    </a>
+    <ul class="dropdown-menu">
+        <li class="header">
+            Files in queue: <b>{{ queuedFilesCount }} ({{ queuedFilesSize }})</b>
+        </li>
+        <li>
+            <ul class="files-list">
+                <li class="file-row" *ngFor="let file of queuedFiles">
+                    <i class="fa fa-video-camera" *ngIf="file.type === FileType.Video"></i>
+                    <i class="fa fa-image" *ngIf="file.type === FileType.Image"></i>
+                    {{ file.name | truncateString: 30 }}.{{ file.extension }} ({{ file.textSize }})
+                </li>
+                <li class="file-row text-center" *ngIf="queuedFiles.length === 0">
+                    --- NO FILES IN QUEUE ---
+                </li>
+            </ul>
+        </li>
+        <li class="footer">
+            <button type="button" class="btn btn-default" [disabled]="(queuedFiles.length === 0)" (click)="start()" *ngIf="downloaderStatus === DownloaderStatus.Idle">
+                <i class="fa fa-play"></i> &nbsp; Start
+            </button>
+            <button type="button" class="btn btn-default" [disabled]="(queuedFiles.length === 0)" (click)="stop()" *ngIf="downloaderStatus === DownloaderStatus.Downloading">
+                <i class="fa fa-stop"></i> &nbsp; Stop
+            </button>
+            <a class="btn btn-default" [href]="routerService.generateUrl('app_tools', {'toolName':'downloader'})">
+                <i class="fa fa-list-ul"></i> &nbsp; Full list
+            </a>
+        </li>
+    </ul>
+</li>

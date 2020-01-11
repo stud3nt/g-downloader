@@ -2,6 +2,7 @@
 
 namespace App\Parser\Base;
 
+use App\Entity\Parser\File;
 use App\Model\ParsedFile;
 use App\Model\ParserRequestModel;
 
@@ -14,13 +15,15 @@ use App\Model\ParserRequestModel;
  */
 interface ParserInterface
 {
-    public function getBoardsListData(ParserRequestModel &$parserRequestModel) : ParserRequestModel;
+    public function getBoardsListData(ParserRequestModel &$parserRequestModel): ParserRequestModel;
 
-    public function getBoardData(ParserRequestModel &$parserRequestModel) : ParserRequestModel;
+    public function getBoardData(ParserRequestModel &$parserRequestModel): ParserRequestModel;
 
-    public function getGalleryData(ParserRequestModel &$parserRequestModel) : ParserRequestModel;
+    public function getGalleryData(ParserRequestModel &$parserRequestModel): ParserRequestModel;
 
-    public function getFileData(ParsedFile &$parsedFile) : ParsedFile;
+    public function getFileData(ParsedFile &$parsedFile): ParsedFile;
 
-    public function getFilePreview(ParsedFile &$parsedFile) : ParsedFile;
+    public function getFilePreview(ParsedFile &$parsedFile): ParsedFile;
+
+    public function generateFileCurlRequest(File &$file): File;
 }

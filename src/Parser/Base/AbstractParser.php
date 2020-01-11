@@ -3,16 +3,18 @@
 namespace App\Parser\Base;
 
 use App\Converter\ModelConverter;
+use App\Entity\Parser\File;
+use App\Entity\User;
 use App\Enum\NodeLevel;
 use App\Enum\PaginationMode;
-use App\Manager\SettingsManager;
 use App\Model\ParserRequestModel;
-use App\Service\FileCache;
-use App\Service\CurlRequest;
+use App\Model\SettingsModel;
+use App\Service\{FileCache, CurlRequest};
 use App\Traits\PageLoaderTrait;
 use App\Utils\AppHelper;
 use GuzzleHttp\Client;
 use PHPHtmlParser\Dom;
+use Symfony\Component\Filesystem\Filesystem;
 
 class AbstractParser
 {
@@ -33,11 +35,14 @@ class AbstractParser
     /** @var FileCache */
     protected $cache;
 
-    /** @var SettingsManager */
-    protected $settingsManager;
-
     /** @var ModelConverter */
     protected $modelConverter;
+
+    /** @var array */
+    protected $settings = [];
+
+    /** @var User */
+    private $user;
 
     // local folders folders
     protected $thumbnailTempDir;
@@ -55,15 +60,23 @@ class AbstractParser
 
     protected $sessionData = [];
 
-    public function __construct(SettingsManager $settingsManager, ModelConverter $modelConverter)
+    /**
+     * AbstractParser constructor.
+     * @param SettingsModel $settings
+     * @param User $user
+     * @throws \Exception
+     */
+    public function __construct(SettingsModel $settings, User $user)
     {
+        $this->user = $user;
+
         $this->httpClient = new Client();
         $this->domLibrary = new Dom();
         $this->curlRequest = (new CurlRequest())->init($this->parserName);
-        $this->cache = new FileCache();
+        $this->cache = new FileCache($user);
 
-        $this->settingsManager = $settingsManager;
-        $this->modelConverter = $modelConverter;
+        $this->modelConverter = new ModelConverter();
+        $this->settings = $settings;
 
         $ds = DIRECTORY_SEPARATOR;
 
@@ -84,12 +97,62 @@ class AbstractParser
         $this->setPageLoaderProgress(5);
     }
 
+    /**
+     * @throws \Exception
+     */
     public function __destruct()
     {
         $this->setPageLoaderProgress(100);
         $this->clearCache();
     }
 
+    public function generateFileCurlRequest(File &$file): File
+    {
+        $ds = DIRECTORY_SEPARATOR;
+        $fs = new Filesystem();
+        $curlService = new CurlRequest();
+        $targetDirectory = $this->settings->getCommonSetting('downloadDirectory');
+        $targetDirectory .= $ds.$this->parserName;
+
+        if ($parserDownloadFolder = $this->settings->getParserSetting($this->parserName, 'downloadFolder')) {
+            $targetDirectory .= $ds.$this->prepareParserDownloadFolder($parserDownloadFolder);
+        }
+
+        if (!$fs->exists($targetDirectory)) {
+            $fs->mkdir($targetDirectory, 0777);
+        }
+
+        $file->setTargetFilePath($targetDirectory.$ds.$file->getName().'.jpg');
+        $file->setTempFilePath($this->previewTempDir.$file->getName().'.'.$file->getExtension());
+        $file->setCurlRequest($curlService->prepareCurlRequest($file->getFileUrl()));
+
+        return $file;
+    }
+
+    protected function prepareParserDownloadFolder(string $rawDownloadFolder): ?string
+    {
+        preg_match_all('/\%[a-zA-Z0-9]{1,}\%/', $rawDownloadFolder, $variables);
+
+        if ($variables[0] && count($variables[0]) > 0) {
+            foreach ($variables[0] as $variable) {
+                $variableName = str_replace('%', '', $variable);
+                $configValue = $this->settings->getParserSetting($this->parserName, $variableName);
+
+                $rawDownloadFolder = str_replace($rawDownloadFolder, $variable, $configValue);
+            }
+        }
+
+        return str_replace('%', '', $rawDownloadFolder);
+    }
+
+    /**
+     * @param string $url
+     * @return Dom
+     * @throws \PHPHtmlParser\Exceptions\ChildNotFoundException
+     * @throws \PHPHtmlParser\Exceptions\CircularException
+     * @throws \PHPHtmlParser\Exceptions\CurlException
+     * @throws \PHPHtmlParser\Exceptions\StrictException
+     */
     protected function loadDomFromUrl(string $url) : Dom
     {
         return $this->domLibrary->load(
@@ -97,6 +160,14 @@ class AbstractParser
         );
     }
 
+    /**
+     * @param string $html
+     * @return Dom
+     * @throws \PHPHtmlParser\Exceptions\ChildNotFoundException
+     * @throws \PHPHtmlParser\Exceptions\CircularException
+     * @throws \PHPHtmlParser\Exceptions\CurlException
+     * @throws \PHPHtmlParser\Exceptions\StrictException
+     */
     protected function loadDomFromHTML(string $html) : Dom
     {
         return $this->domLibrary->load($html);
@@ -138,7 +209,7 @@ class AbstractParser
         foreach ($cacheDirs as $cacheDir) {
             if ($cacheDir && file_exists($cacheDir)) {
                 foreach (scandir($cacheDir) as $file) {
-                    if (!in_array($file, ['.', '..'])) {
+                    if (!in_array($file, ['.', '..', 'preview'])) {
                         $filePath = preg_replace('/\?v=[\d]+$/', '', $cacheDir.$file);
                         $fileTime = filemtime($filePath);
 

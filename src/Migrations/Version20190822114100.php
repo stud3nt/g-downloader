@@ -89,12 +89,13 @@ final class Version20190822114100 extends AbstractMigration
             id MEDIUMINT(6) UNSIGNED AUTO_INCREMENT NOT NULL,
             name VARCHAR(255) DEFAULT NULL, 
             group_name VARCHAR(32) NOT NULL, 
-            level TINYINT(2) UNSIGNED DEFAULT 1,
+            type VARCHAR(32) DEFAULT NULL, 
+            level SMALLINT(2) UNSIGNED DEFAULT 0,
             label VARCHAR(255) DEFAULT NULL,
             description VARCHAR(2048) DEFAULT NULL, 
             value LONGTEXT DEFAULT NULL, 
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP, 
-            updated_at DATETIME DEFAULT NULL, 
+            updated_at DATETIME DEFAULT NULL,
             PRIMARY KEY(id)
         ) DEFAULT CHARACTER SET utf8 COLLATE utf8_unicode_ci ENGINE = InnoDB');
 

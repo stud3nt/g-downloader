@@ -97,6 +97,7 @@ class StringHelper
      */
     public static function underscoreToCamelCase($text, bool $firstLetterSmall = true) : string
     {
+        $text = mb_strtolower($text);
         $textArray = explode('_', $text);
         $camelCaseText = '';
 

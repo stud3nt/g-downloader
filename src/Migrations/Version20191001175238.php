@@ -6,7 +6,8 @@ namespace DoctrineMigrations;
 
 use App\Enum\PaginationMode;
 use App\Enum\ParserType;
-use App\Enum\SettingsLevels;
+use App\Enum\SettingsGroup;
+use App\Enum\SettingsType;
 use Doctrine\DBAL\Schema\Schema;
 use Doctrine\Migrations\AbstractMigration;
 
@@ -19,58 +20,58 @@ final class Version20191001175238 extends AbstractMigration
         [
             'name' => 'INITIAL_LEVEL',
             'value' => 'boards_list',
-            'parser' => ParserType::Reddit,
+            'group_name' => SettingsGroup::Parser,
             'label' => 'label.settings.levels.start_level',
-            'level' => SettingsLevels::Initial,
+            'type' => SettingsType::Reddit,
         ],
         [
             'name' => 'INITIAL_PAGINATION',
             'value' => 'none',
-            'parser' => ParserType::Reddit,
+            'group_name' => SettingsGroup::Parser,
             'label' => 'label.settings.levels.initial_pagination',
-            'level' => SettingsLevels::Initial,
+            'type' => SettingsType::Reddit,
         ],
         [
             'name' => 'INITIAL_LEVEL',
             'value' => 'boards_list',
-            'parser' => ParserType::Boards4chan,
+            'group_name' => SettingsGroup::Parser,
             'label' => 'label.settings.levels.start_level',
-            'level' => SettingsLevels::Initial
+            'type' => SettingsType::Boards4chan
         ],
         [
             'name' => 'INITIAL_PAGINATION',
             'value' => 'none',
-            'parser' => ParserType::Boards4chan,
+            'group_name' => SettingsGroup::Parser,
             'label' => 'label.settings.levels.initial_pagination',
-            'level' => SettingsLevels::Initial
+            'type' => SettingsType::Boards4chan
         ],
         [
             'name' => 'INITIAL_LEVEL',
             'value' => 'board',
-            'parser' => ParserType::HentaiFoundry,
+            'group_name' => SettingsGroup::Parser,
             'label' => 'label.settings.levels.start_level',
-            'level' => SettingsLevels::Initial
+            'type' => SettingsType::HentaiFoundry
         ],
         [
             'name' => 'INITIAL_PAGINATION',
             'value' => PaginationMode::Letters,
-            'parser' => ParserType::HentaiFoundry,
+            'group_name' => SettingsGroup::Parser,
             'label' => 'label.settings.levels.initial_pagination',
-            'level' => SettingsLevels::Initial
+            'type' => SettingsType::HentaiFoundry
         ],
         [
             'name' => 'INITIAL_LEVEL',
             'value' => 'owner',
-            'parser' => ParserType::Imagefap,
+            'group_name' => SettingsGroup::Parser,
             'label' => 'label.settings.levels.start_level',
-            'level' => SettingsLevels::Initial
+            'type' => SettingsType::ImageFap
         ],
         [
             'name' => 'INITIAL_PAGINATION',
             'value' => PaginationMode::Numbers,
-            'parser' => ParserType::Imagefap,
+            'group_name' => SettingsGroup::Parser,
             'label' => 'label.settings.levels.initial_pagination',
-            'level' => SettingsLevels::Initial
+            'type' => SettingsType::ImageFap
         ]
     ];
 
@@ -87,9 +88,9 @@ final class Version20191001175238 extends AbstractMigration
                 ->values([
                     'name' => ':name',
                     'value' => ':value',
-                    'level' => ':level',
                     'label' => ':label',
-                    'group_name' => ':parser'
+                    'group_name' => ':group_name',
+                    'type' => ':type'
                 ])
                 ->setParameters($setting)
                 ->execute();
@@ -98,6 +99,6 @@ final class Version20191001175238 extends AbstractMigration
 
     public function down(Schema $schema) : void
     {
-        $this->addSql('ALTER TABLE settings DROP COLUMN level');
+
     }
 }

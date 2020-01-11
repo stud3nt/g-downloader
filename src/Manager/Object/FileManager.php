@@ -5,15 +5,14 @@ namespace App\Manager\Object;
 use App\Converter\EntityConverter;
 use App\Entity\Parser\File;
 use App\Enum\FileStatus;
-use App\Enum\FileType;
 use App\Manager\Base\EntityManager;
-use App\Manager\Base\ParserObjectManagerInterface;
 use App\Manager\SettingsManager;
 use App\Model\ParsedFile;
 use App\Model\ParserRequestModel;
 use App\Repository\FileRepository;
 use App\Utils\FilesHelper;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Doctrine\ORM\AbstractQuery;
+use Doctrine\ORM\NonUniqueResultException;
 
 class FileManager extends EntityManager
 {
@@ -113,15 +112,21 @@ class FileManager extends EntityManager
      * @param int $limit
      * @return array
      */
-    public function getQueuedFiles(int $limit = 10) : array
+    public function getQueuedFiles(int $limit = 10, bool $asArray = false) : array
     {
-        $queuedFiles = $this->repository->getQueueFilesQb($limit)
-            ->getQuery()
-            ->getArrayResult();
+        $queuedFiles = $this->repository->getFilesQb([
+            'type' => 'queued',
+            'limit' => $limit
+        ])->getQuery()->getResult(
+            ($asArray) ? AbstractQuery::HYDRATE_ARRAY : AbstractQuery::HYDRATE_OBJECT
+        );
 
         if ($queuedFiles) {
             foreach ($queuedFiles as $key => $queuedFile) {
-                $queuedFiles[$key]['textSize'] = FilesHelper::bytesToSize($queuedFile['size']);
+                if ($asArray)
+                    $queuedFiles[$key]['textSize'] = FilesHelper::bytesToSize($queuedFile['size']);
+                else
+                    $queuedFiles[$key]->setTextSize(FilesHelper::bytesToSize($queuedFile->getSize()));
             }
         }
 
@@ -131,83 +136,47 @@ class FileManager extends EntityManager
     /**
      * Return count of all queued files
      *
-     * @return int
-     */
-    public function countQueuedFiles() : int
-    {
-        return $this->repository->countQueuedFiles();
-    }
-
-    /**
-     * Return count of downloaded files (processed after specified date);
-     *
-     * @param int $startingTimestamp
-     * @return int
-     */
-    public function countDownloadedFiles(int $startingTimestamp = 0) : int
-    {
-        return $this->repository->countDownloadedFiles($startingTimestamp);
-    }
-
-    /**
-     * Downloading file (or package of files if size fits in the limit);
-     *
      * @return array
+     * @throws NonUniqueResultException
      */
-    public function downloadFilesPackage() : array
+    public function getBasicFilesData() : array
     {
-        $sizeLimit = (5*1024*1024);
-        $currentLimit = 0;
-        $files = $this->repository->getQueueFilesQb(10)
-            ->getQuery()->getResult();
+        $queuedCounts = $this->repository->getFilesQb([
+            'select' => 'COUNT(f.id) as totalCount, SUM(f.size) as totalSize',
+            'type' => 'queued'
+        ])->setMaxResults(1)->getQuery()->getOneOrNullResult(AbstractQuery::HYDRATE_ARRAY);
 
-        if ($files) {
-            /** @var File $file */
-            foreach ($files as $file) {
-                $currentLimit += $file->getSize();
-
-                $this->downloadFile($file);
-
-                if ($currentLimit > $sizeLimit) {
-                    break;
-                }
-            }
-        }
+        $downloadedCounts = $this->repository->getFilesQb([
+            'type' => 'downloaded',
+            'COUNT(f.id) as totalCount, SUM(f.size) as totalSize'
+        ])->setMaxResults(1)->getQuery()->getOneOrNullResult(AbstractQuery::HYDRATE_ARRAY);
 
         return [
-
+            'queuedFilesCount' => $queuedCounts['totalCount'],
+            'queuedFilesSize' => FilesHelper::bytesToSize($queuedCounts['totalSize']),
+            'downloadedFilesCount' => $downloadedCounts['totalCount'],
+            'downloadedFilesSize' => FilesHelper::bytesToSize($downloadedCounts['totalSize'])
         ];
     }
 
-    public function downloadFile(File $file = null) : bool
+    /**
+     * Updates downloaded file as saved;
+     *
+     * @param array $downloadedFiles
+     * @throws \Doctrine\ORM\ORMException
+     * @throws \Doctrine\ORM\OptimisticLockException
+     */
+    public function updateDownloadedFiles(array $downloadedFiles = []): void
     {
-        if ($file) {
-            $parserName = $file->getParser();
-            $fileSettings = $this->processFileSettings($file);
-            $parserSettings = $this->settingsManager->getParserSetting($parserName);
-
-            if ($fileSettings->subfolder) {
-
+        if ($downloadedFiles) {
+            /** @var File $downloadedFile */
+            foreach ($downloadedFiles as $downloadedFile) {
+                $this->em->persist(
+                    $downloadedFile->setDownloadedAt(new \DateTime('now'))
+                );
             }
 
-            if ($fileSettings->fileNamePattern) {
-
-            }
+            $this->em->flush();
         }
-
-        return false;
-    }
-
-    protected function processFileSettings(File $file = null) : \stdClass
-    {
-        $rawSettings = $file->getBoard()->getSettings();
-        $processedSettings = new \stdClass();
-        $settingsKeys = ['subfolder', 'fileNamePattern'];
-
-        foreach ($settingsKeys as $settingsKey) {
-            $processedSettings->{$settingsKey} = $rawSettings[$settingsKey] ?? false;
-        }
-
-        return $processedSettings;
     }
 }

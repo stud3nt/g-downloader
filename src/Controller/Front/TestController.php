@@ -3,9 +3,9 @@
 namespace App\Controller\Front;
 
 use App\Controller\Front\Base\Controller;
+use App\Entity\Parser\Node;
 use App\Enum\ParserType;
-use App\Enum\SettingsGroups;
-use App\Manager\SettingsManager;
+use App\Manager\Object\FileManager;
 use App\Model\ParsedFile;
 use App\Model\ParserRequestModel;
 use App\Parser\Boards4chanParser;
@@ -13,11 +13,9 @@ use App\Converter\EntityConverter;
 use App\Parser\HentaiFoundryParser;
 use App\Parser\ImagefapParser;
 use App\Parser\RedditParser;
+use App\Service\DownloadService;
 use App\Service\FileCache;
-use App\Service\ImgurApi;
-use App\Utils\CacheHelper;
 use Doctrine\Common\Util\Debug;
-use http\Client\Response;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
@@ -27,7 +25,6 @@ class TestController extends Controller
 {
     /**
      * @Route("/tester/parser_test/{parser}/{test}", name="app_parser_test_function")
-     * @Method({"GET"})
      * @throws \ReflectionException
      * @throws \Exception
      * @throws \ReflectionException
@@ -160,8 +157,27 @@ class TestController extends Controller
     }
 
     /**
-     * @Route("/tester/app/{test}", name="app_funct_test_function")
-     * @Method({"GET"})
+     * @Route("/tester/app/download_files", name="app_test_api_download_files", methods={"GET"})
+     * @throws \ReflectionException
+     * @throws \Doctrine\ORM\ORMException
+     * @throws \Doctrine\ORM\OptimisticLockException
+     */
+    public function downloadTest(Request $request, DownloadService $downloadService, FileManager $fileManager)
+    {
+        $filesForDownload = $this->get(FileManager::class)->getQueuedFiles(6);
+
+        if ($filesForDownload) {
+            $downloadedFiles = $downloadService->downloadQueuedParserFiles($filesForDownload);
+            $fileManager->updateDownloadedFiles($downloadedFiles);
+
+            var_dump(['success' => count($downloadedFiles)]);
+        }
+
+        return new \Symfony\Component\HttpFoundation\Response('TEST_DONE.');
+    }
+
+    /**
+     * @Route("/tester/app/{test}", name="app_funct_test_function", methods={"GET"})
      * @throws \ReflectionException
      */
     public function functionallityTest(Request $request)
@@ -170,7 +186,7 @@ class TestController extends Controller
 
         switch ($test) {
             case 'entity_converter':
-                $board = new Board();
+                $board = new Node();
                 $data = [
                     'name' => 'test',
                     'description' => 'test2',

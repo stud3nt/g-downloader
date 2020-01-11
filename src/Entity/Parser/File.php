@@ -113,6 +113,15 @@ class File extends AbstractEntity
      */
     protected $mainStatus;
 
+    /**
+     * @EntityVariable(convertable=true, writable=false, readable=true)
+     */
+    protected $textSize = '0 bytes';
+
+    protected $curlRequest;
+    protected $tempFilePath;
+    protected $targetFilePath;
+
     public function __construct()
     {
         if (!$this->id) {
@@ -262,6 +271,139 @@ class File extends AbstractEntity
     public function setLength(?int $length): self
     {
         $this->length = $length;
+
+        return $this;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getTextSize()
+    {
+        return $this->textSize;
+    }
+
+    /**
+     * @param mixed $textSize
+     * @return self
+     */
+    public function setTextSize($textSize): self
+    {
+        $this->textSize = $textSize;
+
+        return $this;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getLocalThumbnail()
+    {
+        return $this->localThumbnail;
+    }
+
+    /**
+     * @param mixed $localThumbnail
+     * @return self
+     */
+    public function setLocalThumbnail($localThumbnail): self
+    {
+        $this->localThumbnail = $localThumbnail;
+
+        return $this;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getImageUrl()
+    {
+        return $this->imageUrl;
+    }
+
+    /**
+     * @param mixed $imageUrl
+     * @return self
+     */
+    public function setImageUrl($imageUrl): self
+    {
+        $this->imageUrl = $imageUrl;
+
+        return $this;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getMainStatus()
+    {
+        return $this->mainStatus;
+    }
+
+    /**
+     * @param mixed $mainStatus
+     * @return self
+     */
+    public function setMainStatus($mainStatus): self
+    {
+        $this->mainStatus = $mainStatus;
+
+        return $this;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getCurlRequest()
+    {
+        return $this->curlRequest;
+    }
+
+    /**
+     * @param mixed $curlRequest
+     * @return self
+     */
+    public function setCurlRequest($curlRequest): self
+    {
+        $this->curlRequest = $curlRequest;
+
+        return $this;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getTempFilePath()
+    {
+        return $this->tempFilePath;
+    }
+
+    /**
+     * @param mixed $tempFilePath
+     * @return self
+     */
+    public function setTempFilePath($tempFilePath): self
+    {
+        $this->tempFilePath = $tempFilePath;
+
+        return $this;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getTargetFilePath()
+    {
+        return $this->targetFilePath;
+    }
+
+    /**
+     * @param mixed $targetFilePath
+     * @return self
+     */
+    public function setTargetFilePath($targetFilePath): self
+    {
+        $this->targetFilePath = $targetFilePath;
 
         return $this;
     }

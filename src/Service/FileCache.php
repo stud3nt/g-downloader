@@ -2,6 +2,8 @@
 
 namespace App\Service;
 
+use App\Entity\User;
+use App\Enum\DownloaderStatus;
 use App\Utils\AppHelper;
 use Symfony\Component\Filesystem\Filesystem;
 
@@ -16,14 +18,11 @@ class FileCache
 
     protected $expirationData = [];
 
-    public function __construct(string $userToken = null)
+    public function __construct(User $user = null)
     {
         $this->fs = new Filesystem();
 
-        if (!$userToken) {
-            $userToken = AppHelper::getUserToken();
-            // return;
-        }
+        $userToken = $user->getFileToken();
 
         $this->cacheDirectory = AppHelper::getDataDir().'user-cache'.DIRECTORY_SEPARATOR.$userToken;
 
@@ -38,6 +37,8 @@ class FileCache
         }
 
         $this->expirationData = json_decode(file_get_contents($this->expirationDataFile), true);
+
+        return $this;
     }
 
     /**
@@ -64,16 +65,12 @@ class FileCache
      * @param string $key - cache key
      * @param $value - stored value
      * @param int $expirationTime - cache expiration time (0 - never expires)
-     * @param boolean $public - cache in public folder
      *
      * @return FileCache
      */
-    public function set(string $key, $value, int $expirationTime = 0, bool $public = false) : FileCache
+    public function set(string $key, $value, int $expirationTime = 0) : FileCache
     {
         file_put_contents($this->cacheFilePath($key), json_encode($value));
-
-        if ($public)
-            file_put_contents($this->publicCacheFilePath($key), json_encode($value));
 
         $this->updateExpiration($key, $expirationTime);
 
@@ -103,6 +100,30 @@ class FileCache
     }
 
     /**
+     * @param string $key
+     * @param null $defaultValue
+     * @return mixed|null
+     * @throws \Exception
+     */
+    public function get(string $key, $defaultValue = null)
+    {
+        $cacheFilePath = $this->cacheFilePath($key);
+
+        if ($this->fs->exists($cacheFilePath)) {
+            $data = json_decode(file_get_contents($cacheFilePath), true);
+            $expirationTimestamp = $this->getExpirationTimestamp($key);
+
+            if ($expirationTimestamp === 0 || (new \DateTime())->setTimestamp($expirationTimestamp) >= (new \DateTime())) {
+                return $data;
+            } else {
+                $this->clearCacheData($key);
+            }
+        }
+
+        return $defaultValue;
+    }
+
+    /**
      * Removes cache element by key
      *
      * @deprecated - removed since version 1.0
@@ -110,7 +131,7 @@ class FileCache
      */
     public function clear(string $key): void
     {
-        $this->clearCacheData($key);
+        $this->remove($key);
     }
 
     /**
@@ -120,7 +141,13 @@ class FileCache
      */
     public function remove(string $key): void
     {
-        $this->clearCacheData($key);
+        $cacheFilePath = $this->cacheFilePath($key);
+
+        if ($this->fs->exists($cacheFilePath)) {
+            $this->fs->remove($cacheFilePath);
+        }
+
+        $this->updateExpiration($key, -1);
     }
 
     public function removeAll(): void
@@ -140,21 +167,11 @@ class FileCache
      * @deprecated - removed since version 1.0
      * @param string $key
      * @return mixed|null
+     * @throws \Exception
      */
     public function read(string $key)
     {
-        return $this->getCacheData($key);
-    }
-
-    /**
-     * Proxy for read() function
-     *
-     * @param string $key
-     * @return mixed|null
-     */
-    public function get(string $key)
-    {
-        return $this->getCacheData($key);
+        return $this->get($key);
     }
 
     /**
@@ -163,6 +180,7 @@ class FileCache
      * @deprecated
      * @param string $key
      * @return mixed|null
+     * @throws \Exception
      */
     public function readSessionData(string $keyString)
     {
@@ -186,6 +204,7 @@ class FileCache
      * Automatic saving page loader progress;
      *
      * @param int $progress - page progress in percent (0-100)
+     * @throws \Exception
      */
     public function savePageLoaderProgress(int $progress = 0): void
     {
@@ -207,6 +226,7 @@ class FileCache
      * Automatic save page loader description
      *
      * @param string $description
+     * @throws \Exception
      */
     public function savePageLoaderDescription(string $description = ''): void
     {
@@ -224,38 +244,20 @@ class FileCache
         $this->set('page_loader_status', $pageLoaderData);
     }
 
-    protected function getCacheData(string $key)
+    /**
+     * @return array
+     * @throws \Exception
+     */
+    public function getDownloaderData(): array
     {
-        $cacheFilePath = $this->cacheFilePath($key);
-
-        if ($this->fs->exists($cacheFilePath)) {
-            $data = json_decode(file_get_contents($cacheFilePath), true);
-            $expirationTimestamp = $this->getExpirationTimestamp($key);
-
-            if ($expirationTimestamp === 0 || (new \DateTime())->setTimestamp($expirationTimestamp) >= (new \DateTime())) {
-                return $data;
-            } else {
-                $this->clearCacheData($key);
-            }
-        }
-
-        return null;
+        return [
+            'downloaderStatus' => $this->get('downloader_status', DownloaderStatus::Idle)
+        ];
     }
 
     protected function cacheFilePath(string $key): string
     {
         return $this->cacheDirectory.DIRECTORY_SEPARATOR.'c-'.str_replace('/[^a-zA-Z0-9\_\.\-\=]/', '_', $key).'.json';
-    }
-
-    protected function clearCacheData(string $key)
-    {
-        $cacheFilePath = $this->cacheFilePath($key);
-
-        if ($this->fs->exists($cacheFilePath)) {
-            $this->fs->remove($cacheFilePath);
-        }
-
-        $this->updateExpiration($key, -1);
     }
 
     protected function getExpirationTimestamp(string $key): int

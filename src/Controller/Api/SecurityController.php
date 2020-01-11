@@ -61,7 +61,7 @@ class SecurityController extends Controller
 
                     $csrfToken = $this->get('security.csrf.token_manager')->getToken($user->getTokenId())->getValue();
 
-                    $user->setToken($csrfToken)->refreshLastLoggedAt();
+                    $user->setApiToken($csrfToken)->refreshLastLoggedAt();
 
                     $manager->save($user);
 

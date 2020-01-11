@@ -3,6 +3,7 @@
 namespace App\Service;
 
 use App\Utils\AppHelper;
+use Symfony\Component\Filesystem\Filesystem;
 
 class CurlRequest
 {
@@ -13,9 +14,21 @@ class CurlRequest
 
     protected $cookieFile;
 
-    public function init(string $pageName) : self
+    public function init(string $pageName, string $userToken = null) : self
     {
-        $this->cookieFile = AppHelper::getDataDir().'cookie-temp-'.$pageName.'.txt';
+        if ($userToken) {
+            $ds = DIRECTORY_SEPARATOR;
+            $fs = new Filesystem();
+            $cookieDir = AppHelper::getDataDir().'user-cache'.$ds.$userToken;
+
+            if (!$fs->exists($cookieDir)) {
+                $fs->mkdir($cookieDir, 0777);
+            }
+
+            $this->cookieFile = $cookieDir.$ds.'cookie-temp-'.$pageName.'.txt';
+        } else {
+            $this->cookieFile = AppHelper::getDataDir().'cookie-temp-'.$pageName.'.txt';
+        }
 
         return $this;
     }
@@ -29,11 +42,29 @@ class CurlRequest
         return $this;
     }
 
-    public function addRequest(string $url, array $options = []) : self
+    /**
+     * Adds prepared curl_request to executing array;
+     *
+     * @param $request
+     * @return CurlRequest
+     */
+    public function addRequest($request, $key = null): self
     {
         $this->startMultiCurl();
 
-        $request = $this->prepareCurlRequest($url, $options);
+        if ($key)
+            $this->curlRequests[$key] = $request;
+        else
+            $this->curlRequests[] = $request;
+
+        return $this;
+    }
+
+    public function addRequestFromUrl(string $url, array $options = []) : self
+    {
+        $this->startMultiCurl();
+
+        $request = $this->prepareCurlRequest($url);
 
         if ($customKey = $options['customKey'] ?? null) {
             $this->curlRequests[$customKey] = $request;
@@ -53,7 +84,7 @@ class CurlRequest
      */
     public function executeSingleRequest(string $url, array $options = [])
     {
-        $curlRequest = $this->prepareCurlRequest($url, $options);
+        $curlRequest = $this->prepareCurlRequest($url);
 
         $data = curl_exec($curlRequest);
 
@@ -74,7 +105,6 @@ class CurlRequest
             $running = null;
 
             do { // execute handlers
-
                 curl_multi_exec($this->multiCurlHandle, $running);
             } while($running > 0);
 
@@ -92,7 +122,7 @@ class CurlRequest
         return false;
     }
 
-    protected function prepareCurlRequest(string $url, array $options = [])
+    public function prepareCurlRequest(string $url, string $targetUrl = null)
     {
         $ch = curl_init();
 
@@ -101,10 +131,16 @@ class CurlRequest
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
         curl_setopt($ch, CURLOPT_SSL_VERIFYHOST,false);
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER,false);
-        curl_setopt($ch, CURLOPT_MAXREDIRS, 10);
+        curl_setopt($ch, CURLOPT_MAXREDIRS, 12);
         curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
         curl_setopt($ch, CURLOPT_COOKIEJAR, $this->cookieFile);
         curl_setopt($ch, CURLOPT_COOKIEFILE, $this->cookieFile);
+        curl_setopt($ch, CURLOPT_MAXFILESIZE, (512 * 1000 * 1024)); // 512MB
+        curl_setopt($ch, CURLOPT_TIMEOUT, 60);
+
+        if ($targetUrl) {
+            curl_setopt($ch, CURLOPT_FILE, $targetUrl);
+        }
 
         return $ch;
     }

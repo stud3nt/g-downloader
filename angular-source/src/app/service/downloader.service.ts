@@ -5,35 +5,31 @@ import { AuthService } from "./auth.service";
 import { ParsedFile } from "../model/parsed-file";
 import { HttpHelper } from "../helper/http-helper";
 import { map } from "rxjs/operators";
+import {HttpService} from "./http.service";
+import {JsonResponse} from "../model/json-response";
 
 @Injectable({
   providedIn: 'root'
 })
-export class DownloaderService {
+export class DownloaderService extends HttpService {
 
 	constructor(
-		private http: HttpClient,
-		private router: RouterService,
-		private auth: AuthService
-	) { }
+		protected http: HttpClient,
+		protected router: RouterService,
+		protected auth: AuthService
+	) {
+		super(http);
+	}
 
-	public toggleFileQueue(file: ParsedFile) {
-		let httpParams = HttpHelper.convertObjectToFormData(file);
-
-		return this.http.post(
-			this.router.generateUrl('api_file_toggle_queue'), httpParams
-		).pipe(
-			map((response: Response) => new ParsedFile(response))
+	public setDownloaderStatus(downloadStatus:string) {
+		return this.get(
+			this.router.generateUrl('api_downloader_change_status', {'status':status})
 		);
 	}
 
-	public toggleFilePreview(file: ParsedFile) {
-		let httpParams = HttpHelper.convertObjectToFormData(file);
-
-		return this.http.post(
-			this.router.generateUrl('api_file_toggle_preview'), httpParams
-		).pipe(
-			map((response: Response) => new ParsedFile(response))
+	public checkDownloaderStatus() {
+		return this.get(
+			this.router.generateUrl('api_downloader_check_status')
 		);
 	}
 }

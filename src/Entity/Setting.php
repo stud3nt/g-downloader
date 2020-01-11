@@ -10,8 +10,9 @@ use App\Entity\Traits\{
     NameTrait,
     UpdatedAtTrait
 };
-use App\Enum\SettingsGroups;
-use App\Enum\SettingsLevels;
+use App\Enum\SettingsGroup;
+use App\Enum\SettingsLevel;
+use App\Enum\SettingsType;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
@@ -27,15 +28,21 @@ class Setting extends AbstractEntity
 
     /**
      * @ORM\Column(name="group_name", type="string", length=32, nullable=false)
-     * @EntityVariable(convertable=true, convertNames={"full_settings_data"}, inAllConvertNames=false, writable=true, readable=true)
+     * @EntityVariable(writable=true, readable=true)
      */
-    protected $group = SettingsGroups::Common;
+    protected $group = SettingsGroup::Common;
 
     /**
-     * @ORM\Column(name="level", type="smallint", length=2, options={"unsigned":true, "default":0}, nullable=false)
-     * @EntityVariable(convertable=true, convertNames={"full_settings_data"}, inAllConvertNames=false, writable=true, readable=true)
+     * @ORM\Column(name="type", type="string", length=32, nullable=true)
+     * @EntityVariable(writable=true, readable=true)
      */
-    protected $level = SettingsLevels::System;
+    protected $type = null;
+
+    /**
+     * @ORM\Column(name="level", type="integer", length=2, nullable=true)
+     * @EntityVariable(writable=true, readable=true)
+     */
+    protected $level = SettingsLevel::Public;
 
     /**
      * @ORM\Column(name="label", type="string", length=255, nullable=true)
@@ -145,14 +152,14 @@ class Setting extends AbstractEntity
         return $this;
     }
 
-    public function getLevel(): ?int
+    public function getType(): ?string
     {
-        return $this->level;
+        return $this->type;
     }
 
-    public function setLevel(int $level): self
+    public function setType(?string $type): self
     {
-        $this->level = $level;
+        $this->type = $type;
 
         return $this;
     }

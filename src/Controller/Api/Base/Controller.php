@@ -6,11 +6,8 @@ use App\Converter\ModelConverter;
 use App\Manager\Object\FileManager;
 use App\Manager\Object\NodeManager;
 use App\Manager\SettingsManager;
-use App\Parser\Boards4chanParser;
-use App\Parser\HentaiFoundryParser;
-use App\Parser\ImagefapParser;
-use App\Parser\RedditParser;
-use App\Service\FileCache;
+use App\Parser\Base\ParserInterface;
+use App\Utils\StringHelper;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController as BaseController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -91,13 +88,8 @@ class Controller extends BaseController
     public static function getSubscribedServices(): array
     {
         return array_merge(parent::getSubscribedServices(), [
-            Boards4chanParser::class,
-            ImagefapParser::class,
-            HentaiFoundryParser::class,
-            RedditParser::class,
-            ModelConverter::class,
-            FileCache::class,
             NodeManager::class,
+            ModelConverter::class,
             FileManager::class
         ]);
     }

@@ -4,12 +4,14 @@ namespace App\Controller\Api;
 
 use App\Controller\Api\Base\Controller;
 use App\Converter\ModelConverter;
-use App\Enum\{NodeLevel};
+use App\Enum\{NodeLevel, SettingsType};
 use App\Manager\Object\FileManager;
 use App\Manager\Object\NodeManager;
+use App\Manager\SettingsManager;
 use App\Model\ParsedNode;
 use App\Model\ParserRequestModel;
 use App\Parser\Base\ParserInterface;
+use App\Service\ParserService;
 use App\Utils\StringHelper;
 use Doctrine\ORM\ORMException;
 use Psr\Container\ContainerInterface;
@@ -49,15 +51,13 @@ class ParserController extends Controller
      * @IsGranted("ROLE_ADMIN")
      * @throws \Exception
      */
-    public function parsingAction(Request $request) : JsonResponse
+    public function parsingAction(Request $request, ParserService $parserService) : JsonResponse
     {
         $parserRequestModel = new ParserRequestModel();
         $modelConverter = $this->get(ModelConverter::class);
         $modelConverter->setData($request->request->all(), $parserRequestModel);
 
-        /** @var ParserInterface $parser */
-        $parserName = 'App\\Parser\\'.ucfirst(StringHelper::underscoreToCamelCase($parserRequestModel->parser)).'Parser';
-        $parser = class_exists($parserName) ? $this->get($parserName) : null;
+        $parser = $parserService->loadParser($parserRequestModel->parser);
 
         switch ($parserRequestModel->level) { // execute parser action
             case NodeLevel::Owner:

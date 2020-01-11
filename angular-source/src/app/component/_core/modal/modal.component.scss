@@ -13,21 +13,21 @@
 
     .modal-large {
         @media screen and (max-width: $desktop-break) {
-            width: 96%;
+            width: 96% !important;
         }
 
         @media screen and (min-width: $desktop-break) {
-            width: 1120px;
+            width: 1120px !important;
         }
     }
 
     .modal-small {
         @media screen and (max-width: $mobile-break) {
-            width: 96%;
+            width: 96% !important;
         }
 
         @media screen and (min-width: $desktop-break) {
-            width: 600px;
+            width: 600px !important;
         }
     }
 }

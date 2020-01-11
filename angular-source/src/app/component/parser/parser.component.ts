@@ -1,4 +1,4 @@
-import {Component, OnInit, ViewChildren} from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { NavigationEnd, Router } from "@angular/router";
 import { ContentHeaderDataService } from "../../service/data/content-header-data.service";
 import { ParserService } from "../../service/parser.service";
@@ -13,8 +13,6 @@ import { PaginationMode } from "../../enum/pagination-mode";
 import { Pagination } from "../../model/pagination";
 import { NodesListComponent } from "./nodes-list/nodes-list.component";
 import { NodeStatus } from "../../enum/node-status";
-import {current} from "codelyzer/util/syntaxKind";
-import {last} from "rxjs/operators";
 
 @Component({
 	selector: 'app-parser',
@@ -121,9 +119,9 @@ export class ParserComponent implements OnInit {
 		});
 	}
 
-	public reopenCurrentNode(): void {
+	public reopenCurrentNode(ignoreCache: boolean = false): void {
 		this.prepareParserRequest();
-		this.parserRequest.ignoreCache = true;
+		this.parserRequest.ignoreCache = ignoreCache;
 		this.sendParserRequest(() => {
 			window.scrollTo(0, 0);
 		});
@@ -244,9 +242,9 @@ export class ParserComponent implements OnInit {
 	private initializeParserRequestObject() : void {
 		this.parserRequest = new ParserRequest();
 		this.parserRequest.parser = this.parserName;
-		this.parserRequest.level = this.parserSettings[this.parserName+'_initial_level'];
+		this.parserRequest.level = this.parserSettings[this.parserName]['initialLevel'];
 
-		let initialParserPagination = this.parserSettings[this.parserName+'_initial_pagination'];
+		let initialParserPagination = this.parserSettings[this.parserName]['initialPagination'];
 
 		if (initialParserPagination !== 'none') {
 			this.parserRequest.pagination.active = true;
@@ -258,7 +256,7 @@ export class ParserComponent implements OnInit {
 		let node = new ParserNode();
 
 		node.parser = this.parserName;
-		node.level = this.parserSettings[this.parserName+'_initial_level'];
+		node.level = this.parserSettings[this.parserName]['initialLevel'];
 
 		return node;
 	}
@@ -289,7 +287,7 @@ export class ParserComponent implements OnInit {
 
 		this.parserService.executeAction(this.parserRequest).subscribe((response : ParserRequest) => {
 			this.parserRequest = response;
-			this.highestLevel = (this.parserRequest.currentNode.level === this.parserSettings[this.parserName+'_initial_level']);
+			this.highestLevel = (this.parserRequest.currentNode.level === this.parserSettings[this.parserName]['initialLevel']);
 			this.setBreadcrumb(response.currentNode, response.pagination);
 			this.previousNodeAvailable = (this.getCurrentBreadcrumbIndex() > 0);
 

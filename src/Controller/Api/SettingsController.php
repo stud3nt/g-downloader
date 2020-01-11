@@ -3,7 +3,7 @@
 namespace App\Controller\Api;
 
 use App\Controller\Api\Base\Controller;
-use App\Enum\DownloaderStatusType;
+use App\Enum\DownloaderStatus;
 use App\Manager\DownloadManager;
 use App\Manager\SettingsManager;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;

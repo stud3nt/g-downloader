@@ -4,7 +4,7 @@ namespace App\Enum;
 
 use App\Enum\Base\Enum;
 
-abstract class DownloaderStatusType extends Enum
+abstract class DownloaderStatus extends Enum
 {
     const Idle = 'idle';
     const Downloading = 'downloading';

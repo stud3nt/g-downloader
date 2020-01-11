@@ -2,8 +2,11 @@
 
 namespace App\Service;
 
+use App\Converter\ModelConverter;
 use App\Enum\ParserType;
-use App\Enum\SettingsLevels;
+use App\Enum\SettingsGroup;
+use App\Enum\SettingsLevel;
+use App\Enum\SettingsType;
 use App\Manager\SettingsManager;
 use App\Utils\AppHelper;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -57,10 +60,17 @@ class AngularConfigService
      */
     public function generateInitialJsonConfigFile() : bool
     {
+        $modelConverter = new ModelConverter();
+        $parserSettingsModel =$this->settingsManager->getSettings([
+            'group' => SettingsGroup::Parser,
+            'level' => SettingsLevel::Public
+        ]);
+        $parserSettings = $modelConverter->convert($parserSettingsModel);
+
         $config = json_encode([
             'menu' => $this->getMenuStructure(),
             'routing' => $this->getRouting(),
-            'parsers' => $this->getInitialParsersSettings()
+            'parsers' => $parserSettings['parsers']
         ]);
 
         $refreshTime = $this->container->getParameter('json_cache_refresh_time');
@@ -80,16 +90,6 @@ class AngularConfigService
         }
 
         return false;
-    }
-
-    /**
-     * @throws \ReflectionException
-     */
-    protected function getInitialParsersSettings()
-    {
-        return $this->settingsManager->getSettings([
-            'level' => SettingsLevels::Initial
-        ], true);
     }
 
     protected function getMenuStructure(): array

@@ -2,6 +2,8 @@
 
 namespace App\Service\Reddit;
 
+use App\Enum\ParserType;
+use App\Model\SettingsModel;
 use Symfony\Component\Cache\Adapter\FilesystemAdapter;
 use Symfony\Component\Cache\CacheItem;
 use Symfony\Component\Debug\Debug;
@@ -28,19 +30,19 @@ class RedditOauth
     private $cache;
 
     /**
-     * @param array $redditSettings
+     * @param SettingsModel $settings
      * @return $this
      * @throws \Exception
      * @throws \Psr\Cache\InvalidArgumentException
      */
-    public function init(array $redditSettings)
+    public function init(SettingsModel $settings)
     {
-        $this->username = $redditSettings['reddit_username'];
-        $this->password = $redditSettings['reddit_password'];
-        $this->appId = $redditSettings['reddit_app_id'];
-        $this->appSecret = $redditSettings['reddit_app_secret'];
-        $this->userAgent = $redditSettings['reddit_user_agent'];
-        $this->endpoint = $redditSettings['reddit_endpoint'];
+        $this->username = $settings->getParserSetting(ParserType::Reddit, 'username');
+        $this->password = $settings->getParserSetting(ParserType::Reddit, 'password');
+        $this->appId = $settings->getParserSetting(ParserType::Reddit, 'appId');
+        $this->appSecret = $settings->getParserSetting(ParserType::Reddit, 'appSecret');
+        $this->userAgent = $settings->getParserSetting(ParserType::Reddit, 'userAgent');
+        $this->endpoint = $settings->getParserSetting(ParserType::Reddit, 'endpoint');
         $this->expiration = (new \DateTime())->modify('-1 second');
 
         $this->cache = new FilesystemAdapter();
@@ -58,9 +60,7 @@ class RedditOauth
      */
     public function refreshAccessToken() : void
     {
-        //if (!$this->loadStoredAccessToken() || $this->expiration <= (new \DateTime())) {
-            $this->requestAccessToken();
-        //}
+        $this->requestAccessToken();
     }
 
     public function getAccessToken()
@@ -102,6 +102,8 @@ class RedditOauth
     }
 
     /**
+     * @return bool
+     * @throws \Psr\Cache\InvalidArgumentException
      * @throws \Exception
      */
     private function requestAccessToken() : bool

@@ -2,7 +2,6 @@
 
 namespace App\Parser;
 
-use App\Enum\FileType;
 use App\Enum\NodeLevel;
 use App\Enum\ParserType;
 use App\Model\ParsedFile;
