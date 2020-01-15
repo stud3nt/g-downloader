@@ -176,7 +176,7 @@ class ParsedFile extends AbstractModel
         return $this;
     }
 
-    public function getFullFilename() : string
+    public function getFullFilename(): string
     {
         return $this->getName().(!empty($this->getExtension())
             ? '.'.$this->getExtension()
@@ -536,14 +536,6 @@ class ParsedFile extends AbstractModel
     /**
      * @return mixed
      */
-    public function getStatuses()
-    {
-        return $this->statuses;
-    }
-
-    /**
-     * @return mixed
-     */
     public function getFileUrl()
     {
         return $this->fileUrl;
@@ -606,7 +598,22 @@ class ParsedFile extends AbstractModel
         return $this;
     }
 
-    public function addStatus(string $status) : ParsedFile
+    /**
+     * @return mixed
+     */
+    public function getStatuses()
+    {
+        return $this->statuses;
+    }
+
+    public function clearStatuses(): self
+    {
+        $this->statuses = [];
+
+        return $this;
+    }
+
+    public function addStatus(string $status): self
     {
         if (!$this->hasStatus($status)) {
             $this->statuses[] = $status;
@@ -615,7 +622,7 @@ class ParsedFile extends AbstractModel
         return $this;
     }
 
-    public function removeStatus(string $deletingStatus) : ParsedFile
+    public function removeStatus(string $deletingStatus): self
     {
         if ($this->statuses) {
             foreach ($this->statuses as $statusIndex => $status) {
@@ -628,7 +635,7 @@ class ParsedFile extends AbstractModel
         return $this;
     }
 
-    public function hasStatus(string $checkedStatus) : bool
+    public function hasStatus(string $checkedStatus): bool
     {
         if ($this->statuses) {
             foreach ($this->statuses as $status) {

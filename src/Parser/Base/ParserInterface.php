@@ -15,6 +15,8 @@ use App\Model\ParserRequestModel;
  */
 interface ParserInterface
 {
+    public function getOwnersList(ParserRequestModel &$parserRequestModel): ParserRequestModel;
+
     public function getBoardsListData(ParserRequestModel &$parserRequestModel): ParserRequestModel;
 
     public function getBoardData(ParserRequestModel &$parserRequestModel): ParserRequestModel;

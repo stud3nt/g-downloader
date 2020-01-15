@@ -3,9 +3,9 @@
 <div [ngClass]="actionBeltClass">
     <div class="actionbelt_container__breadcrumb">
         <ol class="breadcrumb">
-            <li *ngFor="let breadcrumb of parserBreadcrumbs">
-                <a *ngIf="breadcrumb && breadcrumb.node.level" [routerLink]="null" (click)="openNodeFromBreadcrumb(breadcrumb)" [ngStyle]="{'font-weight': (breadcrumb.final === true) ? 'bold' : 'normal'}">
-                    {{ NodeLevel.getLevelLabel(breadcrumb.node.level).toUpperCase() }} <span [innerHTML]="breadcrumb.node.name ? '('+breadcrumb.node.name+')' : ''"></span>
+            <li *ngFor="let breadcrumbNode of parserRequest.breadcrumbNodes">
+                <a *ngIf="breadcrumbNode" [routerLink]="routerService.generateNodeUrl(breadcrumbNode)">
+                    {{ NodeLevel.getLevelLabel(breadcrumbNode.level).toUpperCase() }} <span [innerHTML]="breadcrumbNode.label"></span>
                 </a>
             </li>
         </ol>
@@ -14,10 +14,10 @@
     <div class="actionbelt_container__navigation">
         <div class="input-group">
             <div class="input-group-btn">
-                <button type="button" class="btn btn-default" (click)="openPreviousNode()" [disabled]="!previousNodeAvailable">
+                <a *ngIf="parserRequest.previousNode" [href]="routerService.generateNodeUrl(parserRequest.previousNode)" type="button" class="btn btn-default">
                     <i class="fa fa-arrow-left"></i>
-                </button>
-                <button type="button" class="btn btn-default" (click)="reopenCurrentNode()">
+                </a>
+                <button type="button" class="btn btn-default" (click)="reopenCurrentNode(true)">
                     <i class="fa fa-refresh"></i>
                 </button>
                 <app-saved-nodes class="btn component-btn-group-button"></app-saved-nodes>
@@ -41,12 +41,16 @@
                     <i class="fa fa-unlock" *ngIf="parserRequest.currentNode.hasStatus(NodeStatus.Blocked)"></i>
                     <i class="fa fa-lock" *ngIf="!parserRequest.currentNode.hasStatus(NodeStatus.Blocked)"></i>
                 </button>
-                <button type="button" *ngIf="parserRequest.jumpPrevious === true" class="btn btn-default" (click)="jumpBetweenNodes('previous')">
+                <button type="button" [disabled]="parserRequest.currentNode.identifier === null" (click)="markCurrentNode(NodeStatus.Finished)" [ngClass]="getCurrentNodeButtonClass(NodeStatus.Finished)">
+                    <i class="fa fa-check-circle" *ngIf="parserRequest.currentNode.hasStatus(NodeStatus.Finished)"></i>
+                    <i class="fa fa-check-circle-o" *ngIf="!parserRequest.currentNode.hasStatus(NodeStatus.Finished)"></i>
+                </button>
+                <a type="button" *ngIf="previousNodeUrl" class="btn btn-default" [href]="previousNodeUrl">
                     <i class="fa fa-long-arrow-left"></i> &nbsp; JUMP PREV
-                </button>
-                <button type="button" *ngIf="parserRequest.jumpNext === true" class="btn btn-default" (click)="jumpBetweenNodes('next')">
+                </a>
+                <a type="button" *ngIf="nextNodeUrl" class="btn btn-default" [href]="nextNodeUrl">
                     JUMP NEXT &nbsp; <i class="fa fa-long-arrow-right"></i>
-                </button>
+                </a>
             </div>
         </div>
     </div>
@@ -62,7 +66,7 @@
                 </div>
             </div>
             <div class="box-body">
-                <app-nodes-list [parserRequest]="parserRequest" (openChildNode)="openNode($event)"></app-nodes-list>
+                <app-nodes-list [parserRequest]="parserRequest"></app-nodes-list>
                 <app-files-list [parserRequest]="parserRequest"></app-files-list>
             </div>
 

@@ -34,6 +34,12 @@ class Boards4chanParser extends AbstractParser implements ParserInterface
         $this->entityConverter = $entityConverter;
     }
 
+    public function getOwnersList(ParserRequestModel &$parserRequestModel): ParserRequestModel
+    {
+        // NOTHING TO DO HERE
+        return $parserRequestModel;
+    }
+
     /**
      * @param int $page
      * @param array $options
@@ -59,14 +65,13 @@ class Boards4chanParser extends AbstractParser implements ParserInterface
             foreach ($domColumns as $column) {
                 if ($column->find('h3')->text() === 'Adult') {
                     foreach ($column->find('a.boardlink') as $anchor) {
-                        $parserRequestModel->parsedNodes[] = $this->modelConverter->convert(
-                            (new ParsedNode(ParserType::Boards4chan, NodeLevel::BoardsList))
-                                ->setName($anchor->text())
-                                ->setUrl('https:'.$anchor->getAttribute('href').'catalog')
-                                ->setNextLevel(NodeLevel::Board)
-                                ->setIdentifier($this->getBoardSymbol($anchor->getAttribute('href')))
-                                ->setNoImage(true)
-                        );
+                        $parserRequestModel->parsedNodes[] = (new ParsedNode(ParserType::Boards4chan, NodeLevel::BoardsList))
+                            ->setName($anchor->text())
+                            ->setUrl('https:'.$anchor->getAttribute('href').'catalog')
+                            ->setNextLevel(NodeLevel::Board)
+                            ->setIdentifier($this->getBoardSymbol($anchor->getAttribute('href')))
+                            ->setNoImage(true)
+                        ;
                     }
                 }
             }
@@ -143,7 +148,7 @@ class Boards4chanParser extends AbstractParser implements ParserInterface
                             );
                         }
 
-                        $parserRequestModel->parsedNodes[] = $this->modelConverter->convert($node);
+                        $parserRequestModel->parsedNodes[] = $node;
                         $this->progressStep('get_board_data');
                     }
                 }
@@ -226,7 +231,7 @@ class Boards4chanParser extends AbstractParser implements ParserInterface
                             $parsedFile->setLocalThumbnail(UrlHelper::prepareLocalUrl($localThumbnailUrl));
 
                             $this->setParserCache($parserRequestModel, 300);
-                            $parserRequestModel->files[] = $this->modelConverter->convert($parsedFile);
+                            $parserRequestModel->files[] = $parsedFile;
                         }
                     }
                 }

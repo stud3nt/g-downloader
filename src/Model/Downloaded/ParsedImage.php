@@ -152,6 +152,11 @@ class ParsedImage extends AbstractModel
             ->saveJpeg($this->operationalFilePath, 80);
     }
 
+    /**
+     * @param float $minCompressionRatio
+     * @param int $maxFileSize
+     * @throws \Exception
+     */
     public function adjustCompression(float $minCompressionRatio, int $maxFileSize): void
     {
         $filesize = filesize($this->tempFilePath);

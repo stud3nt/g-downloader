@@ -1,12 +1,12 @@
 <div *ngIf="parserRequest.parsedNodes.length > 0">
     <div class="grid-container grid-200">
-        <article id="{{ node.identifier }}" [ngClass]="getNodeClass(node)" *ngFor="let node of parserRequest.parsedNodes" (click)="openNode(node)">
+        <a [routerLink]="routerService.generateNodeUrl(node)" id="{{ node.identifier }}" [ngClass]="getNodeClass(node)" *ngFor="let node of parserRequest.parsedNodes">
             <div class="tile-header-image">
                 <div class="tile-header-icon bg-default" *ngIf="node.hasStatus(NodeStatus.Waiting)">
                     <i class="fa fa-spinner fa-spin fa-fw"></i>
                 </div>
                 <div class="tile-header-icon bg-info" *ngIf="node.hasStatus(NodeStatus.Saved)">
-                    <i class="fa fa-database"></i>
+                    <i class="fa fa-save"></i>
                 </div>
                 <div class="tile-header-icon bg-success" *ngIf="node.hasStatus(NodeStatus.Finished)">
                     <i class="fa fa-check-circle"></i>
@@ -50,9 +50,9 @@
                 </table>
             </div>
             <div class="tile-footer">
-                <button type="button" (mouseenter)="lockTiles=true" (mouseleave)="lockTiles=false" (click)="markNode(node, NodeStatus.Queued)" [ngClass]="getNodeButtonClass(node, NodeStatus.Queued)">
-                    <i class="fa fa-remove" *ngIf="node.hasStatus(NodeStatus.Queued)"></i>
-                    <i class="fa fa-save" *ngIf="!node.hasStatus(NodeStatus.Queued)"></i>
+                <button type="button" (mouseenter)="lockTiles=true" (mouseleave)="lockTiles=false" (click)="markNode(node, NodeStatus.Saved)" [ngClass]="getNodeButtonClass(node, NodeStatus.Saved)">
+                    <i class="fa fa-save" *ngIf="node.hasStatus(NodeStatus.Saved)"></i>
+                    <i class="fa fa-save" *ngIf="!node.hasStatus(NodeStatus.Saved)"></i>
                 </button>
                 <button type="button" (mouseenter)="lockTiles=true" (mouseleave)="lockTiles=false" (click)="markNode(node, NodeStatus.Favorited)" [ngClass]="getNodeButtonClass(node, NodeStatus.Favorited)">
                     <i class="fa fa-star-o" *ngIf="node.hasStatus(NodeStatus.Favorited)"></i>
@@ -67,6 +67,6 @@
                     <i class="fa fa-check-circle-o" *ngIf="!node.hasStatus(NodeStatus.Finished)"></i>
                 </button>
             </div>
-        </article>
+        </a>
     </div>
 </div>

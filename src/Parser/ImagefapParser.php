@@ -34,7 +34,7 @@ class ImagefapParser extends AbstractParser implements ParserInterface
      * @throws \ReflectionException
      * @throws \Exception
      */
-    public function loadOwnersList(ParserRequestModel &$parserRequestModel) : ParserRequestModel
+    public function getOwnersList(ParserRequestModel &$parserRequestModel) : ParserRequestModel
     {
         if (!$this->getParserCache($parserRequestModel)) {
             $pagination = $parserRequestModel->pagination;
@@ -402,19 +402,17 @@ class ImagefapParser extends AbstractParser implements ParserInterface
                             $fileUrl = 'https://x.imagefapusercontent.com/u/'.$userName.'/'.$galleryId.'/'.$imageId.'/'.$fileName;
                             $headers = $this->getFileHeadersData($fileUrl);
 
-                            $parserRequestModel->files[] = $this->modelConverter->convert(
-                                (new ParsedFile(ParserType::Imagefap, FilesHelper::getFileType($fileUrl, true)))
-                                    ->setIdentifier($anchor->getAttribute('name'))
-                                    ->setUrl($imagePageUrl)
-                                    ->setWidth($fileResArray[0])
-                                    ->setHeight($fileResArray[1])
-                                    ->setSize($headers['size'])
-                                    ->setMimeType($headers['mimeType'])
-                                    ->setFileUrl($fileUrl)
-                                    ->setThumbnail($thumbnail->getAttribute('src'))
-                                    ->setExtension(FilesHelper::getFileExtension($fileUrl))
-                                    ->setName(FilesHelper::getFileName($fileUrl))
-                            );
+                            $parserRequestModel->files[] = (new ParsedFile(ParserType::Imagefap, FilesHelper::getFileType($fileUrl, true)))
+                                ->setIdentifier($anchor->getAttribute('name'))
+                                ->setUrl($imagePageUrl)
+                                ->setWidth($fileResArray[0])
+                                ->setHeight($fileResArray[1])
+                                ->setSize($headers['size'])
+                                ->setMimeType($headers['mimeType'])
+                                ->setFileUrl($fileUrl)
+                                ->setThumbnail($thumbnail->getAttribute('src'))
+                                ->setExtension(FilesHelper::getFileExtension($fileUrl))
+                                ->setName(FilesHelper::getFileName($fileUrl));
                         }
                     }
                 }

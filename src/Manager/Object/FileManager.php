@@ -41,28 +41,30 @@ class FileManager extends EntityManager
     public function completeParsedStatuses(ParserRequestModel &$parserRequestModel) : ParserRequestModel
     {
         if ($parserRequestModel->files) {
-            $imagesUrls = [];
+            $filesIdentifiers = [];
 
             /* @var ParsedFile $file */
             foreach ($parserRequestModel->files as $file) {
-                $imagesUrls[] = $file['url'];
+                $filesIdentifiers[] = $file->getIdentifier();
             }
 
             $storedFilesArray = $this->repository->getQb()
-                ->where('f.url IN (:filesUrls)')
-                ->setParameter('filesUrls', $imagesUrls)
+                ->where('f.parser = :parserName')
+                ->andWhere('f.identifier IN (:filesIdentifiers)')
+                ->setParameter('parserName', $parserRequestModel->parser)
+                ->setParameter('filesIdentifiers', $filesIdentifiers)
                 ->getQuery()->getArrayResult();
 
             if ($storedFilesArray) {
                 foreach ($parserRequestModel->files as $fileIndex => $file) {
-                    $parserRequestModel->files[$fileIndex]['statuses'] = [];
+                    $parserRequestModel->files[$fileIndex]->clearStatuses();
 
                     foreach ($storedFilesArray as $storedFile) {
-                        if ($storedFile['identifier'] == $file['identifier']) {
-                            $parserRequestModel->files[$fileIndex]['statuses'][] = FileStatus::Queued;
+                        if ($storedFile['identifier'] == $file->getIdentifier()) {
+                            $parserRequestModel->files[$fileIndex]->addStatus(FileStatus::Queued);
 
                             if ($storedFile['downloadedAt']) {
-                                $parserRequestModel->files[$fileIndex]['statuses'][] = FileStatus::Downloaded;
+                                $parserRequestModel->files[$fileIndex]->addStatus(FileStatus::Downloaded);
                             }
                         }
                     }
@@ -148,7 +150,7 @@ class FileManager extends EntityManager
 
         $downloadedCounts = $this->repository->getFilesQb([
             'type' => 'downloaded',
-            'COUNT(f.id) as totalCount, SUM(f.size) as totalSize'
+            'select' => 'COUNT(f.id) as totalCount, SUM(f.size) as totalSize'
         ])->setMaxResults(1)->getQuery()->getOneOrNullResult(AbstractQuery::HYDRATE_ARRAY);
 
         return [

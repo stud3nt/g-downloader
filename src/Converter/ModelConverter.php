@@ -166,7 +166,18 @@ class ModelConverter
         if ($value && $variableConfig->converter) { // convert model to array (if variable is a model);
             $variableConverterClass = 'App\\Converter\\'.$variableConfig->converter.'Converter';
             $variableConverter = new $variableConverterClass($variableConfig->converterOptions);
-            $value = $variableConverter->convert($value);
+
+            if ($variableConfig->type === 'array') {
+                $arrayValue = [];
+
+                foreach ($value as $row) {
+                    $arrayValue[] = $variableConverter->convert($row);
+                }
+
+                $value = $arrayValue;
+            } else {
+                $value = $variableConverter->convert($value);
+            }
         }
 
         return $value;
@@ -188,8 +199,21 @@ class ModelConverter
                 $value = json_decode($value, true);
             }
 
-            $object = new $variableConfig->converterOptions->class();
-            $value = $variableConverter->setData($value, $object, $skipEmptyFields);
+            if ($variableConfig->type === 'array') {
+                $value = [];
+
+                foreach ($value as $valueRow) {
+                    $object = new $variableConfig->converterOptions->class();
+                    $value[] = ($valueRow instanceof $variableConfig->converterOptions->class)
+                        ? $valueRow
+                        : $variableConverter->setData($valueRow, $object, $skipEmptyFields);
+                }
+            } else {
+                $object = new $variableConfig->converterOptions->class();
+                $value = ($value instanceof $variableConfig->converterOptions->class)
+                    ? $value
+                    : $variableConverter->setData($value, $object, $skipEmptyFields);
+            }
         } else {
             switch ($variableConfig->type) {
                 case 'array':

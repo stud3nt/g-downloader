@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { ConfigService } from "./config.service";
+import {ParserNode} from "../model/parser-node";
 
 @Injectable({
   	providedIn: 'root'
@@ -28,7 +29,12 @@ export class RouterService {
 
 					if (routeUrlParamsReplacers) {
 						for (let paramName in routeUrlParamsReplacers) {
-							routeUrl = routeUrl.replace('{' + paramName + '}', routeUrlParamsReplacers[paramName]);
+							let paramReplacer = routeUrlParamsReplacers[paramName];
+
+							if (paramReplacer === 'null' || paramReplacer === null || paramReplacer === '')
+								routeUrl = routeUrl.replace('/{' + paramName + '}', '');
+							else
+								routeUrl = routeUrl.replace('{' + paramName + '}', routeUrlParamsReplacers[paramName]);
 						}
 					}
 
@@ -38,6 +44,18 @@ export class RouterService {
 		}
 
 		return baseUrl+routeUrl;
+	}
+
+	/**
+	 * Helper function - generates url address for specified node;
+	 * @param node
+	 */
+	public generateNodeUrl(node: ParserNode): string {
+		return this.generateUrl('app_parser', {
+			'parserName': node.parser,
+			'nodeLevel': node.level,
+			'nodeIdentifier': node.identifier
+		})
 	}
 
 	private prepareParamsReplacersForUrl(url: string, defaultParams: object = {}, externalParams: object = null) {

@@ -32,4 +32,10 @@ export class DownloaderService extends HttpService {
 			this.router.generateUrl('api_downloader_check_status')
 		);
 	}
+
+	public downloadProcess() {
+		return this.get(
+			this.router.generateUrl('api_downloader_process')
+		);
+	}
 }

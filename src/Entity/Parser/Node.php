@@ -5,14 +5,16 @@ namespace App\Entity\Parser;
 use App\Annotation\EntityVariable;
 use App\Entity\Base\AbstractEntity;
 use App\Entity\Traits\{CreatedAtTrait, IdentifierTrait, NameTrait, ParserTrait, UpdatedAtTrait, UrlTrait};
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
  * Parsed nodes
  *
  * @ORM\Table(name="parsed_nodes", indexes={
- *     @ORM\Index(name="identifier_idx", columns={"identifier"}),
- *     @ORM\Index(name="url_idx", columns={"url"})
+ *     @ORM\Index(name="IDX__parsed_nodes__identifier", columns={"identifier"}),
+ *     @ORM\Index(name="IDX__parsed_nodes__url", columns={"url"})
  * })
  * @ORM\Entity(repositoryClass="App\Repository\NodeRepository")
  */
@@ -75,10 +77,10 @@ class Node extends AbstractEntity
     protected $lastViewedAt;
 
     /**
-     * @ORM\Column(name="queued", type="boolean", length=1, options={"unsigned"=true, "default":0})
+     * @ORM\Column(name="saved", type="boolean", length=1, options={"unsigned"=true, "default":0})
      * @EntityVariable(convertable=true, writable=true, readable=true, type="boolean")
      */
-    protected $queued = false;
+    protected $saved = false;
 
     /**
      * @ORM\Column(name="blocked", type="boolean", length=1, options={"unsigned"=true, "default":0})
@@ -98,6 +100,24 @@ class Node extends AbstractEntity
      */
     protected $finished = false;
 
+    /**
+     * @ORM\OneToMany(targetEntity="App\Entity\Parser\File", mappedBy="parentNode")
+     */
+    protected $files;
+
+    /**
+     * One Category has Many Categories.
+     * @ORM\OneToMany(targetEntity="App\Entity\Parser\Node", mappedBy="parentNode")
+     */
+    private $childrenNodes;
+
+    /**
+     * Many Categories have One Category.
+     * @ORM\ManyToOne(targetEntity="App\Entity\Parser\Node", inversedBy="childrenNodes")
+     * @ORM\JoinColumn(name="parent_node_id", referencedColumnName="id")
+     */
+    private $parentNode;
+
     public function __construct()
     {
         if (!$this->getId()) {
@@ -106,6 +126,9 @@ class Node extends AbstractEntity
         }
 
         $this->updatedAt = new \DateTime();
+        $this->files = new ArrayCollection();
+        $this->childrens = new ArrayCollection();
+        $this->childrenNodes = new ArrayCollection();
     }
 
     public function getLevel(): ?string
@@ -235,18 +258,6 @@ class Node extends AbstractEntity
         return $this;
     }
 
-    public function getQueued(): ?bool
-    {
-        return $this->queued;
-    }
-
-    public function setQueued(bool $queued): self
-    {
-        $this->queued = $queued;
-
-        return $this;
-    }
-
     public function getBlocked(): ?bool
     {
         return $this->blocked;
@@ -255,6 +266,92 @@ class Node extends AbstractEntity
     public function setBlocked(bool $blocked): self
     {
         $this->blocked = $blocked;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|File[]
+     */
+    public function getFiles(): Collection
+    {
+        return $this->files;
+    }
+
+    public function addFile(File $file): self
+    {
+        if (!$this->files->contains($file)) {
+            $this->files[] = $file;
+            $file->setParentNode($this);
+        }
+
+        return $this;
+    }
+
+    public function removeFile(File $file): self
+    {
+        if ($this->files->contains($file)) {
+            $this->files->removeElement($file);
+            // set the owning side to null (unless already changed)
+            if ($file->getParentNode() === $this) {
+                $file->setParentNode(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|Node[]
+     */
+    public function getChildrenNodes(): Collection
+    {
+        return $this->childrenNodes;
+    }
+
+    public function addChildrenNode(Node $childrenNode): self
+    {
+        if (!$this->childrenNodes->contains($childrenNode)) {
+            $this->childrenNodes[] = $childrenNode;
+            $childrenNode->setParentNode($this);
+        }
+
+        return $this;
+    }
+
+    public function removeChildrenNode(Node $childrenNode): self
+    {
+        if ($this->childrenNodes->contains($childrenNode)) {
+            $this->childrenNodes->removeElement($childrenNode);
+            // set the owning side to null (unless already changed)
+            if ($childrenNode->getParentNode() === $this) {
+                $childrenNode->setParentNode(null);
+            }
+        }
+
+        return $this;
+    }
+
+    public function getParentNode(): ?self
+    {
+        return $this->parentNode;
+    }
+
+    public function setParentNode(?self $parentNode): self
+    {
+        $this->parentNode = $parentNode;
+
+        return $this;
+    }
+
+    public function getSaved(): ?bool
+    {
+        return $this->saved;
+    }
+
+    public function setSaved(bool $saved): self
+    {
+        $this->saved = $saved;
 
         return $this;
     }

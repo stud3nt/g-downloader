@@ -106,6 +106,12 @@ class AbstractParser
         $this->clearCache();
     }
 
+    /**
+     * Generates CURL request for file download and defines file locations (temporary and target);
+     *
+     * @param File $file
+     * @return File
+     */
     public function generateFileCurlRequest(File &$file): File
     {
         $ds = DIRECTORY_SEPARATOR;

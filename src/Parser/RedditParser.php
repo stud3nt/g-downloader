@@ -15,6 +15,7 @@ use App\Parser\Base\ParserInterface;
 use App\Service\Reddit\RedditApi;
 use App\Traits\CurrentUrlTrait;
 use App\Utils\FilesHelper;
+use PHPHtmlParser\Dom\HtmlNode;
 
 class RedditParser extends AbstractParser implements ParserInterface
 {
@@ -37,6 +38,12 @@ class RedditParser extends AbstractParser implements ParserInterface
         parent::__construct($settings, $user);
 
         $this->redditApi = (new RedditApi())->init($this->settings);
+    }
+
+    public function getOwnersList(ParserRequestModel &$parserRequestModel): ParserRequestModel
+    {
+        // NOTHING TO DO HERE
+        return $parserRequestModel;
     }
 
     /**
@@ -118,7 +125,7 @@ class RedditParser extends AbstractParser implements ParserInterface
 
                                 if ($childData) {
                                     foreach ($childData as $nodeObject) {
-                                        $parserRequestModel->files[] = $this->modelConverter->convert($nodeObject);
+                                        $parserRequestModel->files[] = $nodeObject;
                                     }
                                 }
                             }
@@ -129,7 +136,7 @@ class RedditParser extends AbstractParser implements ParserInterface
 
                             if ($childData) {
                                 foreach ($childData as $nodeObject) {
-                                    $parserRequestModel->files[] = $this->modelConverter->convert($nodeObject);
+                                    $parserRequestModel->files[] = $nodeObject;
                                 }
                             }
                         }
@@ -186,6 +193,7 @@ class RedditParser extends AbstractParser implements ParserInterface
             if ($child->domain === 'gfycat.com') {
                 $parsedFile->setUrl($child->url);
             } else {
+                $parsedFile->setUrl($image->source->url);
                 $parsedFile->setFileUrl($image->source->url);
             }
 
@@ -212,12 +220,40 @@ class RedditParser extends AbstractParser implements ParserInterface
         return $parsedFile;
     }
 
+    /**
+     * @param ParsedFile $parsedFile
+     * @return ParsedFile
+     * @throws \PHPHtmlParser\Exceptions\ChildNotFoundException
+     * @throws \PHPHtmlParser\Exceptions\CircularException
+     * @throws \PHPHtmlParser\Exceptions\CurlException
+     * @throws \PHPHtmlParser\Exceptions\NotLoadedException
+     * @throws \PHPHtmlParser\Exceptions\StrictException
+     */
     public function getFilePreview(ParsedFile &$parsedFile) : ParsedFile
     {
         $this->clearCache();
 
-        if (!$parsedFile->getFileUrl() || !$parsedFile->getName() || $parsedFile->getExtension()) {
-            $this->getFileData($parsedFile);
+        // gfycat -> extract file url from page
+        if (parse_url($parsedFile->getUrl())['host'] === 'gfycat.com') {
+            $dom = $this->loadDomFromUrl($parsedFile->getUrl());
+            $videos = $dom->getElementsByTag('video');
+
+            /** @var HtmlNode $video */
+            /** @var HtmlNode $source */
+            foreach ($videos as $video) {
+                if ($video->getAttribute('class') === 'video media') {
+                    $sources = $video->find('source');
+
+                    foreach ($sources as $source) {
+                        $src = $source->getAttribute('src');
+
+                        if (strpos($src, 'giant.gfycat.com') && strpos($src, '.mp4')) {
+                            $parsedFile->setFileUrl($src);
+                            break;
+                        }
+                    }
+                }
+            }
         }
 
         $previewFilePath = $this->previewTempDir.$parsedFile->getFullFilename();

@@ -6,6 +6,7 @@ import { ParserRequest } from "../model/parser-request";
 import { ParserNode } from "../model/parser-node";
 import { HttpHelper } from "../helper/http-helper";
 import { map } from "rxjs/operators";
+import {NodeStatus} from "../enum/node-status";
 
 @Injectable({
   providedIn: 'root'
@@ -18,7 +19,12 @@ export class ParserService {
 		private auth: AuthService
 	) { }
 
-	public executeAction(parserRequest: ParserRequest) {
+	/**
+	 * Parser action request
+	 *
+	 * @param parserRequest
+	 */
+	public sendParserActionRequest(parserRequest: ParserRequest) {
 		let formData = HttpHelper.convertObjectToFormData(parserRequest);
 
 		return this.http.post(this.router.generateUrl('api_parsers_action'), formData).pipe(
@@ -26,12 +32,28 @@ export class ParserService {
 		);
 	}
 
-	public markNode(object: ParserNode, status: string = null) {
-		let formData = HttpHelper.convertObjectToFormData(object);
+	/**
+	 * Change node status request
+	 *
+	 * @param node
+	 * @param status
+	 */
+	public markNode(node: ParserNode, status: string = null) {
+		if (node.hasStatus(NodeStatus.Waiting)) {
+			return;
+		} else {
+			node.addStatus(NodeStatus.Waiting);
+		}
 
-		return this.http.post(
-			this.router.generateUrl('api_parsers_mark_node'), formData
-		);
+		if (node.hasStatus(status)) {
+			node.removeStatus(status);
+		} else {
+			node.addStatus(status);
+		}
+
+		let formData = HttpHelper.convertObjectToFormData(node);
+
+		return this.http.post(this.router.generateUrl('api_parsers_mark_node'), formData);
 	}
 
 }

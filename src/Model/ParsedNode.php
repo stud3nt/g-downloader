@@ -15,6 +15,11 @@ class ParsedNode extends AbstractModel
     /**
      * @ModelVariable()
      */
+    public $label;
+
+    /**
+     * @ModelVariable()
+     */
     public $identifier;
 
     /**
@@ -104,17 +109,11 @@ class ParsedNode extends AbstractModel
         NodeStatus::Finished
     ];
 
-    public function __construct(string $parser = null, string $level = null)
+    public function __construct(string $parser = null, string $level = null, string $identifier = null)
     {
-        if ($parser) {
-            $this->setParser($parser);
-        }
-
-        if ($level) {
-            $this->setLevel($level);
-
-            // TODO: autodetect next level?
-        }
+        $this->setParser($parser);
+        $this->setLevel($level);
+        $this->setIdentifier($identifier);
     }
 
     public function emptyStatuses() : bool
@@ -163,6 +162,25 @@ class ParsedNode extends AbstractModel
     public function setName($name): self
     {
         $this->name = $name;
+
+        return $this;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getLabel()
+    {
+        return $this->label;
+    }
+
+    /**
+     * @param mixed $label
+     * @return $this;
+     */
+    public function setLabel($label): self
+    {
+        $this->label = $label;
 
         return $this;
     }

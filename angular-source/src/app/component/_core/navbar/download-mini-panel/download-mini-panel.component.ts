@@ -9,7 +9,6 @@ import { FileType } from "../../../../enum/file-type";
 
 @Component({
 	selector: 'app-download-mini-panel',
-
 	templateUrl: './download-mini-panel.component.html'
 })
 export class DownloadMiniPanelComponent implements OnInit {
@@ -25,6 +24,9 @@ export class DownloadMiniPanelComponent implements OnInit {
 
 	public DownloaderStatus = DownloaderStatus;
 	public FileType = FileType;
+
+	private checkStatusTimeout = null;
+	private downloadAction: boolean = false;
 
 	constructor(
 		protected downloaderService: DownloaderService,
@@ -47,41 +49,84 @@ export class DownloadMiniPanelComponent implements OnInit {
 					this.stop();
 					break;
 			}
-		})
+		});
+
+		// change files list event (e.q. adds or removes
+		this.downloaderDataService.touchEvent.subscribe((ms) => {
+			clearTimeout(this.checkStatusTimeout);
+
+			this.checkStatusTimeout = setTimeout(() => {
+				this.checkStatus();
+			}, 1500);
+		});
 	}
 
+	/**
+	 * Starts downloading files process
+	 */
 	public start(): void {
 		this.downloaderService.setDownloaderStatus(
 			DownloaderStatus.Downloading
 		).subscribe((response: JsonResponse) => {
 			if (response.success()) {
 				this.downloaderStatus = DownloaderStatus.Downloading;
+				this.download();
 			}
 		});
 	}
 
+	/**
+	 * Stops downloading files process
+	 */
 	public stop(): void {
 		this.downloaderService.setDownloaderStatus(
 			DownloaderStatus.Idle
 		).subscribe((response: JsonResponse) => {
 			if (response.success()) {
 				this.downloaderStatus = DownloaderStatus.Idle;
+				this.downloadAction = false;
 			}
 		});
 	}
 
-	public checkStatus(): void {
+	/**
+	 * Checks download status and statistics
+	 */
+	public checkStatus(filesOnly: boolean = false): void {
 		this.downloaderService.checkDownloaderStatus().subscribe((response: JsonResponse) => {
+			this.queuedFiles = [];
 			this.queuedFilesCount = parseInt(response.data['queuedFilesCount']);
 			this.queuedFilesSize = response.data['queuedFilesSize'];
-			this.downloaderStatus = response.data['downloaderStatus'];
 
-			this.queuedFiles = [];
+			if (filesOnly === false)
+				this.downloaderStatus = response.data['downloaderStatus'];
 
 			if (response.data['queuedFiles']) {
 				for (let queuedFile of response.data['queuedFiles']) {
 					this.queuedFiles.push(new ParsedFile(queuedFile));
 				}
+			}
+		});
+	}
+
+	/**
+	 * Downloading process
+	 */
+	protected download(): void {
+		if (this.downloaderStatus !== DownloaderStatus.Downloading || this.downloadAction === true) {
+			return;
+		}
+
+		this.downloadAction = true;
+
+		this.downloaderService.downloadProcess().subscribe((response: JsonResponse) => {
+			this.checkStatus(true);
+			this.downloadAction = false;
+
+			if (this.downloaderStatus === DownloaderStatus.Downloading && response.data.filesCount > 0) {
+				this.download();
+			} else {
+				this.downloaderStatus = DownloaderStatus.Idle;
 			}
 		});
 	}

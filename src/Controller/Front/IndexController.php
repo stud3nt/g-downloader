@@ -15,7 +15,12 @@ class IndexController extends Controller
      * @Route("/", name="app_index", options={"expose"=true})
      * @Route("/login", name="app_login", options={"expose"=true})
      * @Route("/logout", name="app_logout", options={"expose"=true})
-     * @Route("/parsers/{parserName}", name="app_parser", defaults={"parserName":null}, options={"expose"=true})
+     * @Route(
+     *     "/parsers/{parserName}/{nodeLevel}/{nodeIdentifier}",
+     *     name="app_parser",
+     *     defaults={"parserName":null, "nodeLevel":null, "nodeIdentifier":null},
+     *     options={"expose"=true}
+     * )
      * @Route("/tools/{toolName}", name="app_tools", defaults={"toolName":null}, options={"expose"=true})
      * @Route("/settings", name="app_settings", options={"expose"=true})
      * @Route("/users/list", name="app_users_list", options={"expose"=true})

@@ -25,16 +25,24 @@ class HentaiFoundryParser extends AbstractParser implements ParserInterface
     protected $mainMediaUrl = 'https://pictures.hentai-foundry.com/';
 
     /**
-     * @param int $page
-     * @param array $options
-     * @return array
-     * @throws \ReflectionException
+     * @param ParserRequestModel $parserRequestModel
+     * @return ParserRequestModel
+     */
+    public function getOwnersList(ParserRequestModel &$parserRequestModel): ParserRequestModel
+    {
+        // NOTHING TO DO HERE - HF HAVEN'T 'OWNERS', USERS ARE STORED IN BOARDS;
+        return $parserRequestModel;
+    }
+
+    /**
+     * @param ParserRequestModel $parserRequestModel
+     * @return ParserRequestModel
      */
     public function getBoardsListData(ParserRequestModel &$parserRequestModel) : ParserRequestModel
     {
         // NOTHING TO DO IN THIS PARSER - HF HAVEN'T BOARDS LIST;
 
-        return [];
+        return $parserRequestModel;
     }
 
     /**
@@ -120,11 +128,9 @@ class HentaiFoundryParser extends AbstractParser implements ParserInterface
                 continue;
             }
 
-            $files[] = $this->modelConverter->convert(
-                (new ParsedFile(ParserType::HentaiFoundry, FilesHelper::getFileType($fileUrl)))
-                    ->setUrl($fileUrl)
-                    ->setThumbnail(substr($thumbnailUrl, 0, strlen($thumbnailUrl) - 1))
-            );
+            $files[] = (new ParsedFile(ParserType::HentaiFoundry, FilesHelper::getFileType($fileUrl)))
+                ->setUrl($fileUrl)
+                ->setThumbnail(substr($thumbnailUrl, 0, strlen($thumbnailUrl) - 1));
         }
 
         return $files;
@@ -246,7 +252,7 @@ class HentaiFoundryParser extends AbstractParser implements ParserInterface
                                 ->setType(FileType::Image)
                             ;
 
-                            $files[$resultKey] = $this->modelConverter->convert($parsedFile);
+                            $files[$resultKey] = $parsedFile;
 
                             $convertedFileIndex++;
                         }

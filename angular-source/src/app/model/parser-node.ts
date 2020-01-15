@@ -1,50 +1,52 @@
 export class ParserNode {
 
 	constructor(obj?: any) {
-		this.statuses = [];
+		this._statuses = [];
 
 		Object.assign(this, obj);
 	}
 
-	id: number;
+	private _id: number;
 
-	name: string;
+	private _name: string;
 
-	description: string = null;
+	private _label: string;
 
-	level: string = null;
+	private _description: string = null;
 
-	nextLevel: string = null;
+	private _level: string = null;
 
-	parser: string = null;
+	private _nextLevel: string = null;
 
-	identifier: string = null;
+	private _parser: string = null;
 
-	url: string = ' ';
+	private _identifier: string = null;
 
-	ratio: number = 0;
+	private _url: string = ' ';
 
-	noImage: boolean = false;
+	private _ratio: number = 0;
 
-	singleFile: boolean = false;
+	private _noImage: boolean = false;
 
-	imagesNo: number = 0;
+	private _singleFile: boolean = false;
 
-	commentsNo: number = 0;
+	private _imagesNo: number = 0;
 
-	thumbnails: Array<string> = [];
+	private _commentsNo: number = 0;
 
-	localThumbnails: Array<string> = [];
+	private _thumbnails: Array<string> = [];
 
-	statuses: Array<any> = [];
+	private _localThumbnails: Array<string> = [];
 
-	settings: object = {};
+	private _statuses: Array<any> = [];
+
+	private _settings: object = {};
 
 	// statuses
-	queued: boolean = false;
-	favorited: boolean = false;
-	finished: boolean = false;
-	blocked: boolean = false;
+	private _queued: boolean = false;
+	private _favorited: boolean = false;
+	private _finished: boolean = false;
+	private _blocked: boolean = false;
 
 	/**
 	 * Adds status to library
@@ -53,7 +55,7 @@ export class ParserNode {
 	 */
 	public addStatus(addedStatus: string): ParserNode {
 		if (!this.hasStatus(addedStatus)) {
-			this.statuses.push(addedStatus);
+			this._statuses.push(addedStatus);
 		}
 
 		return this;
@@ -65,10 +67,10 @@ export class ParserNode {
 	 * @param removedStatus
 	 */
 	public removeStatus(removedStatus: string): ParserNode {
-		if (this.statuses.length > 0) {
-			for (let index in this.statuses) {
-				if (this.statuses[index] === removedStatus) {
-					this.statuses.splice(parseInt(index), 1);
+		if (this._statuses.length > 0) {
+			for (let index in this._statuses) {
+				if (this._statuses[index] === removedStatus) {
+					this._statuses.splice(parseInt(index), 1);
 				}
 			}
 		}
@@ -82,14 +84,191 @@ export class ParserNode {
 	 * @param checkedStatus
 	 */
 	public hasStatus(checkedStatus: string): boolean {
-		if (this.statuses.length > 0) {
-			for (let statusKey in this.statuses) {
-				if (this.statuses[statusKey] === checkedStatus) {
+		if (this._statuses.length > 0) {
+			for (let statusKey in this._statuses) {
+				if (this._statuses[statusKey] === checkedStatus) {
 					return true;
 				}
 			}
 		}
 
 		return false;
+	}
+
+
+	get id(): number {
+		return this._id;
+	}
+
+	set id(value: number) {
+		this._id = value;
+	}
+
+	get name(): string {
+		return this._name;
+	}
+
+	set name(value: string) {
+		this._name = value;
+	}
+
+	get label(): string {
+		return this._label;
+	}
+
+	set label(value: string) {
+		this._label = value;
+	}
+
+	get description(): string {
+		return this._description;
+	}
+
+	set description(value: string) {
+		this._description = value;
+	}
+
+	get level(): string {
+		return this._level;
+	}
+
+	set level(value: string) {
+		this._level = value;
+	}
+
+	get nextLevel(): string {
+		return this._nextLevel;
+	}
+
+	set nextLevel(value: string) {
+		this._nextLevel = value;
+	}
+
+	get parser(): string {
+		return this._parser;
+	}
+
+	set parser(value: string) {
+		this._parser = value;
+	}
+
+	get identifier(): string {
+		return this._identifier;
+	}
+
+	set identifier(value: string) {
+		this._identifier = value;
+	}
+
+	get url(): string {
+		return this._url;
+	}
+
+	set url(value: string) {
+		this._url = value;
+	}
+
+	get ratio(): number {
+		return this._ratio;
+	}
+
+	set ratio(value: number) {
+		this._ratio = value;
+	}
+
+	get noImage(): boolean {
+		return this._noImage;
+	}
+
+	set noImage(value: boolean) {
+		this._noImage = value;
+	}
+
+	get singleFile(): boolean {
+		return this._singleFile;
+	}
+
+	set singleFile(value: boolean) {
+		this._singleFile = value;
+	}
+
+	get imagesNo(): number {
+		return this._imagesNo;
+	}
+
+	set imagesNo(value: number) {
+		this._imagesNo = value;
+	}
+
+	get commentsNo(): number {
+		return this._commentsNo;
+	}
+
+	set commentsNo(value: number) {
+		this._commentsNo = value;
+	}
+
+	get thumbnails(): Array<string> {
+		return this._thumbnails;
+	}
+
+	set thumbnails(value: Array<string>) {
+		this._thumbnails = value;
+	}
+
+	get localThumbnails(): Array<string> {
+		return this._localThumbnails;
+	}
+
+	set localThumbnails(value: Array<string>) {
+		this._localThumbnails = value;
+	}
+
+	get statuses(): Array<any> {
+		return this._statuses;
+	}
+
+	set statuses(value: Array<any>) {
+		this._statuses = value;
+	}
+
+	get settings(): object {
+		return this._settings;
+	}
+
+	set settings(value: object) {
+		this._settings = value;
+	}
+
+	get queued(): boolean {
+		return this._queued;
+	}
+
+	set queued(value: boolean) {
+		this._queued = value;
+	}
+
+	get favorited(): boolean {
+		return this._favorited;
+	}
+
+	set favorited(value: boolean) {
+		this._favorited = value;
+	}
+
+	get finished(): boolean {
+		return this._finished;
+	}
+
+	set finished(value: boolean) {
+		this._finished = value;
+	}
+
+	get blocked(): boolean {
+		return this._blocked;
+	}
+
+	set blocked(value: boolean) {
+		this._blocked = value;
 	}
 }

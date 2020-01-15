@@ -57,11 +57,13 @@ class ParserController extends Controller
         $modelConverter = $this->get(ModelConverter::class);
         $modelConverter->setData($request->request->all(), $parserRequestModel);
 
-        $parser = $parserService->loadParser($parserRequestModel->parser);
+        $this->nodeManager->completeCurrentNodeDataFromDb($parserRequestModel);
 
-        switch ($parserRequestModel->level) { // execute parser action
+        $parser = $parserService->loadParser($parserRequestModel->currentNode->parser);
+
+        switch ($parserRequestModel->currentNode->level) { // execute parser action
             case NodeLevel::Owner:
-                $parser->loadOwnersList($parserRequestModel);
+                $parser->getOwnersList($parserRequestModel);
                 break;
 
             case NodeLevel::BoardsList:
@@ -77,7 +79,7 @@ class ParserController extends Controller
                 break;
         }
 
-        $this->nodeManager->completeParsedStatuses($parserRequestModel);
+        $this->nodeManager->completeParsedNodes($parserRequestModel);
         $this->fileManager->completeParsedStatuses($parserRequestModel);
 
         $parserRequestModel->ignoreCache = false;

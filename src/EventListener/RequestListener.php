@@ -19,7 +19,8 @@ class RequestListener
 
     private $sessionUnlockRoutes = [
         'api_parsers_action',
-        'api_parsers_mark_node'
+        'api_parsers_mark_node',
+        'api_downloader_process'
     ];
 
     public function setTokenStorage(TokenStorage $tokenStorage)

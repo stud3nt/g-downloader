@@ -1,9 +1,9 @@
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { ParserRequest } from "../../../model/parser-request";
 import { NodeStatus } from "../../../enum/node-status";
 import { ParserService } from "../../../service/parser.service";
-import { PageLoaderDataService } from "../../../service/data/page-loader-data.service";
 import { ParserNode } from "../../../model/parser-node";
+import { RouterService } from "../../../service/router.service";
 
 @Component({
   selector: 'app-nodes-list',
@@ -12,7 +12,6 @@ import { ParserNode } from "../../../model/parser-node";
 export class NodesListComponent {
 
 	@Input() parserRequest: ParserRequest;
-	@Output() openChildNode = new EventEmitter<ParserNode>();
 
 	public NodeStatus = NodeStatus;
 
@@ -20,16 +19,10 @@ export class NodesListComponent {
 
 	public scrollY = 0;
 
-	constructor(private parserService: ParserService) { }
-
-	public openNode(childNode: ParserNode): void {
-		if (!this.lockTiles) {
-			this.parserRequest.resetNodes();
-			this.parserRequest.level = childNode.level;
-			this.parserRequest.currentNode = childNode;
-			this.openChildNode.emit(childNode);
-		}
-	}
+	constructor(
+		private parserService: ParserService,
+		public routerService: RouterService
+	) { }
 
 	/**
 	 * Marks node with specified status;
@@ -38,20 +31,8 @@ export class NodesListComponent {
 	 * @param status
 	 */
 	public markNode(node: ParserNode, status: string): void {
-		if (node.hasStatus(NodeStatus.Waiting)) {
-			return;
-		} else {
-			node.addStatus(NodeStatus.Waiting);
-		}
-
-		if (node.hasStatus(status)) {
-			node.removeStatus(status);
-		} else {
-			node.addStatus(status);
-		}
-
-		this.parserRequest.actionNode = node;
 		this.parserService.markNode(node).subscribe((response) => {
+			this.parserRequest.currentNode = node; // re-assign current node object
 			node.removeStatus(NodeStatus.Waiting);
 		}, (error) => {
 			node.removeStatus(NodeStatus.Waiting);
@@ -84,6 +65,10 @@ export class NodesListComponent {
 	 * @return string
 	 */
 	public getNodeButtonClass(node: ParserNode, status: string): string {
-		return 'btn ' + ((node.hasStatus(status)) ? 'btn-success' : 'btn-default');
+		return 'btn ' + (
+			(node.hasStatus(status))
+				? NodeStatus.buttonStatusClass(status)
+				: 'btn-default'
+			);
 	}
 }

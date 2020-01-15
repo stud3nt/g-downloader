@@ -160,7 +160,7 @@ class FilesHelper
         $sizeSign = null;
 
         foreach ($tmp as $letter) {
-            if (preg_match('/[0-9]{1}/', $letter)) {
+            if (preg_match('/[0-9\,\.]{1}/', $letter)) {
                 $sizeValue .= $letter;
             } elseif (preg_match('/[a-zA-Z]{1}/', $letter)) {
                 $sizeSign .= $letter;
@@ -170,6 +170,8 @@ class FilesHelper
         if (empty($sizeSign)) {
             return (int)$sizeValue;
         }
+
+        $sizeValue = str_replace(',', '.', $sizeValue);
 
         foreach (self::$extendedFilesSizeUnits as $sizeKey => $sizeConfig) {
             $names = $sizeConfig['names'];

@@ -10,9 +10,6 @@ export class ParserRequest {
 		this.files = [];
 		this.parsedNodes = [];
 
-		this.jumpPrevious = (obj && (obj.jumpPrevious === 'true' || obj.jumpPrevious === true));
-		this.jumpNext = (obj && (obj.jumpNext === 'true' || obj.jumpNext === true));
-
 		if (obj) {
 			if (obj.currentNode) {
 				this.currentNode = new ParserNode(obj.currentNode);
@@ -36,26 +33,17 @@ export class ParserRequest {
 		}
 	}
 
-	public scrollY: number = 0;
-
-	public actionNode: ParserNode = null;
-
 	public currentNode: ParserNode = new ParserNode();
 
 	public parsedNodes: ParserNode[] = [];
 
 	public files: ParsedFile[] = [];
 
-	public fileData: ParsedFile = null;
+	public nextNode: ParserNode = null;
+	public previousNode: ParserNode = null;
 
-	public jumpPrevious : boolean = false;
-	public jumpNext : boolean = false;
-
-	// parser name
-	public parser: string;
-
-	// current parser level
-	public level: string;
+	// breadcrumbs - object with nodes
+	public breadcrumbNodes: ParserNode[] = [];
 
 	public pagination: Pagination = new Pagination();
 

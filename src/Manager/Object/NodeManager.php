@@ -3,6 +3,7 @@
 namespace App\Manager\Object;
 
 use App\Converter\EntityConverter;
+use App\Converter\ModelConverter;
 use App\Entity\Parser\Node;
 use App\Enum\NodeStatus;
 use App\Manager\Base\EntityManager;
@@ -10,6 +11,7 @@ use App\Model\ParserRequestModel;
 use App\Repository\NodeRepository;
 use Doctrine\Persistence\ObjectManager;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
+use ReflectionException;
 
 class NodeManager extends EntityManager
 {
@@ -21,11 +23,43 @@ class NodeManager extends EntityManager
     /** @var EntityConverter */
     protected $entityConverter;
 
+    /** @var ModelConverter */
+    protected $modelConverter;
+
     public function __construct(ObjectManager $em, TokenStorageInterface $tokenStorage, EntityConverter $entityConverter)
     {
         parent::__construct($em, $tokenStorage);
 
         $this->entityConverter = $entityConverter;
+        $this->modelConverter = new ModelConverter();
+    }
+
+    /**
+     * Completes node object with database data (if exists);
+     *
+     * @param ParserRequestModel $parserRequestModel
+     * @return ParserRequestModel
+     * @throws ReflectionException
+     */
+    public function completeCurrentNodeDataFromDb(ParserRequestModel &$parserRequestModel): ParserRequestModel
+    {
+        $node = $parserRequestModel->currentNode;
+
+        if (!$node->getUrl()) { // node haven't specified url => node doesn't come from database;
+            $savedNode = $this->repository->findOneBy([
+                'parser' => $node->getParser(),
+                'level' => $node->getLevel(),
+                'identifier' => $node->getIdentifier()
+            ]);
+
+            if ($savedNode) {
+                $nodeArray = $this->entityConverter->convert($savedNode);
+                $this->modelConverter->setData($nodeArray, $node);
+                $parserRequestModel->currentNode = $node;
+            }
+        }
+
+        return $parserRequestModel;
     }
 
     /**
@@ -34,7 +68,7 @@ class NodeManager extends EntityManager
      * @throws \Doctrine\ORM\ORMException
      * @throws \Doctrine\ORM\OptimisticLockException
      */
-    public function completeParsedStatuses(ParserRequestModel &$parserRequestModel) : ParserRequestModel
+    public function completeParsedNodesStatuses(ParserRequestModel &$parserRequestModel): ParserRequestModel
     {
         if ($parsedNodes = $parserRequestModel->parsedNodes) {
             $parsedNodesIdentifiers = [];
