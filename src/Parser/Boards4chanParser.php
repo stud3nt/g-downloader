@@ -6,7 +6,7 @@ use App\Enum\NodeLevel;
 use App\Enum\ParserType;
 use App\Model\ParsedFile;
 use App\Model\ParsedNode;
-use App\Model\ParserRequestModel;
+use App\Model\ParserRequest;
 use App\Parser\Base\AbstractParser;
 use App\Parser\Base\ParserInterface;
 use App\Converter\EntityConverter;
@@ -34,10 +34,10 @@ class Boards4chanParser extends AbstractParser implements ParserInterface
         $this->entityConverter = $entityConverter;
     }
 
-    public function getOwnersList(ParserRequestModel &$parserRequestModel): ParserRequestModel
+    public function getOwnersList(ParserRequest &$parserRequest): ParserRequest
     {
         // NOTHING TO DO HERE
-        return $parserRequestModel;
+        return $parserRequest;
     }
 
     /**
@@ -47,16 +47,16 @@ class Boards4chanParser extends AbstractParser implements ParserInterface
      * @throws \ReflectionException
      * @throws \Exception
      */
-    public function getBoardsListData(ParserRequestModel &$parserRequestModel) : ParserRequestModel
+    public function getBoardsListData(ParserRequest &$parserRequest) : ParserRequest
     {
-        if (!$this->getParserCache($parserRequestModel)) {
+        if (!$this->getParserCache($parserRequest)) {
             // @var HtmlNode $column
             // @var HtmlNode $anchor
             $dom = $this->loadDomFromUrl($this->mainBoardUrl);
 
-            $parserRequestModel->currentNode->url = $this->mainBoardUrl;
-            $parserRequestModel->parsedNodes = [];
-            $parserRequestModel->pagination->disable();
+            $parserRequest->currentNode->setUrl($this->mainBoardUrl);
+            $parserRequest->currentNode->setName($dom->find('title')[0]->text());
+            $parserRequest->pagination->disable();
 
             $domColumns = $dom->find('div.column');
 
@@ -65,10 +65,9 @@ class Boards4chanParser extends AbstractParser implements ParserInterface
             foreach ($domColumns as $column) {
                 if ($column->find('h3')->text() === 'Adult') {
                     foreach ($column->find('a.boardlink') as $anchor) {
-                        $parserRequestModel->parsedNodes[] = (new ParsedNode(ParserType::Boards4chan, NodeLevel::BoardsList))
+                        $parserRequest->parsedNodes[] = (new ParsedNode(ParserType::Boards4chan, NodeLevel::BoardsList))
                             ->setName($anchor->text())
                             ->setUrl('https:'.$anchor->getAttribute('href').'catalog')
-                            ->setNextLevel(NodeLevel::Board)
                             ->setIdentifier($this->getBoardSymbol($anchor->getAttribute('href')))
                             ->setNoImage(true)
                         ;
@@ -76,28 +75,27 @@ class Boards4chanParser extends AbstractParser implements ParserInterface
                 }
             }
 
-            $this->setParserCache($parserRequestModel, 0);
+            $this->setParserCache($parserRequest, 0);
             $this->setPageLoaderProgress(100);
         }
 
-        return $parserRequestModel;
+        return $parserRequest;
     }
 
     /**
-     * @param ParserRequestModel $parserRequestModel
-     * @return ParserRequestModel
+     * @param ParserRequest $parserRequest
+     * @return ParserRequest
      * @throws \ReflectionException
      * @throws \Exception
      */
-    public function getBoardData(ParserRequestModel &$parserRequestModel) : ParserRequestModel
+    public function getBoardData(ParserRequest &$parserRequest) : ParserRequest
     {
-        $parserRequestModel->parsedNodes = [];
-        $parserRequestModel->pagination->disable();
+        $parserRequest->pagination->disable();
 
-        $this->updateUrlsFromBoardUrls($parserRequestModel->currentNode->url);
+        $this->updateUrlsFromBoardUrls($parserRequest->currentNode->getUrl());
 
-        if (!$this->getParserCache($parserRequestModel)) {
-            $html = $this->loadHtmlFromUrl($parserRequestModel->currentNode->url);
+        if (!$this->getParserCache($parserRequest)) {
+            $html = $this->loadHtmlFromUrl($parserRequest->currentNode->getUrl());
 
             $this->setPageLoaderProgress(20);
 
@@ -108,6 +106,9 @@ class Boards4chanParser extends AbstractParser implements ParserInterface
                 $jsonEnd = strpos($html, $stringEnd);
                 $jsonContent = substr($html, $jsonStart, ($jsonEnd-$jsonStart));
                 $arrayContent = json_decode($jsonContent, true);
+                $dom = $this->loadDomFromHTML($html);
+
+                $parserRequest->currentNode->setName($dom->find('title')[0]->text());
 
                 if ($arrayContent['threads']) {
                     $this->startProgress('get_board_data', count($arrayContent['threads']), 20, 90);
@@ -128,7 +129,6 @@ class Boards4chanParser extends AbstractParser implements ParserInterface
                             ->setUrl($this->mainGalleryUrl.'thread/'.$galleryId)
                             ->setImagesNo($galleryData['i'])
                             ->setCommentsNo($galleryData['r'])
-                            ->setNextLevel(NodeLevel::Gallery)
                         ;
 
                         if (isset($galleryData['imgurl'])) {
@@ -148,7 +148,7 @@ class Boards4chanParser extends AbstractParser implements ParserInterface
                             );
                         }
 
-                        $parserRequestModel->parsedNodes[] = $node;
+                        $parserRequest->parsedNodes[] = $node;
                         $this->progressStep('get_board_data');
                     }
                 }
@@ -156,10 +156,10 @@ class Boards4chanParser extends AbstractParser implements ParserInterface
                 $this->endProgress('get_board_data');
             }
 
-            $this->setParserCache($parserRequestModel, 180);
+            $this->setParserCache($parserRequest, 180);
         }
 
-        return $parserRequestModel;
+        return $parserRequest;
     }
 
     private function extractFileInfoFromText(string $text)
@@ -176,22 +176,23 @@ class Boards4chanParser extends AbstractParser implements ParserInterface
     }
 
     /**
-     * @param ParserRequestModel $parserRequestModel
-     * @return ParserRequestModel
+     * @param ParserRequest $parserRequest
+     * @return ParserRequest
      * @throws \ReflectionException
      * @throws \Exception
      */
-    public function getGalleryData(ParserRequestModel &$parserRequestModel) : ParserRequestModel
+    public function getGalleryData(ParserRequest &$parserRequest) : ParserRequest
     {
-        if (!$this->getParserCache($parserRequestModel)) {
-            $parserRequestModel->files = [];
-            $parserRequestModel->pagination->disable();
+        if (!$this->getParserCache($parserRequest)) {
+            $parserRequest->pagination->disable();
 
             /** @var HtmlNode $anchor */
             /** @var HtmlNode $image */
             /** @var HtmlNode $div */
-            $dom = $this->loadDomFromUrl($parserRequestModel->currentNode->url);
+            $dom = $this->loadDomFromUrl($parserRequest->currentNode->getUrl());
             $divs = $dom->getElementsByClass('postContainer');
+
+            $parserRequest->currentNode->setName($dom->find('title')[0]->text());
 
             $this->setPageLoaderProgress(20);
             $this->startProgress('get_gallery_data', count($divs), 20, 90);
@@ -230,8 +231,8 @@ class Boards4chanParser extends AbstractParser implements ParserInterface
 
                             $parsedFile->setLocalThumbnail(UrlHelper::prepareLocalUrl($localThumbnailUrl));
 
-                            $this->setParserCache($parserRequestModel, 300);
-                            $parserRequestModel->files[] = $parsedFile;
+                            $this->setParserCache($parserRequest, 300);
+                            $parserRequest->files[] = $parsedFile;
                         }
                     }
                 }
@@ -240,7 +241,7 @@ class Boards4chanParser extends AbstractParser implements ParserInterface
             }
         }
 
-        return $parserRequestModel;
+        return $parserRequest;
     }
 
     /**

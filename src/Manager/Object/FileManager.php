@@ -8,7 +8,7 @@ use App\Enum\FileStatus;
 use App\Manager\Base\EntityManager;
 use App\Manager\SettingsManager;
 use App\Model\ParsedFile;
-use App\Model\ParserRequestModel;
+use App\Model\ParserRequest;
 use App\Repository\FileRepository;
 use App\Utils\FilesHelper;
 use Doctrine\ORM\AbstractQuery;
@@ -35,36 +35,36 @@ class FileManager extends EntityManager
     }
 
     /**
-     * @param ParserRequestModel $parserRequestModel
-     * @return ParserRequestModel
+     * @param ParserRequest $parserRequest
+     * @return ParserRequest
      */
-    public function completeParsedStatuses(ParserRequestModel &$parserRequestModel) : ParserRequestModel
+    public function completeParsedStatuses(ParserRequest &$parserRequest) : ParserRequest
     {
-        if ($parserRequestModel->files) {
+        if ($parserRequest->files) {
             $filesIdentifiers = [];
 
             /* @var ParsedFile $file */
-            foreach ($parserRequestModel->files as $file) {
+            foreach ($parserRequest->files as $file) {
                 $filesIdentifiers[] = $file->getIdentifier();
             }
 
             $storedFilesArray = $this->repository->getQb()
                 ->where('f.parser = :parserName')
                 ->andWhere('f.identifier IN (:filesIdentifiers)')
-                ->setParameter('parserName', $parserRequestModel->parser)
+                ->setParameter('parserName', $parserRequest->parser)
                 ->setParameter('filesIdentifiers', $filesIdentifiers)
                 ->getQuery()->getArrayResult();
 
             if ($storedFilesArray) {
-                foreach ($parserRequestModel->files as $fileIndex => $file) {
-                    $parserRequestModel->files[$fileIndex]->clearStatuses();
+                foreach ($parserRequest->files as $fileIndex => $file) {
+                    $parserRequest->files[$fileIndex]->clearStatuses();
 
                     foreach ($storedFilesArray as $storedFile) {
                         if ($storedFile['identifier'] == $file->getIdentifier()) {
-                            $parserRequestModel->files[$fileIndex]->addStatus(FileStatus::Queued);
+                            $parserRequest->files[$fileIndex]->addStatus(FileStatus::Queued);
 
                             if ($storedFile['downloadedAt']) {
-                                $parserRequestModel->files[$fileIndex]->addStatus(FileStatus::Downloaded);
+                                $parserRequest->files[$fileIndex]->addStatus(FileStatus::Downloaded);
                             }
                         }
                     }
@@ -72,7 +72,7 @@ class FileManager extends EntityManager
             }
         }
 
-        return $parserRequestModel;
+        return $parserRequest;
     }
 
     /**

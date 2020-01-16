@@ -7,7 +7,7 @@ use App\Entity\Parser\File;
 use App\Entity\User;
 use App\Enum\NodeLevel;
 use App\Enum\PaginationMode;
-use App\Model\ParserRequestModel;
+use App\Model\ParserRequest;
 use App\Model\SettingsModel;
 use App\Service\{FileCache, CurlRequest};
 use App\Traits\PageLoaderTrait;
@@ -256,25 +256,22 @@ class AbstractParser
     /**
      * Read cache data based on request;
      *
-     * @param ParserRequestModel $parserRequestModel
-     * @return ParserRequestModel
+     * @param ParserRequest $parserRequest
+     * @return ParserRequest
      * @throws \Exception
      */
-    protected function getParserCache(ParserRequestModel &$parserRequestModel) : ?ParserRequestModel
+    protected function getParserCache(ParserRequest &$parserRequest) : ?ParserRequest
     {
-        if (!$parserRequestModel->ignoreCache) {
-            $cacheKey = $this->determineCacheKey($parserRequestModel);
+        if (!$parserRequest->ignoreCache) {
+            $cacheKey = $this->determineCacheKey($parserRequest);
 
             if ($this->cache->has($cacheKey)) {
-                $parserRequestModel->parsedNodes = [];
-                $parserRequestModel->files = [];
-
                 $cacheData = $this->cache->get($cacheKey);
 
                 if (!empty($cacheData)) {
-                    $this->modelConverter->setData($cacheData, $parserRequestModel, true);
+                    $this->modelConverter->setData($cacheData, $parserRequest, true);
 
-                    return $parserRequestModel;
+                    return $parserRequest;
                 }
             }
         }
@@ -288,32 +285,12 @@ class AbstractParser
      * @param string $key
      * @param $value
      * @param int $expirationTime (0 - unlimited)
+     * @throws \ReflectionException
      */
-    protected function setParserCache(ParserRequestModel &$parserRequestModel, $expirationTime = 10) : void
+    protected function setParserCache(ParserRequest &$parserRequest, $expirationTime = 10) : void
     {
-        $key = $this->determineCacheKey($parserRequestModel);
-        $data = [
-            'parsedNodes' => [],
-            'files' => [],
-            'pagination' => [
-                'mode' => null
-            ]
-        ];
-
-        switch ($parserRequestModel->level) {
-            case NodeLevel::Owner:
-            case NodeLevel::BoardsList:
-            case NodeLevel::Board:
-                $data['parsedNodes'] = $parserRequestModel->parsedNodes;
-                break;
-
-            case NodeLevel::Gallery:
-                $data['files'] = $parserRequestModel->files;
-                break;
-        }
-
-        $data['pagination']['active'] = json_decode(json_encode($parserRequestModel->pagination->active), true);
-        $data['pagination']['mode'] = json_decode(json_encode($parserRequestModel->pagination->mode), true);
+        $key = $this->determineCacheKey($parserRequest);
+        $data = $this->modelConverter->convert($parserRequest);
 
         $this->cache->set($key, $data, $expirationTime);
     }
@@ -321,15 +298,15 @@ class AbstractParser
     /**
      * Determines cache key based on ParserRequestModel
      *
-     * @param ParserRequestModel $parserRequestModel
+     * @param ParserRequest $parserRequest
      * @return string - cache key
      */
-    protected function determineCacheKey(ParserRequestModel $parserRequestModel) : string
+    protected function determineCacheKey(ParserRequest $parserRequest) : string
     {
-        $cacheKey = $this->parserName.'_'.$parserRequestModel->level;
+        $cacheKey = $this->parserName.'_'.$parserRequest->currentNode->getLevel();
 
-        if ($parserRequestModel->pagination->active) {
-            $pagination = $parserRequestModel->pagination;
+        if ($parserRequest->pagination->active) {
+            $pagination = $parserRequest->pagination;
 
             switch ($pagination->mode) {
                 case PaginationMode::Letters:
@@ -346,8 +323,8 @@ class AbstractParser
             }
         }
 
-        if ($parserRequestModel->currentNode->identifier) {
-            $cacheKey .= '_'.$parserRequestModel->currentNode->identifier;
+        if ($parserRequest->currentNode->getIdentifier()) {
+            $cacheKey .= '_'.$parserRequest->currentNode->getIdentifier();
         }
 
         return $cacheKey;

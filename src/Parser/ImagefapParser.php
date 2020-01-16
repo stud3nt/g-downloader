@@ -8,7 +8,7 @@ use App\Enum\PaginationMode;
 use App\Enum\ParserType;
 use App\Model\ParsedFile;
 use App\Model\ParsedNode;
-use App\Model\ParserRequestModel;
+use App\Model\ParserRequest;
 use App\Parser\Base\AbstractParser;
 use App\Parser\Base\ParserInterface;
 use App\Utils\FilesHelper;
@@ -29,23 +29,23 @@ class ImagefapParser extends AbstractParser implements ParserInterface
     /**
      * Loading imagefap users list
      *
-     * @param ParserRequestModel $parserRequestModel
-     * @return ParserRequestModel
+     * @param ParserRequest $parserRequest
+     * @return ParserRequest
      * @throws \ReflectionException
      * @throws \Exception
      */
-    public function getOwnersList(ParserRequestModel &$parserRequestModel) : ParserRequestModel
+    public function getOwnersList(ParserRequest &$parserRequest) : ParserRequest
     {
-        if (!$this->getParserCache($parserRequestModel)) {
-            $pagination = $parserRequestModel->pagination;
-            $urlParams = array_merge($parserRequestModel->sorting, [
+        if (!$this->getParserCache($parserRequest)) {
+            $pagination = $parserRequest->pagination;
+            $urlParams = array_merge($parserRequest->sorting, [
                 'page' => ($pagination->currentPage + $pagination->pageShift)
             ]);
-            $parserRequestModel->currentNode->url = $this->mainBoardUrl.'profiles.php?'.http_build_query($urlParams);
-            $parserRequestModel->currentNode->name = 'Users list';
-            $parserRequestModel->parsedNodes = [];
+            $parserRequest->currentNode->url = $this->mainBoardUrl.'profiles.php?'.http_build_query($urlParams);
+            $parserRequest->currentNode->name = 'Users list';
+            $parserRequest->parsedNodes = [];
 
-            $dom = $this->loadDomFromUrl($parserRequestModel->currentNode->url);
+            $dom = $this->loadDomFromUrl($parserRequest->currentNode->url);
 
             $this->setPageLoaderProgress(20);
 
@@ -79,7 +79,7 @@ class ImagefapParser extends AbstractParser implements ParserInterface
                     $userId = (substr($messageUrl, (strpos($messageUrl, '%3fuid%3d') + 9)));
                     $username = str_replace('\'s profile', '', $image->getAttribute('alt'));
 
-                    $parserRequestModel->parsedNodes[] = $this->modelConverter->convert(
+                    $parserRequest->parsedNodes[] = $this->modelConverter->convert(
                         ($node = new ParsedNode(ParserType::Imagefap, NodeLevel::Owner))
                             ->setName($username)
                             ->setIdentifier($userId)
@@ -95,34 +95,34 @@ class ImagefapParser extends AbstractParser implements ParserInterface
                 // extract pagination data
                 if ($paginationTag) {
                     $currentPage = (int)trim($paginationTag->find('b')[0]->text());
-                    $parserRequestModel->pagination->numericPagination($currentPage, 10, -1);
+                    $parserRequest->pagination->numericPagination($currentPage, 10, -1);
                 }
 
-                $this->setParserCache($parserRequestModel, 60);
+                $this->setParserCache($parserRequest, 60);
                 $this->endProgress('load_owners_list');
             }
         }
 
-        return $parserRequestModel;
+        return $parserRequest;
     }
 
     /**
      * Loading user boards
      *
-     * @param ParserRequestModel $parserRequestModel
+     * @param ParserRequest $parserRequest
      * @return array
      * @throws \Exception
      * @throws \ReflectionException
      */
-    public function getBoardsListData(ParserRequestModel &$parserRequestModel) : ParserRequestModel
+    public function getBoardsListData(ParserRequest &$parserRequest) : ParserRequest
     {
-        if (!$this->getParserCache($parserRequestModel)) {
-            $favoritesUrl = $this->mainBoardUrl.'showfavorites.php?userid='.$parserRequestModel->currentNode->identifier;
-            $galleriesUrl = $this->mainBoardUrl.'profile/'.$parserRequestModel->currentNode->name.'/galleries';
+        if (!$this->getParserCache($parserRequest)) {
+            $favoritesUrl = $this->mainBoardUrl.'showfavorites.php?userid='.$parserRequest->currentNode->identifier;
+            $galleriesUrl = $this->mainBoardUrl.'profile/'.$parserRequest->currentNode->name.'/galleries';
 
-            $parserRequestModel->currentNode->url = $galleriesUrl;
-            $parserRequestModel->parsedNodes = [];
-            $parserRequestModel->pagination->reset();
+            $parserRequest->currentNode->url = $galleriesUrl;
+            $parserRequest->parsedNodes = [];
+            $parserRequest->pagination->reset();
 
             $htmlArray = [
                 'GALLERY' => $this->loadHtmlFromUrl($galleriesUrl),
@@ -155,7 +155,7 @@ class ImagefapParser extends AbstractParser implements ParserInterface
                                     parse_str($paramsUrl['query'], $paramsArray);
                                     $identifier = ((int)$paramsArray['userid'] + (int)$paramsArray['folderid']);
 
-                                    $parserRequestModel->parsedNodes[] = $this->modelConverter->convert(
+                                    $parserRequest->parsedNodes[] = $this->modelConverter->convert(
                                         (new ParsedNode(ParserType::Imagefap, NodeLevel::BoardsList))
                                             ->setName($anchor->textContent.' ('.$section.')')
                                             ->setUrl($anchor->getAttribute('href'))
@@ -170,26 +170,26 @@ class ImagefapParser extends AbstractParser implements ParserInterface
                 }
             }
 
-            $this->setParserCache($parserRequestModel, 72000);
+            $this->setParserCache($parserRequest, 72000);
             $this->setPageLoaderProgress(90);
         }
 
-        return $parserRequestModel;
+        return $parserRequest;
     }
 
     /**
      * Loading board galleries
      *
-     * @param ParserRequestModel $parserRequestModel
-     * @return ParserRequestModel
+     * @param ParserRequest $parserRequest
+     * @return ParserRequest
      * @throws \ReflectionException
      * @throws \Exception
      */
-    public function getBoardData(ParserRequestModel &$parserRequestModel) : ParserRequestModel
+    public function getBoardData(ParserRequest &$parserRequest) : ParserRequest
     {
-        if (!$this->getParserCache($parserRequestModel)) {
-            $boardUrl = $parserRequestModel->currentNode->url;
-            $pagination = $parserRequestModel->pagination;
+        if (!$this->getParserCache($parserRequest)) {
+            $boardUrl = $parserRequest->currentNode->url;
+            $pagination = $parserRequest->pagination;
 
             if ($pagination->active) {
                 $boardUrl .= '&page='.($pagination->currentPage + $pagination->pageShift);
@@ -201,8 +201,8 @@ class ImagefapParser extends AbstractParser implements ParserInterface
 
             $this->setPageLoaderProgress(50);
 
-            $parserRequestModel->parsedNodes = [];
-            $parserRequestModel->files = [];
+            $parserRequest->parsedNodes = [];
+            $parserRequest->files = [];
 
             /** @var \DOMElement $tr */
             /** @var \DOMElement $td */
@@ -229,7 +229,7 @@ class ImagefapParser extends AbstractParser implements ParserInterface
                             }
                         }
 
-                        $parserRequestModel->pagination->numericPagination($currentPage, $totalPages, -1);
+                        $parserRequest->pagination->numericPagination($currentPage, $totalPages, -1);
                     }
 
                     break;
@@ -237,7 +237,7 @@ class ImagefapParser extends AbstractParser implements ParserInterface
             }
 
             if (!$paginationTag) {
-                $parserRequestModel->pagination->disable();
+                $parserRequest->pagination->disable();
             }
 
             if ($tableRows && $tableCells) {
@@ -300,7 +300,7 @@ class ImagefapParser extends AbstractParser implements ParserInterface
                                 $gallery->addThumbnail($thumbnail->getAttribute('src'));
                             }
 
-                            $parserRequestModel->parsedNodes[] = $this->modelConverter->convert($gallery);
+                            $parserRequest->parsedNodes[] = $this->modelConverter->convert($gallery);
                         }
                     }
                 } elseif ($mode === 'gallery') {
@@ -316,33 +316,33 @@ class ImagefapParser extends AbstractParser implements ParserInterface
                                 ->setUrl($anchor->getAttribute('href'))
                             ;
 
-                            $parserRequestModel->files[] = $this->modelConverter->convert($image);
+                            $parserRequest->files[] = $this->modelConverter->convert($image);
                         }
                     }
                 }
             }
 
-            $this->setParserCache($parserRequestModel, 3600);
+            $this->setParserCache($parserRequest, 3600);
             $this->setPageLoaderProgress(90);
         }
 
-        return $parserRequestModel;
+        return $parserRequest;
     }
 
     /**
-     * @param ParserRequestModel $parserRequestModel
-     * @return ParserRequestModel
+     * @param ParserRequest $parserRequest
+     * @return ParserRequest
      * @throws \ReflectionException
      * @throws \Exception
      */
-    public function getGalleryData(ParserRequestModel &$parserRequestModel) : ParserRequestModel
+    public function getGalleryData(ParserRequest &$parserRequest) : ParserRequest
     {
-        if (!$this->getParserCache($parserRequestModel)) {
-            $parserRequestModel->files = [];
-            $parserRequestModel->pagination->disable();
+        if (!$this->getParserCache($parserRequest)) {
+            $parserRequest->files = [];
+            $parserRequest->pagination->disable();
 
-            $galleryUrl = $parserRequestModel->currentNode->url;
-            $imagesNo = $parserRequestModel->currentNode->imagesNo;
+            $galleryUrl = $parserRequest->currentNode->url;
+            $imagesNo = $parserRequest->currentNode->imagesNo;
             $pagesNo = ceil($imagesNo / 24);
 
             $html = $this->loadHtmlFromUrl($galleryUrl.'?view=0');
@@ -397,12 +397,12 @@ class ImagefapParser extends AbstractParser implements ParserInterface
                         ;
 
                         if (substr($fileName, -3, 3) === '...') { // incomplete file name - can't create final url :/
-                            $parserRequestModel->files[] = $this->getFileData($parsedFile);
+                            $parserRequest->files[] = $this->getFileData($parsedFile);
                         } else {
                             $fileUrl = 'https://x.imagefapusercontent.com/u/'.$userName.'/'.$galleryId.'/'.$imageId.'/'.$fileName;
                             $headers = $this->getFileHeadersData($fileUrl);
 
-                            $parserRequestModel->files[] = (new ParsedFile(ParserType::Imagefap, FilesHelper::getFileType($fileUrl, true)))
+                            $parserRequest->files[] = (new ParsedFile(ParserType::Imagefap, FilesHelper::getFileType($fileUrl, true)))
                                 ->setIdentifier($anchor->getAttribute('name'))
                                 ->setUrl($imagePageUrl)
                                 ->setWidth($fileResArray[0])
@@ -420,16 +420,16 @@ class ImagefapParser extends AbstractParser implements ParserInterface
                 $this->progressStep('get_gallery_data');
             }
 
-            $this->setParserCache($parserRequestModel, 0);
+            $this->setParserCache($parserRequest, 0);
             $this->endProgress('get_gallery_data');
         }
 
-        return $parserRequestModel;
+        return $parserRequest;
     }
 
     /**
-     * @param ParserRequestModel $parserRequestModel
-     * @return ParserRequestModel
+     * @param ParserRequest $parserRequest
+     * @return ParserRequest
      * @throws \ReflectionException
      */
     public function getFileData(ParsedFile &$parsedFile) : ParsedFile

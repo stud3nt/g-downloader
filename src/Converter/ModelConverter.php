@@ -3,6 +3,7 @@
 namespace App\Converter;
 
 use App\Annotation\ModelVariable;
+use App\Entity\Base\AbstractEntity;
 use App\Model\AbstractModel;
 use App\Utils\StringHelper;
 use Doctrine\Common\Annotations\AnnotationReader;
@@ -62,11 +63,20 @@ class ModelConverter
         if ($data) {
             $this->model = $model;
 
+            if ($data instanceof \stdClass || $data instanceof AbstractEntity) {
+                $entityConverter = new EntityConverter();
+                $modelData = $entityConverter->convert($data);
+            } elseif (StringHelper::isJson($data)) {
+                $modelData = json_decode($data, true);
+            } else {
+                $modelData = $data;
+            }
+
             $modelVariables = $this->getModelVariables();
 
             if ($modelVariables) {
                 foreach ($modelVariables as $variableName => $variableConfig) {
-                    $variableValue = array_key_exists($variableName, $data) ? $data[$variableName] : null;
+                    $variableValue = array_key_exists($variableName, $modelData) ? $modelData[$variableName] : null;
 
                     if (!$variableValue) {
                         if ($skipEmptyFields) {
@@ -200,14 +210,16 @@ class ModelConverter
             }
 
             if ($variableConfig->type === 'array') {
-                $value = [];
+                $setArrayValues = [];
 
                 foreach ($value as $valueRow) {
                     $object = new $variableConfig->converterOptions->class();
-                    $value[] = ($valueRow instanceof $variableConfig->converterOptions->class)
+                    $setArrayValues[] = ($valueRow instanceof $variableConfig->converterOptions->class)
                         ? $valueRow
                         : $variableConverter->setData($valueRow, $object, $skipEmptyFields);
                 }
+
+                $value = $setArrayValues;
             } else {
                 $object = new $variableConfig->converterOptions->class();
                 $value = ($value instanceof $variableConfig->converterOptions->class)
@@ -221,13 +233,12 @@ class ModelConverter
                     break;
 
                 case 'boolean':
-                    if (is_string($value)) {
+                    if (is_string($value))
                         $value = ($value === 'true' || $value === true);
-                    } elseif (is_numeric($value)) {
+                    elseif (is_numeric($value))
                         $value = ($value === 1 || $value === '1');
-                    } elseif (!is_bool($value)) {
+                    elseif (!is_bool($value))
                         $value = (bool)$value;
-                    }
                     break;
 
                 case 'integer':
@@ -235,11 +246,15 @@ class ModelConverter
                     break;
 
                 case 'stdClass':
-                    if (is_array($value)) {
+                    if (is_array($value))
                         $value = json_decode(json_encode($value), false);
-                    } elseif (is_string($value) && StringHelper::isJson($value)) {
+                    elseif (is_string($value) && StringHelper::isJson($value))
                         $value = json_decode($value, false);
-                    }
+                    break;
+
+                case 'string':
+                    if ($value === 'null')
+                        $value = null;
                     break;
             }
         }

@@ -7,7 +7,7 @@ use App\Enum\NodeLevel;
 use App\Enum\ParserType;
 use App\Model\ParsedFile;
 use App\Model\ParsedNode;
-use App\Model\ParserRequestModel;
+use App\Model\ParserRequest;
 use App\Parser\Base\AbstractParser;
 use App\Parser\Base\ParserInterface;
 use App\Utils\FilesHelper;
@@ -25,48 +25,48 @@ class HentaiFoundryParser extends AbstractParser implements ParserInterface
     protected $mainMediaUrl = 'https://pictures.hentai-foundry.com/';
 
     /**
-     * @param ParserRequestModel $parserRequestModel
-     * @return ParserRequestModel
+     * @param ParserRequest $parserRequest
+     * @return ParserRequest
      */
-    public function getOwnersList(ParserRequestModel &$parserRequestModel): ParserRequestModel
+    public function getOwnersList(ParserRequest &$parserRequest): ParserRequest
     {
         // NOTHING TO DO HERE - HF HAVEN'T 'OWNERS', USERS ARE STORED IN BOARDS;
-        return $parserRequestModel;
+        return $parserRequest;
     }
 
     /**
-     * @param ParserRequestModel $parserRequestModel
-     * @return ParserRequestModel
+     * @param ParserRequest $parserRequest
+     * @return ParserRequest
      */
-    public function getBoardsListData(ParserRequestModel &$parserRequestModel) : ParserRequestModel
+    public function getBoardsListData(ParserRequest &$parserRequest) : ParserRequest
     {
         // NOTHING TO DO IN THIS PARSER - HF HAVEN'T BOARDS LIST;
 
-        return $parserRequestModel;
+        return $parserRequest;
     }
 
     /**
      * Parsing all page with users by letter;
      *
-     * @param ParserRequestModel $parserRequestModel
-     * @return ParserRequestModel
+     * @param ParserRequest $parserRequest
+     * @return ParserRequest
      * @throws \ReflectionException
      * @throws \Exception
      */
-    public function getBoardData(ParserRequestModel &$parserRequestModel) : ParserRequestModel
+    public function getBoardData(ParserRequest &$parserRequest) : ParserRequest
     {
-        if (!$this->getParserCache($parserRequestModel)) {
+        if (!$this->getParserCache($parserRequest)) {
             $this->login();
 
             $page = 1;
-            $letter = $parserRequestModel->pagination->currentLetter;
-            $parserRequestModel->pagination->letterPagination($letter);
+            $letter = $parserRequest->pagination->currentLetter;
+            $parserRequest->pagination->letterPagination($letter);
 
             $url = $this->mainBoardUrl.'users/byletter/'.$letter.'/page/'.$page;
             $dom = $this->loadDomFromUrl($url);
 
-            $parserRequestModel->currentNode->url = $url;
-            $parserRequestModel->parsedNodes = $this->parseGalleriesPageData($dom); // parsing first page;
+            $parserRequest->currentNode->url = $url;
+            $parserRequest->parsedNodes = $this->parseGalleriesPageData($dom); // parsing first page;
 
             $this->setPageLoaderProgress(20);
 
@@ -86,8 +86,8 @@ class HentaiFoundryParser extends AbstractParser implements ParserInterface
 
                             foreach ($results as $html) {
                                 $domResult = $this->loadDomFromHtml($html);
-                                $parserRequestModel->parsedNodes = array_merge(
-                                    $parserRequestModel->parsedNodes,
+                                $parserRequest->parsedNodes = array_merge(
+                                    $parserRequest->parsedNodes,
                                     $this->parseGalleriesPageData($domResult)
                                 );
                             }
@@ -97,12 +97,12 @@ class HentaiFoundryParser extends AbstractParser implements ParserInterface
                     }
                 }
 
-                $this->setParserCache($parserRequestModel, 0);
+                $this->setParserCache($parserRequest, 0);
                 $this->endProgress('get_board_data');
             }
         }
 
-        return $parserRequestModel;
+        return $parserRequest;
     }
 
     /**
@@ -139,27 +139,27 @@ class HentaiFoundryParser extends AbstractParser implements ParserInterface
     /**
      * Get gallery files;
      *
-     * @param ParserRequestModel $parserRequestModel
+     * @param ParserRequest $parserRequest
      * @return array
      * @throws \Exception
      */
-    public function getGalleryData(ParserRequestModel &$parserRequestModel) : ParserRequestModel
+    public function getGalleryData(ParserRequest &$parserRequest) : ParserRequest
     {
-        if (!$this->getParserCache($parserRequestModel)) {
-            $parserRequestModel->files = [];
-            $parserRequestModel->pagination->disable();
+        if (!$this->getParserCache($parserRequest)) {
+            $parserRequest->files = [];
+            $parserRequest->pagination->disable();
 
             $options = array_merge([
                 'dateTo' => null,
                 'direction' => 'DESC',
-            ], $parserRequestModel->sorting);
+            ], $parserRequest->sorting);
 
             $this->login();
 
             $page = 1;
             $files = [];
 
-            $galleryUrl = $this->mainBoardUrl.$parserRequestModel->currentNode->url.'/page/'.$page;
+            $galleryUrl = $this->mainBoardUrl.$parserRequest->currentNode->url.'/page/'.$page;
             $dom = $this->loadDomFromUrl($galleryUrl);
 
             $this->setPageLoaderProgress(20);
@@ -175,7 +175,7 @@ class HentaiFoundryParser extends AbstractParser implements ParserInterface
                     $limit = (int)end($lastHrefArray);
 
                     for ($page = 2; $page <= $limit; $page++) {
-                        $galleryUrl = $this->mainBoardUrl.$parserRequestModel->currentNode->url.'/page/'.$page;
+                        $galleryUrl = $this->mainBoardUrl.$parserRequest->currentNode->url.'/page/'.$page;
                         $pageDom = $this->loadDomFromUrl($galleryUrl);
                         $rawFiles = array_merge($rawFiles, $this->parseFilesPageData($pageDom));
                     }
@@ -262,12 +262,12 @@ class HentaiFoundryParser extends AbstractParser implements ParserInterface
                     $this->progressStep('get_gallery_data');
                 }
 
-                $parserRequestModel->files = $files;
-                $this->setParserCache($parserRequestModel, 3600);
+                $parserRequest->files = $files;
+                $this->setParserCache($parserRequest, 3600);
             }
         }
 
-        return $parserRequestModel;
+        return $parserRequest;
     }
 
     /**
@@ -304,7 +304,7 @@ class HentaiFoundryParser extends AbstractParser implements ParserInterface
 
     /**
      * @param ParsedFile $parsedFile
-     * @return ParserRequestModel
+     * @return ParserRequest
      * @throws \Exception
      */
     public function getFilePreview(ParsedFile &$parsedFile) : ParsedFile

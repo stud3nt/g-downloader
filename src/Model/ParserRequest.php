@@ -4,7 +4,7 @@ namespace App\Model;
 
 use App\Annotation\ModelVariable;
 
-class ParserRequestModel extends AbstractModel
+class ParserRequest extends AbstractModel
 {
     /**
      * @var string
@@ -60,6 +60,7 @@ class ParserRequestModel extends AbstractModel
     public $pagination;
 
     /**
+     * @var array
      * @ModelVariable(type="stdClass")
      */
     public $tokens;
@@ -105,7 +106,7 @@ class ParserRequestModel extends AbstractModel
     /**
      * @return string
      */
-    public function getActionName(): string
+    public function getActionName(): ?string
     {
         return $this->actionName;
     }
@@ -124,7 +125,7 @@ class ParserRequestModel extends AbstractModel
     /**
      * @return ParsedNode
      */
-    public function getCurrentNode(): ParsedNode
+    public function getCurrentNode(): ?ParsedNode
     {
         return $this->currentNode;
     }
@@ -143,7 +144,7 @@ class ParserRequestModel extends AbstractModel
     /**
      * @return ParsedNode[]
      */
-    public function getParsedNodes(): array
+    public function getParsedNodes(): ?array
     {
         return $this->parsedNodes;
     }
@@ -160,8 +161,18 @@ class ParserRequestModel extends AbstractModel
     }
 
     /**
+     * @return ParserRequest
+     */
+    public function clearParsedNodes(): self
+    {
+        $this->parsedNodes = [];
+
+        return $this;
+    }
+
+    /**
      * @param ParsedNode $parsedNode
-     * @return ParserRequestModel
+     * @return ParserRequest
      */
     public function addParsedNode(ParsedNode $parsedNode): self
     {
@@ -192,7 +203,7 @@ class ParserRequestModel extends AbstractModel
     /**
      * @return ParsedNode
      */
-    public function getPreviousNode(): ParsedNode
+    public function getPreviousNode(): ?ParsedNode
     {
         return $this->previousNode;
     }
@@ -211,7 +222,7 @@ class ParserRequestModel extends AbstractModel
     /**
      * @return ParsedNode[]
      */
-    public function getBreadcrumbNodes(): array
+    public function getBreadcrumbNodes(): ?array
     {
         return $this->breadcrumbNodes;
     }
@@ -229,7 +240,7 @@ class ParserRequestModel extends AbstractModel
 
     /**
      * @param ParsedNode $node
-     * @return ParserRequestModel
+     * @return ParserRequest
      */
     public function addBreadcrumbNode(ParsedNode $node): self
     {
@@ -241,7 +252,7 @@ class ParserRequestModel extends AbstractModel
     /**
      * @return ParsedFile[]
      */
-    public function getFiles(): array
+    public function getFiles(): ?array
     {
         return $this->files;
     }
@@ -258,6 +269,16 @@ class ParserRequestModel extends AbstractModel
     }
 
     /**
+     * @return ParserRequest
+     */
+    public function clearFiles(): self
+    {
+        $this->files = [];
+
+        return $this;
+    }
+
+    /**
      * @return mixed
      */
     public function getFileData()
@@ -269,7 +290,7 @@ class ParserRequestModel extends AbstractModel
      * @param mixed $fileData
      * @return self
      */
-    public function setFileData($fileData): self
+    public function setFileData($fileData): ?self
     {
         $this->fileData = $fileData;
 
@@ -355,13 +376,14 @@ class ParserRequestModel extends AbstractModel
     /**
      * @return array
      */
-    public function getSorting(): array
+    public function getSorting(): ?array
     {
         return $this->sorting;
     }
 
     /**
      * @param array $sorting
+     * @return self
      */
     public function setSorting(array $sorting): self
     {

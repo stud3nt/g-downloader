@@ -2,11 +2,11 @@
 
 namespace App\Manager\Base;
 
-use App\Model\ParserRequestModel;
+use App\Model\ParserRequest;
 
 interface ParserObjectManagerInterface
 {
-    public function addToDatabase(ParserRequestModel &$parserRequestModel) : ParserRequestModel;
+    public function addToDatabase(ParserRequest &$parserRequest) : ParserRequest;
 
-    public function removeFromDatabase(ParserRequestModel &$parserRequestModel) : ParserRequestModel;
+    public function removeFromDatabase(ParserRequest &$parserRequest) : ParserRequest;
 }

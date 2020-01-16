@@ -5,9 +5,11 @@ namespace App\Manager\Object;
 use App\Converter\EntityConverter;
 use App\Converter\ModelConverter;
 use App\Entity\Parser\Node;
+use App\Enum\NodeLevel;
 use App\Enum\NodeStatus;
 use App\Manager\Base\EntityManager;
-use App\Model\ParserRequestModel;
+use App\Model\ParsedNode;
+use App\Model\ParserRequest;
 use App\Repository\NodeRepository;
 use Doctrine\Persistence\ObjectManager;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
@@ -37,65 +39,93 @@ class NodeManager extends EntityManager
     /**
      * Completes node object with database data (if exists);
      *
-     * @param ParserRequestModel $parserRequestModel
-     * @return ParserRequestModel
+     * @param ParserRequest $parserRequest
+     * @return ParserRequest
      * @throws ReflectionException
      */
-    public function completeCurrentNodeDataFromDb(ParserRequestModel &$parserRequestModel): ParserRequestModel
+    public function completeCurrentNodeDataFromDb(ParserRequest &$parserRequest): ParserRequest
     {
-        $node = $parserRequestModel->currentNode;
+        $node = $parserRequest->getCurrentNode();
 
         if (!$node->getUrl()) { // node haven't specified url => node doesn't come from database;
-            $savedNode = $this->repository->findOneBy([
-                'parser' => $node->getParser(),
-                'level' => $node->getLevel(),
-                'identifier' => $node->getIdentifier()
-            ]);
+            $savedNode = $this->repository->findOneByParsedNode($node);
 
             if ($savedNode) {
                 $nodeArray = $this->entityConverter->convert($savedNode);
                 $this->modelConverter->setData($nodeArray, $node);
-                $parserRequestModel->currentNode = $node;
+                $parserRequest->currentNode = $node;
             }
         }
 
-        return $parserRequestModel;
+        return $parserRequest;
     }
 
     /**
-     * @param ParserRequestModel $parserRequestModel
-     * @return ParserRequestModel
-     * @throws \Doctrine\ORM\ORMException
-     * @throws \Doctrine\ORM\OptimisticLockException
+     * Update existing node (or creates new if not exists);
+     *
+     * @param ParserRequest $parserRequest
+     * @return ParserRequest
+     * @throws ReflectionException
      */
-    public function completeParsedNodesStatuses(ParserRequestModel &$parserRequestModel): ParserRequestModel
+    public function updateCurrentNode(ParserRequest &$parserRequest): ParserRequest
     {
-        if ($parsedNodes = $parserRequestModel->parsedNodes) {
-            $parsedNodesIdentifiers = [];
+        $currentNode = $parserRequest->getCurrentNode();
 
-            foreach ($parsedNodes as $parsedNode) { // collect identifiers
-                $parsedNodesIdentifiers[] = $parsedNode['identifier'];
+        if ($currentNode->hasMinimumEntityData()) {
+            $savedNode = $this->repository->findOneByParsedNode($currentNode);
+
+            if (!$savedNode) {
+                $savedNode = new Node();
             }
 
-            $savedNodes = $this->repository->findBy([
-                'identifier' => $parsedNodesIdentifiers,
-                'parser' => $parserRequestModel->currentNode->parser,
-                'level' => $parserRequestModel->currentNode->nextLevel ?? $parserRequestModel->currentNode->level
-            ]);
+            $this->entityConverter->setData($currentNode, $savedNode);
+            $this->save($savedNode);
+        }
+    }
+
+    /**
+     * Loads and compares data in nodes from database.
+     * Saves new nodes.
+     *
+     * @param ParserRequest $parserRequest
+     * @return ParserRequest
+     * @throws \Doctrine\ORM\ORMException
+     * @throws \Doctrine\ORM\OptimisticLockException
+     * @throws \ReflectionException
+     */
+    public function completeParsedNodes(ParserRequest &$parserRequest): ParserRequest
+    {
+        $parentNodeEntity = $this->repository->findOneByParsedNode(
+            $parserRequest->getCurrentNode()
+        );
+
+        if ($parsedNodes = $parserRequest->getParsedNodes()) {
+            $parsedNodesIdentifiers = [];
+            $parsedNodesForSave = $parsedNodes;
+
+            foreach ($parsedNodes as $parsedNode) { // collect identifiers
+                $parsedNodesIdentifiers[] = $parsedNode->getIdentifier();
+            }
+
+            $savedNodes = $this->repository->findSavedNodesByRequestAndIdentifiers($parserRequest, $parsedNodesIdentifiers);
 
             if ($savedNodes) {
                 /** @var Node $savedNode */
+                /** @var ParsedNode $parsedNode */
                 foreach ($parsedNodes as $parsedNodeKey => $parsedNode) {
                     foreach ($savedNodes as $savedNodeKey => $savedNode) { // update statuses
-                        if ($savedNode->getIdentifier() == $parsedNode['identifier']) {
+                        if ($savedNode->getIdentifier() == $parsedNode->getIdentifier()) {
+                            unset($parsedNodesForSave[$parsedNodeKey]); // no need to save this node, update only;
                             $savedNode->refreshLastViewedAt();
 
-                            if ($savedNode->getImagesNo() !== $parsedNode['imagesNo']) {
-                                $savedNode->setImagesNo($parsedNode['imagesNo']);
-                                $savedNode->setRatio($parsedNode['ratio']);
-                                $savedNode->setCommentsNo($parsedNode['commentsNo']);
+                            if ($savedNode->getImagesNo() !== $parsedNode->getImagesNo()) {
+                                $savedNode->setImagesNo($parsedNode->getImagesNo());
+                                $savedNode->setRatio($parsedNode->getRatio());
+                                $savedNode->setCommentsNo($parsedNode->getCommentsNo());
+                                $savedNode->setParentNode($parentNodeEntity);
 
-                                $parsedNodes[$parsedNodeKey]['statuses'][] = NodeStatus::NewContent;
+                                // more images? Adding 'new content' info;
+                                $parsedNodes[$parsedNodeKey]->addStatus(NodeStatus::NewContent);
                             }
 
                             $this->em->persist($savedNode);
@@ -104,7 +134,7 @@ class NodeManager extends EntityManager
                                 $statusGetter = 'get'.ucfirst($status);
 
                                 if (method_exists($savedNode, $statusGetter) && $savedNode->$statusGetter()) {
-                                    $parsedNodes[$parsedNodeKey]['statuses'][] = $status;
+                                    $parsedNodes[$parsedNodeKey]->addStatus($status);
                                     $parsedNodes[$parsedNodeKey][$status] = $status;
                                 }
                             }
@@ -112,21 +142,31 @@ class NodeManager extends EntityManager
                     }
                 }
 
-                usort($parsedNodes, function($node1, $node2) : int { // sorting nodes - favorites on top
-                    if ($node1['favorited'] === $node2['favorited']) {
+                usort($parsedNodes, function(ParsedNode $node1, ParsedNode $node2) : int { // sorting nodes - favorites on top
+                    if ($node1->isFavorited() === $node2->isFavorited()) {
                         return 0;
                     }
 
-                    return ($node1['favorited'] > $node2['favorited']) ? -1 : 1;
+                    return ((int)$node1->isFavorited() > (int)$node2->isFavorited()) ? -1 : 1;
                 });
 
-                $this->em->flush();
-
-                $parserRequestModel->parsedNodes = $parsedNodes;
+                $parserRequest->setParsedNodes($parsedNodes);
             }
+
+            if ($parsedNodesForSave) {
+                foreach ($parsedNodesForSave as $parsedNodeForSave) {
+                    $nodeEntity = new Node();
+                    $nodeEntity->setParentNode($parentNodeEntity);
+
+                    $this->entityConverter->setData($parsedNodeForSave, $nodeEntity);
+                    $this->em->persist($nodeEntity);
+                }
+            }
+
+            $this->em->flush();
         }
 
-        return $parserRequestModel;
+        return $parserRequest;
     }
 
     /**
@@ -138,6 +178,7 @@ class NodeManager extends EntityManager
      */
     public function updateNodeInDatabase(array $nodeData): void
     {
+        // TODO: switch node data from array to ParsedNode model;
         $dbNode = $this->repository->findOneBy([
             'identifier' => $nodeData['identifier'],
             'parser' => $nodeData['parser'],

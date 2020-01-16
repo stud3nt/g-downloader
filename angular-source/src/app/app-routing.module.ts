@@ -37,7 +37,11 @@ export const routes : Routes = [
 		component: ParserComponent
 	},
 	{
-		path: 'parsers/:parserName/:nodeIdentifier',
+		path: 'parsers/:parserName/:nodeLevel',
+		component: ParserComponent
+	},
+	{
+		path: 'parsers/:parserName/:nodeLevel/:nodeIdentifier',
 		component: ParserComponent
 	},
 	{

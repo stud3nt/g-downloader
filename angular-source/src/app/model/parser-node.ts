@@ -1,6 +1,10 @@
-export class ParserNode {
+import { BaseModel } from "./base/base-model";
+
+export class ParserNode extends BaseModel{
 
 	constructor(obj?: any) {
+		super();
+
 		this._statuses = [];
 
 		Object.assign(this, obj);

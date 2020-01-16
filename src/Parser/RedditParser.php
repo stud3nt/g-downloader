@@ -8,7 +8,7 @@ use App\Enum\NodeLevel;
 use App\Enum\ParserType;
 use App\Model\ParsedFile;
 use App\Model\ParsedNode;
-use App\Model\ParserRequestModel;
+use App\Model\ParserRequest;
 use App\Model\SettingsModel;
 use App\Parser\Base\AbstractParser;
 use App\Parser\Base\ParserInterface;
@@ -40,10 +40,10 @@ class RedditParser extends AbstractParser implements ParserInterface
         $this->redditApi = (new RedditApi())->init($this->settings);
     }
 
-    public function getOwnersList(ParserRequestModel &$parserRequestModel): ParserRequestModel
+    public function getOwnersList(ParserRequest &$parserRequest): ParserRequest
     {
         // NOTHING TO DO HERE
-        return $parserRequestModel;
+        return $parserRequest;
     }
 
     /**
@@ -56,22 +56,22 @@ class RedditParser extends AbstractParser implements ParserInterface
      * @throws \Psr\Cache\InvalidArgumentException
      * @throws \Exception
      */
-    public function getBoardsListData(ParserRequestModel &$parserRequestModel) : ParserRequestModel
+    public function getBoardsListData(ParserRequest &$parserRequest) : ParserRequest
     {
-        if (!$this->getParserCache($parserRequestModel)) {
+        if (!$this->getParserCache($parserRequest)) {
             $after = null;
             $nextPage = true;
 
-            $parserRequestModel->parsedNodes = [];
-            $parserRequestModel->currentNode->url = $this->mainBoardUrl;
-            $parserRequestModel->pagination->disable();
+            $parserRequest->parsedNodes = [];
+            $parserRequest->currentNode->url = $this->mainBoardUrl;
+            $parserRequest->pagination->disable();
 
             while ($nextPage === true) {
                 $subreddits = $this->redditApi->getSubredditsList($after);
 
                 if ($subreddits && $subreddits->data && count($subreddits->data->children) > 0) {
                     foreach ($subreddits->data->children as $subreddit) {
-                        $parserRequestModel->parsedNodes[] = $this->modelConverter->convert(
+                        $parserRequest->parsedNodes[] = $this->modelConverter->convert(
                             (new ParsedNode(ParserType::Reddit, NodeLevel::BoardsList))
                                 ->setName($subreddit->data->title)
                                 ->setDescription(trim($subreddit->data->public_description))
@@ -92,27 +92,27 @@ class RedditParser extends AbstractParser implements ParserInterface
                 $after = $subreddits->data->after;
             }
 
-            $this->setParserCache($parserRequestModel, 0);
+            $this->setParserCache($parserRequest, 0);
             $this->setPageLoaderProgress(90);
         }
 
-        return $parserRequestModel;
+        return $parserRequest;
     }
 
     /**
-     * @param ParserRequestModel $parserRequestModel
+     * @param ParserRequest $parserRequest
      * @return array
      * @throws \Psr\Cache\InvalidArgumentException
      * @throws \ReflectionException
      * @throws \Exception
      */
-    public function getBoardData(ParserRequestModel &$parserRequestModel) : ParserRequestModel
+    public function getBoardData(ParserRequest &$parserRequest) : ParserRequest
     {
-        $parserRequestModel->pagination->loadMorePagination();
+        $parserRequest->pagination->loadMorePagination();
 
-        if (!$this->getParserCache($parserRequestModel)) {
-            $parserRequestModel->parsedNodes = [];
-            $subreddit = $this->redditApi->getSubreddit($parserRequestModel);
+        if (!$this->getParserCache($parserRequest)) {
+            $parserRequest->parsedNodes = [];
+            $subreddit = $this->redditApi->getSubreddit($parserRequest);
 
             $this->setPageLoaderProgress(90);
 
@@ -125,7 +125,7 @@ class RedditParser extends AbstractParser implements ParserInterface
 
                                 if ($childData) {
                                     foreach ($childData as $nodeObject) {
-                                        $parserRequestModel->files[] = $nodeObject;
+                                        $parserRequest->files[] = $nodeObject;
                                     }
                                 }
                             }
@@ -136,26 +136,26 @@ class RedditParser extends AbstractParser implements ParserInterface
 
                             if ($childData) {
                                 foreach ($childData as $nodeObject) {
-                                    $parserRequestModel->files[] = $nodeObject;
+                                    $parserRequest->files[] = $nodeObject;
                                 }
                             }
                         }
                     }
                 }
 
-                $this->cache->set('listing.'.$this->getSubredditName($parserRequestModel), [
+                $this->cache->set('listing.'.$this->getSubredditName($parserRequest), [
                     'before' => $subreddit->data->before,
                     'after' => $subreddit->data->after
                 ]);
 
-                $parserRequestModel->tokens->after = $subreddit->data->after;
-                $parserRequestModel->tokens->before = $subreddit->data->before;
+                $parserRequest->tokens->after = $subreddit->data->after;
+                $parserRequest->tokens->before = $subreddit->data->before;
 
-                $this->setParserCache($parserRequestModel, 90);
+                $this->setParserCache($parserRequest, 90);
             }
         }
 
-        return $parserRequestModel;
+        return $parserRequest;
     }
 
     /**
@@ -210,9 +210,9 @@ class RedditParser extends AbstractParser implements ParserInterface
         return $parsedFiles;
     }
 
-    public function getGalleryData(ParserRequestModel &$parserRequestModel = null) : ParserRequestModel
+    public function getGalleryData(ParserRequest &$parserRequest = null) : ParserRequest
     {
-        return $parserRequestModel;
+        return $parserRequest;
     }
 
     public function getFileData(ParsedFile &$parsedFile) : ParsedFile
@@ -266,9 +266,9 @@ class RedditParser extends AbstractParser implements ParserInterface
         return $parsedFile;
     }
 
-    public function getSubredditName(ParserRequestModel $parserRequestModel) : string
+    public function getSubredditName(ParserRequest $parserRequest) : string
     {
-        $urlArray = explode('/', $parserRequestModel->currentNode->url);
+        $urlArray = explode('/', $parserRequest->currentNode->url);
 
         if ($urlArray) {
             foreach ($urlArray as $key => $value) {
