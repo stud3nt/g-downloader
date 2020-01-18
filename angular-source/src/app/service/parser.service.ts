@@ -39,7 +39,7 @@ export class ParserService {
 	 * @param status
 	 */
 	public markNode(node: ParserNode, status: string = null) {
-		if (node.hasStatus(NodeStatus.Waiting)) {
+		if (status === null || node.hasStatus(NodeStatus.Waiting)) {
 			return;
 		} else {
 			node.addStatus(NodeStatus.Waiting);

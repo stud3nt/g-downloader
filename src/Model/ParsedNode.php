@@ -202,9 +202,9 @@ class ParsedNode extends AbstractModel
      * @param string $name
      * @return $this;
      */
-    public function setName(string $name = null): self
+    public function setName(string $name = null, bool $skipIfNotNull = false): self
     {
-        $this->name = $name;
+        $this->name = ($skipIfNotNull && $this->name) ? $this->name : $name;
 
         return $this;
     }
@@ -316,9 +316,9 @@ class ParsedNode extends AbstractModel
      * @param string $url
      * @return $this;
      */
-    public function setUrl(string $url = null): self
+    public function setUrl(string $url = null, bool $skipIfNotNull = false): self
     {
-        $this->url = $url;
+        $this->url = ($skipIfNotNull && $this->url) ? $this->url : $url;
 
         return $this;
     }

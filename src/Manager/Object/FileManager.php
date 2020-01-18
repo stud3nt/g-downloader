@@ -4,6 +4,7 @@ namespace App\Manager\Object;
 
 use App\Converter\EntityConverter;
 use App\Entity\Parser\File;
+use App\Entity\Parser\Node;
 use App\Enum\FileStatus;
 use App\Manager\Base\EntityManager;
 use App\Manager\SettingsManager;
@@ -51,7 +52,7 @@ class FileManager extends EntityManager
             $storedFilesArray = $this->repository->getQb()
                 ->where('f.parser = :parserName')
                 ->andWhere('f.identifier IN (:filesIdentifiers)')
-                ->setParameter('parserName', $parserRequest->parser)
+                ->setParameter('parserName', $parserRequest->currentNode->parser)
                 ->setParameter('filesIdentifiers', $filesIdentifiers)
                 ->getQuery()->getArrayResult();
 
@@ -80,7 +81,7 @@ class FileManager extends EntityManager
      * @return bool
      * @throws \ReflectionException
      */
-    public function toggleFileQueue(ParsedFile &$parsedFile): ParsedFile
+    public function toggleFileQueue(ParsedFile &$parsedFile, Node $parentNode = null): ParsedFile
     {
         $dbFile = $this->repository->findOneBy([
             'identifier' => $parsedFile->identifier,
@@ -91,6 +92,8 @@ class FileManager extends EntityManager
             $dbFile = new File();
 
             $this->entityConverter->setData($parsedFile, $dbFile);
+
+            $dbFile->setParentNode($parentNode);
 
             if ($this->save($dbFile)) {
                 $parsedFile->statuses[] = FileStatus::Queued;

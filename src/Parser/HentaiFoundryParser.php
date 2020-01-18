@@ -65,8 +65,12 @@ class HentaiFoundryParser extends AbstractParser implements ParserInterface
             $url = $this->mainBoardUrl.'users/byletter/'.$letter.'/page/'.$page;
             $dom = $this->loadDomFromUrl($url);
 
-            $parserRequest->currentNode->url = $url;
+            $boardName = 'Users list';
+
             $parserRequest->parsedNodes = $this->parseGalleriesPageData($dom); // parsing first page;
+            $parserRequest->currentNode
+                ->setName($boardName, true)
+                ->setLabel($boardName);
 
             $this->setPageLoaderProgress(20);
 
@@ -108,7 +112,8 @@ class HentaiFoundryParser extends AbstractParser implements ParserInterface
     /**
      * @param Dom $dom
      * @return array
-     * @throws \ReflectionException
+     * @throws \PHPHtmlParser\Exceptions\ChildNotFoundException
+     * @throws \PHPHtmlParser\Exceptions\NotLoadedException
      */
     private function parseFilesPageData(Dom $dom) : array
     {
@@ -140,7 +145,7 @@ class HentaiFoundryParser extends AbstractParser implements ParserInterface
      * Get gallery files;
      *
      * @param ParserRequest $parserRequest
-     * @return array
+     * @return ParserRequest
      * @throws \Exception
      */
     public function getGalleryData(ParserRequest &$parserRequest) : ParserRequest
@@ -159,8 +164,14 @@ class HentaiFoundryParser extends AbstractParser implements ParserInterface
             $page = 1;
             $files = [];
 
-            $galleryUrl = $this->mainBoardUrl.$parserRequest->currentNode->url.'/page/'.$page;
+            $galleryUrl = $this->mainBoardUrl.$parserRequest->currentNode->getUrl().'/page/'.$page;
             $dom = $this->loadDomFromUrl($galleryUrl);
+            $galleryName = $dom->find('title')[0]->text();
+            $galleryName = substr($galleryName, 0, strpos($galleryName, "'s Profile"));
+
+            $parserRequest->currentNode
+                ->setName($galleryName, true)
+                ->setLabel($galleryName);
 
             $this->setPageLoaderProgress(20);
 
@@ -230,7 +241,7 @@ class HentaiFoundryParser extends AbstractParser implements ParserInterface
 
                             if ($options['dateTo']) {
                                 if (strtoupper($options['direction']) === 'DESC' && $imageUploadedAt < $options['dateTo']) {
-                                    return $files;
+                                    continue;
                                 }
                             }
 
@@ -240,7 +251,7 @@ class HentaiFoundryParser extends AbstractParser implements ParserInterface
 
                             $this->modelConverter->setData($rawFiles[$convertedFileIndex], $parsedFile);
 
-                            $parsedFile->setUploadedAt($imageUploadedAt)
+                            $files[$resultKey] = $parsedFile->setUploadedAt($imageUploadedAt)
                                 ->setFileUrl($imageSrc)
                                 ->setThumbnail($thumbnailUrl)
                                 ->setName(FilesHelper::getFileName($imageSrc))
@@ -251,8 +262,6 @@ class HentaiFoundryParser extends AbstractParser implements ParserInterface
                                 ->setMimeType($headersData['mimeType'])
                                 ->setType(FileType::Image)
                             ;
-
-                            $files[$resultKey] = $parsedFile;
 
                             $convertedFileIndex++;
                         }
@@ -331,7 +340,8 @@ class HentaiFoundryParser extends AbstractParser implements ParserInterface
      *
      * @param Dom $dom
      * @return array
-     * @throws \ReflectionException
+     * @throws \PHPHtmlParser\Exceptions\ChildNotFoundException
+     * @throws \PHPHtmlParser\Exceptions\NotLoadedException
      */
     private function parseGalleriesPageData(Dom $dom) : array
     {
@@ -356,24 +366,31 @@ class HentaiFoundryParser extends AbstractParser implements ParserInterface
                 continue;
             }
 
-            $nodeModel = (new ParsedNode(ParserType::HentaiFoundry, NodeLevel::Board))
+            $nodeModel = (new ParsedNode(ParserType::HentaiFoundry, NodeLevel::Gallery))
                 ->setName($profileAnchor->text())
                 ->setIdentifier($profileAnchor->text())
                 ->setUrl(substr($countAnchor->getAttribute('href'), 1))
                 ->setImagesNo($imagesNo)
-                ->setNextLevel(NodeLevel::Gallery)
             ;
 
             if (strpos($thumbnailAlt, 'featured picture')) {
                 $nodeModel->addThumbnail($thumbnail->getAttribute('src'));
             }
 
-            $galleries[] = $this->modelConverter->convert($nodeModel);
+            $galleries[] = $nodeModel;
         }
 
         return $galleries;
     }
 
+    /**
+     * @throws \Exception
+     * @throws \PHPHtmlParser\Exceptions\ChildNotFoundException
+     * @throws \PHPHtmlParser\Exceptions\CircularException
+     * @throws \PHPHtmlParser\Exceptions\CurlException
+     * @throws \PHPHtmlParser\Exceptions\NotLoadedException
+     * @throws \PHPHtmlParser\Exceptions\StrictException
+     */
     private function login()
     {
         $this->setPageLoaderProgress(10);
@@ -428,9 +445,13 @@ class HentaiFoundryParser extends AbstractParser implements ParserInterface
         $this->setPageLoaderProgress(15);
     }
 
+    /**
+     * @return bool
+     * @throws \Exception
+     */
     private function isLoggedIn() : bool
     {
-        $cookieTime = (int)$this->cache->read('parser.hentai_foundry.cookie_time');
+        $cookieTime = (int)$this->cache->get('parser.hentai_foundry.cookie_time');
 
         if ($cookieTime > 0) {
             $cookieDate = (new \DateTime())->setTimestamp($cookieTime);

@@ -3,9 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\Parser\Node;
-use App\Enum\NodeLevel;
 use App\Model\ParsedNode;
-use App\Model\ParserRequest;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -31,12 +29,11 @@ class NodeRepository extends ServiceEntityRepository
         ]);
     }
 
-    public function findSavedNodesByRequestAndIdentifiers(ParserRequest $parserRequest, array $identifiers = [])
+    public function findByParentAndIdentifiers(Node $parent = null, array $identifiers = [])
     {
         return $this->findBy([
-            'identifier' => $identifiers,
-            'parser' => $parserRequest->currentNode->parser,
-            'level' => NodeLevel::determineNextLevel($parserRequest->currentNode->level)
+            'parentNode' => $parent,
+            'identifier' => $identifiers
         ]);
     }
 }

@@ -34,6 +34,8 @@ export class ParserComponent implements OnInit {
 
 	public parserRequest: ParserRequest = new ParserRequest();
 
+	public parserRequestAction: boolean = false;
+
 	public NodeLevel = NodeLevel;
 	public NodeStatus = NodeStatus;
 
@@ -110,7 +112,7 @@ export class ParserComponent implements OnInit {
 	 * @param status
 	 */
 	public markCurrentNode(status: string): void {
-		this.parserService.markNode(this.parserRequest.currentNode).subscribe((response) => {
+		this.parserService.markNode(this.parserRequest.currentNode, status).subscribe((response) => {
 			this.parserRequest.currentNode.removeStatus(NodeStatus.Waiting);
 		}, (error) => {
 			this.parserRequest.currentNode.removeStatus(NodeStatus.Waiting);
@@ -187,6 +189,9 @@ export class ParserComponent implements OnInit {
 	 * Sends data to parser API
 	 */
 	private sendParserRequest(successFunction: () => any = null, errorFunction: () => any = null, completeFunction: () => any = null) {
+		if (this.parserRequestAction) // only one action
+			return;
+
 		this.pageLoaderDataService.setProgress(1).show().enableRefreshingFromApi();
 
 		this.parserService.sendParserActionRequest(this.parserRequest).subscribe((response : ParserRequest) => {

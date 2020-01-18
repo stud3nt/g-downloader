@@ -53,10 +53,10 @@ export class FilesListComponent implements OnInit {
 	 * @param file
 	 */
 	public toggleFileQueue(file: ParsedFile) : void {
-		if (this.lockTiles || file.hasStatus(FileStatus.Waiting)) {
+		if (this.lockTiles || file.hasStatus(FileStatus.Waiting))
 			return;
-		}
 
+		file.parentNode = this.parserRequest.currentNode;
 		file.addStatus(FileStatus.Waiting);
 
 		this.nodeFileService.toggleFileQueue(file).subscribe((result: ParsedFile) => {

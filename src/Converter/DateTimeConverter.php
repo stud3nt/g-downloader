@@ -25,7 +25,7 @@ class DateTimeConverter extends BaseConverter
         if (is_numeric($value)) { // timestamp integer
             $date = new \DateTime();
             $date->setTimestamp($value);
-        } elseif ($value === 'null') {
+        } elseif ($value === 'null' || $value === null) {
             $date = null;
         } else {
             $date = new \DateTime($value);

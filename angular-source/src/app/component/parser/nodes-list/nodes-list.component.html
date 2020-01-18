@@ -1,6 +1,6 @@
 <div *ngIf="parserRequest.parsedNodes.length > 0">
     <div class="grid-container grid-200">
-        <a [routerLink]="routerService.generateNodeUrl(node)" id="{{ node.identifier }}" [ngClass]="getNodeClass(node)" *ngFor="let node of parserRequest.parsedNodes">
+        <a target="_blank" [routerLink]="(lockTiles ? null : routerService.generateNodeUrl(node))" id="{{ node.identifier }}" [ngClass]="getNodeClass(node)" *ngFor="let node of parserRequest.parsedNodes">
             <div class="tile-header-image">
                 <div class="tile-header-icon bg-default" *ngIf="node.hasStatus(NodeStatus.Waiting)">
                     <i class="fa fa-spinner fa-spin fa-fw"></i>
@@ -50,19 +50,19 @@
                 </table>
             </div>
             <div class="tile-footer">
-                <button type="button" (mouseenter)="lockTiles=true" (mouseleave)="lockTiles=false" (click)="markNode(node, NodeStatus.Saved)" [ngClass]="getNodeButtonClass(node, NodeStatus.Saved)">
+                <button type="button" (mouseenter)="lockTiles=true" (mouseleave)="lockTiles=false" (click)="markNode(node, NodeStatus.Saved)" [ngClass]="getNodeButtonClass(node, NodeStatus.Saved, 'small')">
                     <i class="fa fa-save" *ngIf="node.hasStatus(NodeStatus.Saved)"></i>
                     <i class="fa fa-save" *ngIf="!node.hasStatus(NodeStatus.Saved)"></i>
                 </button>
-                <button type="button" (mouseenter)="lockTiles=true" (mouseleave)="lockTiles=false" (click)="markNode(node, NodeStatus.Favorited)" [ngClass]="getNodeButtonClass(node, NodeStatus.Favorited)">
+                <button type="button" (mouseenter)="lockTiles=true" (mouseleave)="lockTiles=false" (click)="markNode(node, NodeStatus.Favorited)" [ngClass]="getNodeButtonClass(node, NodeStatus.Favorited, 'small')">
                     <i class="fa fa-star-o" *ngIf="node.hasStatus(NodeStatus.Favorited)"></i>
                     <i class="fa fa-star" *ngIf="!node.hasStatus(NodeStatus.Favorited)"></i>
                 </button>
-                <button type="button" (mouseenter)="lockTiles=true" (mouseleave)="lockTiles=false" (click)="markNode(node, NodeStatus.Blocked)" [ngClass]="getNodeButtonClass(node, NodeStatus.Blocked)">
+                <button type="button" (mouseenter)="lockTiles=true" (mouseleave)="lockTiles=false" (click)="markNode(node, NodeStatus.Blocked)" [ngClass]="getNodeButtonClass(node, NodeStatus.Blocked, 'small')">
                     <i class="fa fa-unlock" *ngIf="node.hasStatus(NodeStatus.Blocked)"></i>
                     <i class="fa fa-lock" *ngIf="!node.hasStatus(NodeStatus.Blocked)"></i>
                 </button>
-                <button type="button" (mouseenter)="lockTiles=true" (mouseleave)="lockTiles=false" (click)="markNode(node, NodeStatus.Finished)" [ngClass]="getNodeButtonClass(node, NodeStatus.Finished)">
+                <button type="button" (mouseenter)="lockTiles=true" (mouseleave)="lockTiles=false" (click)="markNode(node, NodeStatus.Finished)" [ngClass]="getNodeButtonClass(node, NodeStatus.Finished, 'small')">
                     <i class="fa fa-check-circle" *ngIf="node.hasStatus(NodeStatus.Finished)"></i>
                     <i class="fa fa-check-circle-o" *ngIf="!node.hasStatus(NodeStatus.Finished)"></i>
                 </button>

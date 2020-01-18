@@ -41,11 +41,15 @@ class ImagefapParser extends AbstractParser implements ParserInterface
             $urlParams = array_merge($parserRequest->sorting, [
                 'page' => ($pagination->currentPage + $pagination->pageShift)
             ]);
-            $parserRequest->currentNode->url = $this->mainBoardUrl.'profiles.php?'.http_build_query($urlParams);
-            $parserRequest->currentNode->name = 'Users list';
-            $parserRequest->parsedNodes = [];
 
-            $dom = $this->loadDomFromUrl($parserRequest->currentNode->url);
+            $parserRequest->currentNode
+                ->setUrl($this->mainBoardUrl.'profiles.php?'.http_build_query($urlParams))
+                ->setName('Users list', true)
+                ->setLabel('Users list');
+
+            $dom = $this->loadDomFromUrl(
+                $parserRequest->currentNode->getUrl())
+            ;
 
             $this->setPageLoaderProgress(20);
 
@@ -79,15 +83,13 @@ class ImagefapParser extends AbstractParser implements ParserInterface
                     $userId = (substr($messageUrl, (strpos($messageUrl, '%3fuid%3d') + 9)));
                     $username = str_replace('\'s profile', '', $image->getAttribute('alt'));
 
-                    $parserRequest->parsedNodes[] = $this->modelConverter->convert(
-                        ($node = new ParsedNode(ParserType::Imagefap, NodeLevel::Owner))
-                            ->setName($username)
-                            ->setIdentifier($userId)
-                            ->setNextLevel(NodeLevel::BoardsList)
-                            ->setUrl($this->mainBoardUrl.substr($anchor->getAttribute('href'), 1))
-                            ->setRatio($ratio)
-                            ->addThumbnail($image->getAttribute('src'))
-                    );
+                    $parserRequest->parsedNodes[] = ($node = new ParsedNode(ParserType::Imagefap, NodeLevel::BoardsList))
+                        ->setName($username)
+                        ->setIdentifier($userId)
+                        ->setUrl($this->mainBoardUrl.substr($anchor->getAttribute('href'), 1))
+                        ->setRatio($ratio)
+                        ->addThumbnail($image->getAttribute('src'))
+                    ;
 
                     $this->progressStep('load_owners_list');
                 }
@@ -117,12 +119,22 @@ class ImagefapParser extends AbstractParser implements ParserInterface
     public function getBoardsListData(ParserRequest &$parserRequest) : ParserRequest
     {
         if (!$this->getParserCache($parserRequest)) {
-            $favoritesUrl = $this->mainBoardUrl.'showfavorites.php?userid='.$parserRequest->currentNode->identifier;
-            $galleriesUrl = $this->mainBoardUrl.'profile/'.$parserRequest->currentNode->name.'/galleries';
+            $currentName = $parserRequest->currentNode->getName();
 
-            $parserRequest->currentNode->url = $galleriesUrl;
-            $parserRequest->parsedNodes = [];
+            if (empty($currentName)) {
+                $urlArray = explode('/', $parserRequest->currentNode->getUrl());
+                $currentName = end($urlArray);
+                $parserRequest->currentNode->setName($currentName);
+            }
+
+            $favoritesUrl = $this->mainBoardUrl.'showfavorites.php?userid='.$parserRequest->currentNode->getIdentifier();
+            $galleriesUrl = $this->mainBoardUrl.'profile/'.$parserRequest->currentNode->getName().'/galleries';
+
             $parserRequest->pagination->reset();
+            $parserRequest->currentNode
+                ->setName($currentName, true)
+                ->setLabel($currentName)
+            ;
 
             $htmlArray = [
                 'GALLERY' => $this->loadHtmlFromUrl($galleriesUrl),
@@ -155,14 +167,12 @@ class ImagefapParser extends AbstractParser implements ParserInterface
                                     parse_str($paramsUrl['query'], $paramsArray);
                                     $identifier = ((int)$paramsArray['userid'] + (int)$paramsArray['folderid']);
 
-                                    $parserRequest->parsedNodes[] = $this->modelConverter->convert(
-                                        (new ParsedNode(ParserType::Imagefap, NodeLevel::BoardsList))
-                                            ->setName($anchor->textContent.' ('.$section.')')
-                                            ->setUrl($anchor->getAttribute('href'))
-                                            ->setNextLevel(NodeLevel::Board)
-                                            ->setIdentifier($identifier)
-                                            ->addThumbnail($thumb->getAttribute('src'))
-                                    );
+                                    $parserRequest->parsedNodes[] = (new ParsedNode(ParserType::Imagefap, NodeLevel::Board))
+                                        ->setName($anchor->textContent.' ('.$section.')')
+                                        ->setUrl($anchor->getAttribute('href'))
+                                        ->setIdentifier($identifier)
+                                        ->addThumbnail($thumb->getAttribute('src'))
+                                    ;
                                 }
                             }
                         }
@@ -178,7 +188,7 @@ class ImagefapParser extends AbstractParser implements ParserInterface
     }
 
     /**
-     * Loading board galleries
+     * Loading user's board galleries
      *
      * @param ParserRequest $parserRequest
      * @return ParserRequest
@@ -188,7 +198,7 @@ class ImagefapParser extends AbstractParser implements ParserInterface
     public function getBoardData(ParserRequest &$parserRequest) : ParserRequest
     {
         if (!$this->getParserCache($parserRequest)) {
-            $boardUrl = $parserRequest->currentNode->url;
+            $boardUrl = $parserRequest->currentNode->getUrl();
             $pagination = $parserRequest->pagination;
 
             if ($pagination->active) {
@@ -287,11 +297,10 @@ class ImagefapParser extends AbstractParser implements ParserInterface
                             $galleryUrl = 'https://www.imagefap.com/pictures/'.$galleryId.'/';
                             $galleryUrl .= urlencode(str_replace(' ', '-', $galleryName));
 
-                            $gallery = (new ParsedNode(ParserType::Imagefap, NodeLevel::Board))
+                            $gallery = (new ParsedNode(ParserType::Imagefap, NodeLevel::Gallery))
                                 ->setName(StringHelper::clearString($cells[0]->textContent))
                                 ->setUrl($galleryUrl)
                                 ->setImagesNo(StringHelper::clearString($cells[1]->textContent))
-                                ->setNextLevel(NodeLevel::Gallery)
                                 ->setIdentifier($galleryId)
                             ;
 
@@ -300,7 +309,7 @@ class ImagefapParser extends AbstractParser implements ParserInterface
                                 $gallery->addThumbnail($thumbnail->getAttribute('src'));
                             }
 
-                            $parserRequest->parsedNodes[] = $this->modelConverter->convert($gallery);
+                            $parserRequest->parsedNodes[] = $gallery;
                         }
                     }
                 } elseif ($mode === 'gallery') {
@@ -312,7 +321,7 @@ class ImagefapParser extends AbstractParser implements ParserInterface
 
                             $image = (new ParsedFile(ParserType::Imagefap))
                                 ->setThumbnail($thumbnail->getAttribute('href'))
-                                ->setExtension(FilesHelper::getFileExtension($thumbnail->getAttribute('href'), true))
+                                ->setExtension(FilesHelper::getFileExtension($thumbnail->getAttribute('href')))
                                 ->setUrl($anchor->getAttribute('href'))
                             ;
 

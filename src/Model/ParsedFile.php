@@ -127,6 +127,12 @@ class ParsedFile extends AbstractModel
      */
     public $statuses;
 
+    /**
+     * @var ParsedNode
+     * @ModelVariable(converter="Model", converterOptions={"class":"App\Model\ParsedNode"})
+     */
+    public $parentNode = null;
+
     public function __construct(string $parser = null, string $type = null)
     {
         if ($parser) {
@@ -646,5 +652,24 @@ class ParsedFile extends AbstractModel
         }
 
         return false;
+    }
+
+    /**
+     * @return ParsedNode
+     */
+    public function getParentNode(): ?ParsedNode
+    {
+        return $this->parentNode;
+    }
+
+    /**
+     * @param ParsedNode $parentNode
+     * @return ParsedNode
+     */
+    public function setParentNode(ParsedNode $parentNode): self
+    {
+        $this->parentNode = $parentNode;
+
+        return $this;
     }
 }

@@ -50,8 +50,9 @@ class ParserController extends Controller
      */
     public function parsingAction(Request $request, ParserService $parserService) : JsonResponse
     {
-        $parserRequest = (new ParserRequestFactory())
-            ->buildFromRequestData($request->request->all());
+        $parserRequest = (new ParserRequestFactory())->buildFromRequestData(
+            $request->request->all()
+        );
 
         $this->nodeManager->completeCurrentNodeDataFromDb($parserRequest);
 

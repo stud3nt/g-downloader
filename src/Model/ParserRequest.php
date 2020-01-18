@@ -181,6 +181,50 @@ class ParserRequest extends AbstractModel
         return $this;
     }
 
+    public function sortParsedNodesByStatus(array $sortingSettings = []): self
+    {
+        if (!empty($this->parsedNodes) && !empty($sortingSettings)) {
+            foreach ($sortingSettings as $sortingColumn => $sortingValue) {
+                $sortingData = [
+                    'column' => $sortingColumn,
+                    'value' => $sortingValue
+                ];
+
+                usort($this->parsedNodes, function(ParsedNode $node1, ParsedNode $node2) use ($sortingData) : int { // sorting nodes - favorites on top
+                    $getter = 'get'.ucfirst($sortingData['column']);
+                    $isser = 'is'.ucfirst($sortingData['column']);
+
+                    if (method_exists($node1, $getter) && method_exists($node1, $getter)) {
+                        $node1Value = (int)$node1->$getter();
+                        $node2Value = (int)$node2->$getter();
+                    } elseif (method_exists($node1, $isser) && method_exists($node2, $isser)) {
+                        $node1Value = (int)$node1->$isser();
+                        $node2Value = (int)$node2->$isser();
+                    } else {
+                        return 0;
+                    }
+
+                    if ($node1Value === $node2Value)
+                        return 0;
+
+                    switch (strtolower($sortingData['value'])) {
+                        case 'asc':
+                            return ($node1Value < $node2Value) ? -1 : 1;
+                            break;
+
+                        case 'desc':
+                            return ($node1Value > $node2Value) ? -1 : 1;
+                            break;
+                    }
+
+                    return 0;
+                });
+            }
+        }
+
+        return $this;
+    }
+
     /**
      * @return ParsedNode
      */

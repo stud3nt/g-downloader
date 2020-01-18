@@ -15,9 +15,8 @@ export class NodesListComponent {
 
 	public NodeStatus = NodeStatus;
 
+	// controller - if true, all tiles are locked (non-clickable);
 	public lockTiles = false;
-
-	public scrollY = 0;
 
 	constructor(
 		private parserService: ParserService,
@@ -31,7 +30,12 @@ export class NodesListComponent {
 	 * @param status
 	 */
 	public markNode(node: ParserNode, status: string): void {
-		this.parserService.markNode(node).subscribe((response) => {
+		let request = this.parserService.markNode(node, status);
+
+		if (!request)
+			return;
+
+		request.subscribe((response) => {
 			this.parserRequest.currentNode = node; // re-assign current node object
 			node.removeStatus(NodeStatus.Waiting);
 		}, (error) => {
@@ -62,13 +66,26 @@ export class NodesListComponent {
 	 *
 	 * @param node
 	 * @param status
+	 * @param size
 	 * @return string
 	 */
-	public getNodeButtonClass(node: ParserNode, status: string): string {
-		return 'btn ' + (
-			(node.hasStatus(status))
-				? NodeStatus.buttonStatusClass(status)
-				: 'btn-default'
-			);
+	public getNodeButtonClass(node: ParserNode, status: string, size: string = 'normal'): string {
+		let buttonClasses = 'btn';
+
+		switch (size) {
+			case 'normal':
+				break;
+
+			case 'small':
+				buttonClasses += ' btn-sm';
+				break;
+		}
+
+		if (node.hasStatus(status))
+			buttonClasses += (' '+NodeStatus.buttonStatusClass(status));
+		else
+			buttonClasses += ' btn-default';
+
+		return buttonClasses;
 	}
 }

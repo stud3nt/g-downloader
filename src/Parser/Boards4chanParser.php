@@ -53,10 +53,12 @@ class Boards4chanParser extends AbstractParser implements ParserInterface
             // @var HtmlNode $column
             // @var HtmlNode $anchor
             $dom = $this->loadDomFromUrl($this->mainBoardUrl);
+            $name = $dom->find('title')[0]->text();
 
-            $parserRequest->currentNode->setUrl($this->mainBoardUrl);
-            $parserRequest->currentNode->setName($dom->find('title')[0]->text());
             $parserRequest->pagination->disable();
+            $parserRequest->currentNode->setUrl($this->mainBoardUrl)
+                ->setName($name, true)
+                ->setLabel($name);
 
             $domColumns = $dom->find('div.column');
 
@@ -65,7 +67,7 @@ class Boards4chanParser extends AbstractParser implements ParserInterface
             foreach ($domColumns as $column) {
                 if ($column->find('h3')->text() === 'Adult') {
                     foreach ($column->find('a.boardlink') as $anchor) {
-                        $parserRequest->parsedNodes[] = (new ParsedNode(ParserType::Boards4chan, NodeLevel::BoardsList))
+                        $parserRequest->parsedNodes[] = (new ParsedNode(ParserType::Boards4chan, NodeLevel::Board))
                             ->setName($anchor->text())
                             ->setUrl('https:'.$anchor->getAttribute('href').'catalog')
                             ->setIdentifier($this->getBoardSymbol($anchor->getAttribute('href')))
@@ -108,7 +110,10 @@ class Boards4chanParser extends AbstractParser implements ParserInterface
                 $arrayContent = json_decode($jsonContent, true);
                 $dom = $this->loadDomFromHTML($html);
 
-                $parserRequest->currentNode->setName($dom->find('title')[0]->text());
+                $name = $dom->find('title')[0]->text();
+                $parserRequest->currentNode
+                    ->setName($name, true)
+                    ->setLabel($name);
 
                 if ($arrayContent['threads']) {
                     $this->startProgress('get_board_data', count($arrayContent['threads']), 20, 90);
@@ -122,7 +127,7 @@ class Boards4chanParser extends AbstractParser implements ParserInterface
                         $name = trim($galleryData['sub']);
                         $description = trim($galleryData['teaser']);
 
-                        $node = (new ParsedNode(ParserType::Boards4chan, NodeLevel::Board))
+                        $node = (new ParsedNode(ParserType::Boards4chan, NodeLevel::Gallery))
                             ->setIdentifier($galleryId)
                             ->setName(strlen($name) > 0 ? $name : $description)
                             ->setDescription(strlen($name) > 0 ? $description : '')
@@ -192,7 +197,10 @@ class Boards4chanParser extends AbstractParser implements ParserInterface
             $dom = $this->loadDomFromUrl($parserRequest->currentNode->getUrl());
             $divs = $dom->getElementsByClass('postContainer');
 
-            $parserRequest->currentNode->setName($dom->find('title')[0]->text());
+            $galleryName = $dom->find('title')[0]->text();
+            $parserRequest->currentNode
+                ->setName($galleryName, true)
+                ->setLabel($galleryName);
 
             $this->setPageLoaderProgress(20);
             $this->startProgress('get_gallery_data', count($divs), 20, 90);

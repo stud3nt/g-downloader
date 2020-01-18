@@ -10,7 +10,7 @@ trait CreatedAtTrait
     /**
      * @var \DateTime
      * @ORM\Column(name="created_at", type="datetime", options={"default"="CURRENT_TIMESTAMP"}, nullable=true)
-     * @EntityVariable(convertable=true, writable=true, inAllConvertNames=false, readable=true, converter="DateTime")
+     * @EntityVariable(convertable=true, writable=false, inAllConvertNames=false, readable=true, converter="DateTime")
      */
     protected $createdAt;
     

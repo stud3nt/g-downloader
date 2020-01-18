@@ -7,8 +7,6 @@ use App\Entity\User;
 use App\Manager\Object\FileManager;
 use App\Manager\Object\NodeManager;
 use App\Manager\SettingsManager;
-use App\Parser\Base\ParserInterface;
-use App\Utils\StringHelper;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController as BaseController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;

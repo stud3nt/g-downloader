@@ -26,7 +26,7 @@ export class ParserNode extends BaseModel{
 
 	private _identifier: string = null;
 
-	private _url: string = ' ';
+	private _url: string = null;
 
 	private _ratio: number = 0;
 

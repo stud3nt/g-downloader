@@ -130,7 +130,11 @@ class AbstractParser
 
         $file->setTargetFilePath($targetDirectory.$ds.$file->getName().'.jpg');
         $file->setTempFilePath($this->previewTempDir.$file->getName().'.'.$file->getExtension());
-        $file->setCurlRequest($curlService->prepareCurlRequest($file->getFileUrl()));
+        $file->setCurlRequest(
+            $curlService->prepareCurlRequest(
+                $file->getFileUrl() ?? $file->getUrl()
+            )
+        );
 
         return $file;
     }

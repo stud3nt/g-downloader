@@ -4,11 +4,11 @@ namespace App\Controller\Api;
 
 use App\Controller\Api\Base\Controller;
 use App\Converter\ModelConverter;
+use App\Factory\ParsedFileFactory;
 use App\Manager\Object\FileManager;
+use App\Manager\Object\NodeManager;
 use App\Model\ParsedFile;
-use App\Parser\Base\ParserInterface;
 use App\Service\ParserService;
-use App\Utils\StringHelper;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
@@ -23,17 +23,18 @@ class FileController extends Controller
      */
     public function toggleFileQueue(Request $request, ParserService $parserService) : JsonResponse
     {
-        $parsedFile = new ParsedFile();
-        $modelConverter = $this->get(ModelConverter::class);
-        $modelConverter->setData($request->request->all(), $parsedFile);
+        $parsedFile = (new ParsedFileFactory())->buildFromRequestData(
+            $request->request->all()
+        );
 
         $parser = $parserService->loadParser($parsedFile->getParser());
         $parser->getFileData($parsedFile);
 
-        $this->get(FileManager::class)->toggleFileQueue($parsedFile);
+        $parentNode = $this->get(NodeManager::class)->getOneByParsedNode($parsedFile->getParentNode());
+        $this->get(FileManager::class)->toggleFileQueue($parsedFile, $parentNode);
 
         return $this->json(
-            $modelConverter->convert($parsedFile)
+            $this->get(ModelConverter::class)->convert($parsedFile)
         );
     }
 
@@ -45,9 +46,9 @@ class FileController extends Controller
      */
     public function toggleFilePreview(Request $request, ParserService $parserService) : JsonResponse
     {
-        $parsedFile = new ParsedFile();
-        $modelConverter = $this->get(ModelConverter::class);
-        $modelConverter->setData($request->request->all(), $parsedFile);
+        $parsedFile = (new ParsedFileFactory())->buildFromRequestData(
+            $request->request->all()
+        );
 
         $parser = $parserService->loadParser($parsedFile->getParser());
         $parser->getFilePreview($parsedFile);
@@ -58,7 +59,7 @@ class FileController extends Controller
         );
 
         return $this->json(
-            $modelConverter->convert($parsedFile)
+            $this->get(ModelConverter::class)->convert($parsedFile)
         );
     }
 }

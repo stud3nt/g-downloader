@@ -11,6 +11,7 @@ use App\Manager\Base\EntityManager;
 use App\Model\ParsedNode;
 use App\Model\ParserRequest;
 use App\Repository\NodeRepository;
+use App\Utils\StringHelper;
 use Doctrine\Persistence\ObjectManager;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use ReflectionException;
@@ -34,6 +35,11 @@ class NodeManager extends EntityManager
 
         $this->entityConverter = $entityConverter;
         $this->modelConverter = new ModelConverter();
+    }
+
+    public function getOneByParsedNode(ParsedNode $node): ?Node
+    {
+        return $this->repository->findOneByParsedNode($node);
     }
 
     /**
@@ -95,9 +101,13 @@ class NodeManager extends EntityManager
      */
     public function completeParsedNodes(ParserRequest &$parserRequest): ParserRequest
     {
-        $parentNodeEntity = $this->repository->findOneByParsedNode(
-            $parserRequest->getCurrentNode()
-        );
+        $parentNode = $parserRequest->getCurrentNode();
+        $parentNodeEntity = $this->repository->findOneByParsedNode($parentNode);
+
+        // complete statuses for parent node;
+        $this->updateNodeStatuses($parentNode, $parentNodeEntity);
+
+        $parserRequest->setCurrentNode($parentNode);
 
         if ($parsedNodes = $parserRequest->getParsedNodes()) {
             $parsedNodesIdentifiers = [];
@@ -107,7 +117,7 @@ class NodeManager extends EntityManager
                 $parsedNodesIdentifiers[] = $parsedNode->getIdentifier();
             }
 
-            $savedNodes = $this->repository->findSavedNodesByRequestAndIdentifiers($parserRequest, $parsedNodesIdentifiers);
+            $savedNodes = $this->repository->findByParentAndIdentifiers($parentNodeEntity, $parsedNodesIdentifiers);
 
             if ($savedNodes) {
                 /** @var Node $savedNode */
@@ -116,41 +126,21 @@ class NodeManager extends EntityManager
                     foreach ($savedNodes as $savedNodeKey => $savedNode) { // update statuses
                         if ($savedNode->getIdentifier() == $parsedNode->getIdentifier()) {
                             unset($parsedNodesForSave[$parsedNodeKey]); // no need to save this node, update only;
-                            $savedNode->refreshLastViewedAt();
 
-                            if ($savedNode->getImagesNo() !== $parsedNode->getImagesNo()) {
-                                $savedNode->setImagesNo($parsedNode->getImagesNo());
-                                $savedNode->setRatio($parsedNode->getRatio());
-                                $savedNode->setCommentsNo($parsedNode->getCommentsNo());
+                            if ($parentNodeEntity) {
                                 $savedNode->setParentNode($parentNodeEntity);
-
-                                // more images? Adding 'new content' info;
-                                $parsedNodes[$parsedNodeKey]->addStatus(NodeStatus::NewContent);
                             }
 
+                            $this->updateNodeStatuses($parsedNode, $savedNode);
                             $this->em->persist($savedNode);
 
-                            foreach (NodeStatus::getData() as $status) {
-                                $statusGetter = 'get'.ucfirst($status);
-
-                                if (method_exists($savedNode, $statusGetter) && $savedNode->$statusGetter()) {
-                                    $parsedNodes[$parsedNodeKey]->addStatus($status);
-                                    $parsedNodes[$parsedNodeKey][$status] = $status;
-                                }
-                            }
+                            $parsedNodes[$parsedNodeKey] = $parsedNode;
                         }
                     }
                 }
 
-                usort($parsedNodes, function(ParsedNode $node1, ParsedNode $node2) : int { // sorting nodes - favorites on top
-                    if ($node1->isFavorited() === $node2->isFavorited()) {
-                        return 0;
-                    }
-
-                    return ((int)$node1->isFavorited() > (int)$node2->isFavorited()) ? -1 : 1;
-                });
-
-                $parserRequest->setParsedNodes($parsedNodes);
+                // set and sort parsed nodes;
+                $parserRequest->setParsedNodes($parsedNodes)->sortParsedNodesByStatus(['favorited' => 'DESC']);
             }
 
             if ($parsedNodesForSave) {
@@ -167,6 +157,30 @@ class NodeManager extends EntityManager
         }
 
         return $parserRequest;
+    }
+
+    public function updateNodeStatuses(ParsedNode &$parsedNode, Node &$savedNode): void
+    {
+        $savedNode->refreshLastViewedAt();
+
+        if ($savedNode->getImagesNo() !== $parsedNode->getImagesNo()) {
+            $savedNode->setImagesNo($parsedNode->getImagesNo());
+            $savedNode->setRatio($parsedNode->getRatio());
+            $savedNode->setCommentsNo($parsedNode->getCommentsNo());
+
+            // more images? Adding 'new content' info;
+            $parsedNode->addStatus(NodeStatus::NewContent);
+        }
+
+        foreach (NodeStatus::getData() as $status) {
+            $statusGetter = 'get'.ucfirst(StringHelper::underscoreToCamelCase($status));
+            $statusSetter = 'set'.ucfirst(StringHelper::underscoreToCamelCase($status));
+
+            if (method_exists($savedNode, $statusGetter) && $savedNode->$statusGetter()) {
+                $parsedNode->addStatus($status, true);
+                $parsedNode->$statusSetter($savedNode->$statusGetter());
+            }
+        }
     }
 
     /**

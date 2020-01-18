@@ -71,15 +71,13 @@ class RedditParser extends AbstractParser implements ParserInterface
 
                 if ($subreddits && $subreddits->data && count($subreddits->data->children) > 0) {
                     foreach ($subreddits->data->children as $subreddit) {
-                        $parserRequest->parsedNodes[] = $this->modelConverter->convert(
-                            (new ParsedNode(ParserType::Reddit, NodeLevel::BoardsList))
-                                ->setName($subreddit->data->title)
-                                ->setDescription(trim($subreddit->data->public_description))
-                                ->setNextLevel(NodeLevel::Board)
-                                ->setUrl($subreddit->data->display_name_prefixed)
-                                ->setIdentifier($subreddit->data->display_name_prefixed)
-                                ->setNoImage(true)
-                        );
+                        $parserRequest->parsedNodes[] = (new ParsedNode(ParserType::Reddit, NodeLevel::Board))
+                            ->setName($subreddit->data->title)
+                            ->setDescription(trim($subreddit->data->public_description))
+                            ->setUrl($subreddit->data->display_name_prefixed)
+                            ->setIdentifier($subreddit->data->display_name_prefixed)
+                            ->setNoImage(true)
+                        ;
                     }
                 }
 

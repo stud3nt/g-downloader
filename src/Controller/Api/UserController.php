@@ -20,9 +20,11 @@ class UserController extends Controller
     {
         $fileCache = new FileCache($this->getUser());
 
-        // TODO: Replace with jsonSuccess
-        return $this->json(
-            $fileCache->get(CacheType::PageLoaderStatus)
+        return $this->jsonSuccess(
+            $fileCache->get(CacheType::PageLoaderStatus, [
+                'progress' => 1,
+                'description' => ''
+            ])
         );
     }
 
