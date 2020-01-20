@@ -189,4 +189,11 @@ class FilesHelper
 
         return (int)$sizeValue;
     }
+
+    public static function createFolderNameFromString(string $customName): string
+    {
+        return mb_strtolower(
+            preg_replace('/[^a-zA-Z0-9\-\_ ]/', '_', $customName)
+        );
+    }
 }

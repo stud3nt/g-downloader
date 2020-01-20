@@ -111,11 +111,11 @@ class HentaiFoundryParser extends AbstractParser implements ParserInterface
 
     /**
      * @param Dom $dom
-     * @return array
+     * @return ParsedFile[]
      * @throws \PHPHtmlParser\Exceptions\ChildNotFoundException
      * @throws \PHPHtmlParser\Exceptions\NotLoadedException
      */
-    private function parseFilesPageData(Dom $dom) : array
+    private function parseFilesPageData(Dom $dom): array
     {
         $files = [];
 
@@ -128,10 +128,13 @@ class HentaiFoundryParser extends AbstractParser implements ParserInterface
             $thumbnailStyle = $thumbnailSpan->getAttribute('style');
             $thumbnailUrl = substr($thumbnailStyle, strpos($thumbnailStyle, 'url(') + 4);
             $fileUrl = substr($imageAnchor->getAttribute('href'), 1);
+            $fileUrlStart = substr($fileUrl, 0, 4);
 
-            if (strpos($thumbnailUrl, 'symbolFlash.jpg')) { // flash animation? NO, THX!!!
+            if (strpos($thumbnailUrl, 'symbolFlash.jpg')) // flash animation? NO, THX!!!
                 continue;
-            }
+
+            if ($fileUrlStart !== 'http' && $fileUrlStart === '//pi')
+                $fileUrl = 'https:'.$fileUrl;
 
             $files[] = (new ParsedFile(ParserType::HentaiFoundry, FilesHelper::getFileType($fileUrl)))
                 ->setUrl($fileUrl)
@@ -175,7 +178,7 @@ class HentaiFoundryParser extends AbstractParser implements ParserInterface
 
             $this->setPageLoaderProgress(20);
 
-            $rawFiles = $this->parseFilesPageData($dom);
+            $parsedFiles = $this->parseFilesPageData($dom);
 
             if (count($dom->find('.last')) > 0) {
                 $lastDiv = $dom->find('.last');
@@ -188,26 +191,26 @@ class HentaiFoundryParser extends AbstractParser implements ParserInterface
                     for ($page = 2; $page <= $limit; $page++) {
                         $galleryUrl = $this->mainBoardUrl.$parserRequest->currentNode->url.'/page/'.$page;
                         $pageDom = $this->loadDomFromUrl($galleryUrl);
-                        $rawFiles = array_merge($rawFiles, $this->parseFilesPageData($pageDom));
+                        $parsedFiles = array_merge($parsedFiles, $this->parseFilesPageData($pageDom));
                     }
                 }
             }
 
-            if ($rawFiles) {
-                $this->startProgress('get_gallery_data', count($rawFiles), 20, 90);
+            if ($parsedFiles) {
+                $this->startProgress('get_gallery_data', count($parsedFiles), 20, 90);
 
                 if (strtoupper($options['direction']) == 'ASC') { // reverse array order;
-                    $rawFiles = array_reverse($rawFiles, false);
+                    $parsedFiles = array_reverse($parsedFiles, false);
                 }
 
-                foreach ($rawFiles as $rawFileIndex => $rawFile) {
-                    $this->curlRequest->addRequestFromUrl($this->mainBoardUrl.$rawFile['url'], [
-                        'customKey' => $rawFileIndex
+                foreach ($parsedFiles as $parsedFileIndex => $parsedFile) {
+                    $this->curlRequest->addRequestFromUrl($this->mainBoardUrl.$parsedFile->getUrl(), [
+                        'customKey' => $parsedFileIndex
                     ]);
 
                     $convertedFileIndex = 0;
 
-                    if (($rawFileIndex + 1) % 10 === 0 || ($rawFileIndex + 1) === count($rawFiles)) {
+                    if (($parsedFileIndex + 1) % 10 === 0 || ($parsedFileIndex + 1) === count($parsedFiles)) {
                         $results = $this->curlRequest->executeRequests();
 
                         foreach ($results as $resultKey => $fileHtml) {
@@ -220,10 +223,10 @@ class HentaiFoundryParser extends AbstractParser implements ParserInterface
 
                             if ($image->hasAttribute('onclick')) {
                                 $onclick = $image->getAttribute('onclick');
-                                $imageSrc = 'http:'.str_replace('this.src=\'', '', $onclick);
+                                $imageSrc = 'https:'.str_replace('this.src=\'', '', $onclick);
                                 $imageSrc = substr(0, strpos($imageSrc, '\';'));
                             } else {
-                                $imageSrc = 'http:'.$image->getAttribute('src');
+                                $imageSrc = 'https:'.$image->getAttribute('src');
                             }
 
                             $imageName = FilesHelper::getFileName($imageSrc);
@@ -247,9 +250,7 @@ class HentaiFoundryParser extends AbstractParser implements ParserInterface
 
                             $headersData = $this->getFileHeadersData($imageSrc);
 
-                            $parsedFile = new ParsedFile();
-
-                            $this->modelConverter->setData($rawFiles[$convertedFileIndex], $parsedFile);
+                            $parsedFile = $parsedFiles[$resultKey];
 
                             $files[$resultKey] = $parsedFile->setUploadedAt($imageUploadedAt)
                                 ->setFileUrl($imageSrc)

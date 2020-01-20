@@ -5,6 +5,7 @@ namespace App\Controller\Api;
 use App\Controller\Api\Base\Controller;
 use App\Converter\ModelConverter;
 use App\Enum\{NodeLevel};
+use App\Factory\ParsedNodeFactory;
 use App\Factory\ParserRequestFactory;
 use App\Manager\Object\FileManager;
 use App\Manager\Object\NodeManager;
@@ -98,9 +99,7 @@ class ParserController extends Controller
      */
     public function markNode(Request $request) : JsonResponse
     {
-        $nodeModel = new ParsedNode();
-        $this->modelConverter->setData($request->request->all(), $nodeModel);
-        $nodeModel->setStatusesFromArray();
+        $nodeModel = (new ParsedNodeFactory())->buildFromRequestData($request->request->all());
 
         $this->nodeManager->updateNodeInDatabase(
             $this->modelConverter->convert($nodeModel)

@@ -105,7 +105,8 @@ class NodeManager extends EntityManager
         $parentNodeEntity = $this->repository->findOneByParsedNode($parentNode);
 
         // complete statuses for parent node;
-        $this->updateNodeStatuses($parentNode, $parentNodeEntity);
+        if ($parentNodeEntity)
+            $this->updateNodeStatuses($parentNode, $parentNodeEntity);
 
         $parserRequest->setCurrentNode($parentNode);
 

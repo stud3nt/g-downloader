@@ -28,4 +28,6 @@ interface ParserInterface
     public function getFilePreview(ParsedFile &$parsedFile): ParsedFile;
 
     public function generateFileCurlRequest(File &$file): File;
+
+    public function determineFileSubfolder(File $file): ?string;
 }

@@ -12,6 +12,8 @@ import { Pagination } from "../../model/pagination";
 import { NodesListComponent } from "./nodes-list/nodes-list.component";
 import { NodeStatus } from "../../enum/node-status";
 import { RouterService } from "../../service/router.service";
+import {PaginationMode} from "../../enum/pagination-mode";
+import {ParsedFile} from "../../model/parsed-file";
 
 @Component({
 	selector: 'app-parser',
@@ -39,16 +41,18 @@ export class ParserComponent implements OnInit {
 	public NodeLevel = NodeLevel;
 	public NodeStatus = NodeStatus;
 
-	public highestLevel = true;
 	public parserBreadcrumbs = [];
 
 	/** Template variables **/
 	public actionBeltClass: string = ''; // classes for action belt
 	public actionBeltMaskClass: string = ''; // classes for action belt mask
+	public scrollTopClass: string = ''; // classes for "scroll top" button
 	public previousNodeUrl: string = null;
 	public nextNodeUrl: string = null;
 
 	public nodesListComponent: NodesListComponent;
+
+	private filesTemp: ParsedFile[] = [];
 
 	constructor(
 		private headerData: ContentHeaderDataService,
@@ -138,11 +142,16 @@ export class ParserComponent implements OnInit {
 	public determineActionBeltClass(): void {
 		this.actionBeltClass = 'actionbelt_container' + ((this.scrollY > 80) ? ' fixed' : '');
 		this.actionBeltMaskClass = 'actionbelt_mask' + ((this.scrollY > 80) ? ' visible' : '');
+		this.scrollTopClass = 'scroll-top-container'+((this.scrollY > 200) ? ' visible' : '');
 	}
 
 	public toggleSettingsModal(): void {
 
 	}
+
+	public scrollTop(): void {
+		window.scrollTo(0, 0);
+	};
 
 	/**
 	 * Changes page of currently viewed node.
@@ -150,10 +159,14 @@ export class ParserComponent implements OnInit {
 	 * @param pagination - pagination settings;
 	 */
 	public changeNodePage(pagination: Pagination): void {
+		this.filesTemp = (pagination.mode === PaginationMode.LoadMore) // new files will be added to current;
+			? this.parserRequest.files
+			: null;
+
 		this.parserRequest.pagination = pagination;
-		this.parserRequest.clearParsedData();
-		this.sendParserRequest()
-	}
+	 	this.parserRequest.clearParsedData();
+		this.sendParserRequest();
+	};
 
 	/**
 	 * Scrolling event function - saves scroll position and runs classes function for action belt;
@@ -170,7 +183,7 @@ export class ParserComponent implements OnInit {
 	private initializeParserRequestObject() : void {
 		this.parserRequest = new ParserRequest();
 		this.parserRequest.currentNode = this.initializeParserNodeObject();
-	}
+	};
 
 	/**
 	 * Creates initial ParserNodeObject with absolutely basic datas;
@@ -183,7 +196,7 @@ export class ParserComponent implements OnInit {
 		node.identifier = this.nodeIdentifier;
 
 		return node;
-	}
+	};
 
 	/**
 	 * Sends data to parser API
@@ -194,17 +207,18 @@ export class ParserComponent implements OnInit {
 
 		this.pageLoaderDataService.setProgress(1).show().enableRefreshingFromApi();
 
+		if (this.filesTemp) // adding new files at end of list;
+			this.parserRequest.files = this.filesTemp;
+
 		this.parserService.sendParserActionRequest(this.parserRequest).subscribe((response : ParserRequest) => {
 			this.parserRequest = response;
-			this.highestLevel = (this.parserRequest.currentNode.level === this.parserSettings[this.parserName]['initialLevel']);
-			this.previousNodeUrl = (response.previousNode) ? this.routerService.generateUrl('app_node', {
-				'parserName': response.previousNode.parser,
-				'nodeIdentifier': response.previousNode.identifier
-			}) : null;
-			this.nextNodeUrl = (response.nextNode) ? this.routerService.generateUrl('app_node', {
-				'parserName': response.nextNode.parser,
-				'nodeIdentifier': response.nextNode.identifier
-			}) : null;
+			this.previousNodeUrl = (response.previousNode) ? this.routerService.generateNodeUrl(response.previousNode) : null;
+			this.nextNodeUrl = (response.nextNode) ? this.routerService.generateNodeUrl(response.nextNode) : null;
+
+			if (this.filesTemp) // adding new files at end of list;
+				this.parserRequest.files = [...this.filesTemp, ...this.parserRequest.files];
+
+			console.log(this.parserRequest.files);
 
 			if (successFunction)
 				successFunction();
@@ -219,7 +233,7 @@ export class ParserComponent implements OnInit {
 			if (completeFunction)
 				completeFunction();
 		});
-	}
+	};
 
 	/**
 	 * Determines parser name based by URL address;

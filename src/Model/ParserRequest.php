@@ -60,7 +60,7 @@ class ParserRequest extends AbstractModel
     public $pagination;
 
     /**
-     * @var array
+     * @var \stdClass
      * @ModelVariable(type="stdClass")
      */
     public $tokens;
@@ -88,7 +88,10 @@ class ParserRequest extends AbstractModel
         $this->clearData();
     }
 
-    public function clearData()
+    /**
+     * @return ParserRequest
+     */
+    public function clearData(): self
     {
         $this->data = new \stdClass();
         $this->tokens = new \stdClass();
@@ -101,6 +104,19 @@ class ParserRequest extends AbstractModel
         $this->tokens->after = null;
 
         $this->pagination = new Pagination();
+
+        return $this;
+    }
+
+    /**
+     * @return ParserRequest
+     */
+    public function clearParsedData(): self
+    {
+        $this->files = [];
+        $this->parsedNodes = [];
+
+        return $this;
     }
 
     /**
@@ -308,6 +324,14 @@ class ParserRequest extends AbstractModel
     public function setFiles(array $files): self
     {
         $this->files = $files;
+
+        return $this;
+    }
+
+
+    public function addFile(ParsedFile $file): self
+    {
+        $this->files[] = $file;
 
         return $this;
     }

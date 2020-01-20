@@ -20,9 +20,6 @@ class ParserRequestFactory implements RequestFactoryInterface
         $modelConverter = new ModelConverter();
         $modelConverter->setData($requestData, $parserRequest);
 
-        // clear files and nodes sent from outside;
-        $parserRequest->clearFiles()->clearParsedNodes();
-
         return $parserRequest;
     }
 }

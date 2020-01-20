@@ -2,6 +2,7 @@
 
 namespace App\Parser;
 
+use App\Entity\Parser\File;
 use App\Enum\NodeLevel;
 use App\Enum\ParserType;
 use App\Model\ParsedFile;
@@ -49,6 +50,8 @@ class Boards4chanParser extends AbstractParser implements ParserInterface
      */
     public function getBoardsListData(ParserRequest &$parserRequest) : ParserRequest
     {
+        $parserRequest->clearParsedData();
+
         if (!$this->getParserCache($parserRequest)) {
             // @var HtmlNode $column
             // @var HtmlNode $anchor
@@ -67,12 +70,12 @@ class Boards4chanParser extends AbstractParser implements ParserInterface
             foreach ($domColumns as $column) {
                 if ($column->find('h3')->text() === 'Adult') {
                     foreach ($column->find('a.boardlink') as $anchor) {
-                        $parserRequest->parsedNodes[] = (new ParsedNode(ParserType::Boards4chan, NodeLevel::Board))
+                        $parserRequest->addParsedNode((new ParsedNode(ParserType::Boards4chan, NodeLevel::Board))
                             ->setName($anchor->text())
                             ->setUrl('https:'.$anchor->getAttribute('href').'catalog')
                             ->setIdentifier($this->getBoardSymbol($anchor->getAttribute('href')))
                             ->setNoImage(true)
-                        ;
+                        );
                     }
                 }
             }
@@ -92,7 +95,9 @@ class Boards4chanParser extends AbstractParser implements ParserInterface
      */
     public function getBoardData(ParserRequest &$parserRequest) : ParserRequest
     {
-        $parserRequest->pagination->disable();
+        $parserRequest->clearParsedData()
+            ->pagination
+            ->disable();
 
         $this->updateUrlsFromBoardUrls($parserRequest->currentNode->getUrl());
 
@@ -153,7 +158,7 @@ class Boards4chanParser extends AbstractParser implements ParserInterface
                             );
                         }
 
-                        $parserRequest->parsedNodes[] = $node;
+                        $parserRequest->addParsedNode($node);
                         $this->progressStep('get_board_data');
                     }
                 }
@@ -167,6 +172,12 @@ class Boards4chanParser extends AbstractParser implements ParserInterface
         return $parserRequest;
     }
 
+    /**
+     * Extracting file information (width, height, size) from string (eq. "(188 KB, 960x960)")
+     *
+     * @param string $text
+     * @return array
+     */
     private function extractFileInfoFromText(string $text)
     {
         $clearText = str_replace(['File:  (', ')'], ['', ''], $text);
@@ -188,6 +199,8 @@ class Boards4chanParser extends AbstractParser implements ParserInterface
      */
     public function getGalleryData(ParserRequest &$parserRequest) : ParserRequest
     {
+        $parserRequest->clearParsedNodes();
+
         if (!$this->getParserCache($parserRequest)) {
             $parserRequest->pagination->disable();
 
@@ -238,15 +251,15 @@ class Boards4chanParser extends AbstractParser implements ParserInterface
                             }
 
                             $parsedFile->setLocalThumbnail(UrlHelper::prepareLocalUrl($localThumbnailUrl));
-
-                            $this->setParserCache($parserRequest, 300);
-                            $parserRequest->files[] = $parsedFile;
+                            $parserRequest->addFile($parsedFile);
                         }
                     }
                 }
 
                 $this->progressStep('get_gallery_data');
             }
+
+            $this->setParserCache($parserRequest, 300);
         }
 
         return $parserRequest;
@@ -276,6 +289,19 @@ class Boards4chanParser extends AbstractParser implements ParserInterface
         $parsedFile->setLocalUrl($previewWebPath);
 
         return $parsedFile;
+    }
+
+    public function determineFileSubfolder(File $file): ?string
+    {
+        $subfolder = '';
+
+        if ($gallery = $file->getParentNode()) {
+            if ($board = $gallery->getParentNode()) {
+                $subfolder = DIRECTORY_SEPARATOR.FilesHelper::createFolderNameFromString($board->getName());
+            }
+        }
+
+        return $subfolder;
     }
 
     protected function getBoardSymbol(string $boardUrl) : string

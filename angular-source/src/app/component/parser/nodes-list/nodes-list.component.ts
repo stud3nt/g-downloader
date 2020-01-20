@@ -1,27 +1,35 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { ParserRequest } from "../../../model/parser-request";
 import { NodeStatus } from "../../../enum/node-status";
 import { ParserService } from "../../../service/parser.service";
 import { ParserNode } from "../../../model/parser-node";
 import { RouterService } from "../../../service/router.service";
+import { NodeLevel } from "../../../enum/node-level";
 
 @Component({
   selector: 'app-nodes-list',
   templateUrl: './nodes-list.component.html'
 })
-export class NodesListComponent {
+export class NodesListComponent implements OnInit {
 
 	@Input() parserRequest: ParserRequest;
 
 	public NodeStatus = NodeStatus;
+	public NodeLevel = NodeLevel;
 
 	// controller - if true, all tiles are locked (non-clickable);
 	public lockTiles = false;
+
+	public currentUrl: string = '';
 
 	constructor(
 		private parserService: ParserService,
 		public routerService: RouterService
 	) { }
+
+	ngOnInit(): void {
+		this.currentUrl = document.location.pathname;
+	}
 
 	/**
 	 * Marks node with specified status;

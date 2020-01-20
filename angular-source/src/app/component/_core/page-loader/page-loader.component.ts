@@ -86,6 +86,9 @@ export class PageLoaderComponent extends HttpService implements OnInit {
 			if (response.success()) {
 				Object.assign(this.preloaderData, response.data);
 
+				if (this.preloaderData.progress > 0 && this.preloaderData.progress < 100)
+					this.preloaderData.visible = true;
+
 				clearTimeout(this.refreshDataTimeout);
 
 				if (this.preloaderData.progress < 100) {

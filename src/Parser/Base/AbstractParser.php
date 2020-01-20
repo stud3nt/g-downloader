@@ -44,7 +44,7 @@ class AbstractParser
     /** @var User */
     private $user;
 
-    // local folders folders
+    // local folders
     protected $thumbnailTempDir;
     protected $thumbnailFolder;
     protected $previewTempDir;
@@ -114,15 +114,29 @@ class AbstractParser
      */
     public function generateFileCurlRequest(File &$file): File
     {
+        $curlService = new CurlRequest();
         $ds = DIRECTORY_SEPARATOR;
         $fs = new Filesystem();
-        $curlService = new CurlRequest();
+
         $targetDirectory = $this->settings->getCommonSetting('downloadDirectory');
         $targetDirectory .= $ds.$this->parserName;
 
         if ($parserDownloadFolder = $this->settings->getParserSetting($this->parserName, 'downloadFolder')) {
-            $targetDirectory .= $ds.$this->prepareParserDownloadFolder($parserDownloadFolder);
+            preg_match_all('/\%[a-zA-Z0-9]{1,}\%/', $parserDownloadFolder, $variables);
+
+            // replacing url phrases with config values
+            if ($variables[0] && count($variables[0]) > 0) {
+                foreach ($variables[0] as $variable) {
+                    $variableName = str_replace('%', '', $variable);
+                    $configValue = $this->settings->getParserSetting($this->parserName, $variableName);
+                    $parserDownloadFolder = str_replace($parserDownloadFolder, $variable, $configValue);
+                }
+            }
+
+            $targetDirectory .= $ds.str_replace('%', '', $parserDownloadFolder);
         }
+
+        $targetDirectory .= $this->determineFileSubfolder($file);
 
         if (!$fs->exists($targetDirectory)) {
             $fs->mkdir($targetDirectory, 0777);
@@ -139,20 +153,9 @@ class AbstractParser
         return $file;
     }
 
-    protected function prepareParserDownloadFolder(string $rawDownloadFolder): ?string
+    public function determineFileSubfolder(File $file): ?string
     {
-        preg_match_all('/\%[a-zA-Z0-9]{1,}\%/', $rawDownloadFolder, $variables);
-
-        if ($variables[0] && count($variables[0]) > 0) {
-            foreach ($variables[0] as $variable) {
-                $variableName = str_replace('%', '', $variable);
-                $configValue = $this->settings->getParserSetting($this->parserName, $variableName);
-
-                $rawDownloadFolder = str_replace($rawDownloadFolder, $variable, $configValue);
-            }
-        }
-
-        return str_replace('%', '', $rawDownloadFolder);
+        return '';
     }
 
     /**

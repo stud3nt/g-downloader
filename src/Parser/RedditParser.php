@@ -2,6 +2,7 @@
 
 namespace App\Parser;
 
+use App\Entity\Parser\File;
 use App\Entity\User;
 use App\Enum\FileType;
 use App\Enum\NodeLevel;
@@ -58,6 +59,8 @@ class RedditParser extends AbstractParser implements ParserInterface
      */
     public function getBoardsListData(ParserRequest &$parserRequest) : ParserRequest
     {
+        $parserRequest->clearParsedData();
+
         if (!$this->getParserCache($parserRequest)) {
             $after = null;
             $nextPage = true;
@@ -71,13 +74,13 @@ class RedditParser extends AbstractParser implements ParserInterface
 
                 if ($subreddits && $subreddits->data && count($subreddits->data->children) > 0) {
                     foreach ($subreddits->data->children as $subreddit) {
-                        $parserRequest->parsedNodes[] = (new ParsedNode(ParserType::Reddit, NodeLevel::Board))
+                        $parserRequest->addParsedNode((new ParsedNode(ParserType::Reddit, NodeLevel::Board))
                             ->setName($subreddit->data->title)
                             ->setDescription(trim($subreddit->data->public_description))
                             ->setUrl($subreddit->data->display_name_prefixed)
                             ->setIdentifier($subreddit->data->display_name_prefixed)
                             ->setNoImage(true)
-                        ;
+                        );
                     }
                 }
 
@@ -106,51 +109,54 @@ class RedditParser extends AbstractParser implements ParserInterface
      */
     public function getBoardData(ParserRequest &$parserRequest) : ParserRequest
     {
-        $parserRequest->pagination->loadMorePagination();
+        $parserRequest->clearParsedData()
+            ->pagination->loadMorePagination();
 
-        if (!$this->getParserCache($parserRequest)) {
-            $parserRequest->parsedNodes = [];
-            $subreddit = $this->redditApi->getSubreddit($parserRequest);
+        $subreddit = $this->redditApi->getSubreddit($parserRequest);
 
-            $this->setPageLoaderProgress(90);
+        $this->setPageLoaderProgress(20);
 
-            if ($subreddit) {
-                foreach ($subreddit->data->children as $index => $child) {
-                    if (property_exists($child->data, 'crosspost_parent_list')) { // this is not post, but crosspost :/
-                        foreach ($child->data->crosspost_parent_list as $parentChild) {
-                            if (property_exists($parentChild, 'preview')) {
-                                $childData = $this->processBoardChildData($parentChild);
+        if ($subreddit) {
+            $this->startProgress('get_board_data', 100, 20, 90);
 
-                                if ($childData) {
-                                    foreach ($childData as $nodeObject) {
-                                        $parserRequest->files[] = $nodeObject;
-                                    }
+            foreach ($subreddit->data->children as $childIndex => $child) {
+                if (property_exists($child->data, 'crosspost_parent_list')) { // this is not post, but crosspost :/
+                    foreach ($child->data->crosspost_parent_list as $parentChild) {
+                        if (property_exists($parentChild, 'preview')) {
+                            $childData = $this->processBoardChildData($parentChild);
+
+                            if ($childData) {
+                                foreach ($childData as $file) {
+                                    $parserRequest->addFile($file);
                                 }
                             }
                         }
-                    } else {
-                        if (property_exists($child->data, 'preview')) {
-                            $childData = $this->processBoardChildData($child->data);
+                    }
+                } else {
+                    if (property_exists($child->data, 'preview')) {
+                        $childData = $this->processBoardChildData($child->data);
 
-                            if ($childData) {
-                                foreach ($childData as $nodeObject) {
-                                    $parserRequest->files[] = $nodeObject;
-                                }
+                        if ($childData) {
+                            foreach ($childData as $file) {
+                                $parserRequest->addFile($file);
                             }
                         }
                     }
                 }
 
-                $this->cache->set('listing.'.$this->getSubredditName($parserRequest), [
-                    'before' => $subreddit->data->before,
-                    'after' => $subreddit->data->after
-                ]);
-
-                $parserRequest->tokens->after = $subreddit->data->after;
-                $parserRequest->tokens->before = $subreddit->data->before;
-
-                $this->setParserCache($parserRequest, 90);
+                $this->progressStep('get_board_data');
             }
+
+            $this->endProgress('get_board_data');
+            $this->setPageLoaderProgress(95);
+
+            $this->cache->set('listing.'.$this->getSubredditName($parserRequest), [
+                'before' => $subreddit->data->before,
+                'after' => $subreddit->data->after
+            ]);
+
+            $parserRequest->tokens->after = $subreddit->data->after;
+            $parserRequest->tokens->before = $subreddit->data->before;
         }
 
         return $parserRequest;
@@ -259,7 +265,7 @@ class RedditParser extends AbstractParser implements ParserInterface
 
         $parsedFile->setLocalUrl($previewWebPath);
 
-        $this->downloadFile($parsedFile->getFileUrl(), $previewFilePath);
+        $this->downloadFile($parsedFile->getFileUrl() ?? $parsedFile->getUrl(), $previewFilePath);
 
         return $parsedFile;
     }
@@ -279,37 +285,16 @@ class RedditParser extends AbstractParser implements ParserInterface
         return '';
     }
 
-    private function getThumbnailsFromChild(\stdClass $child, bool $onlyFirst = false)
+    public function determineFileSubfolder(File $file): ?string
     {
-        $thumbnails = [];
+        $subfolder = '';
 
-        if ($child && $child->preview->images) {
-            foreach ($child->preview->images as $image) {
-                $thumbnail = null;
-
-                foreach ($image->resolutions as $imagePreview) {
-                    if ($imagePreview->width > 230 || $imagePreview->height > 260) {
-                        if ($onlyFirst) {
-                            return $imagePreview->url;
-                        } else {
-                            $thumbnail = $imagePreview->url;
-                        }
-
-                        break;
-                    }
-                }
-
-                // no image found? Get last;
-                if ($onlyFirst) {
-                    return end($image->resolutions)->url;
-                } elseif (empty($thumbnail)) {
-                    $thumbnails[] = (empty($thumbnail))
-                        ? end($image->resolutions)->url
-                        : $thumbnail;
-                }
+        if ($parentNode = $file->getParentNode()) {
+            if ($parentNode->getLevel() === NodeLevel::Board) {
+                $subfolder = DIRECTORY_SEPARATOR.FilesHelper::createFolderNameFromString($parentNode->getName());
             }
         }
 
-        return $thumbnails;
+        return $subfolder;
     }
 }
