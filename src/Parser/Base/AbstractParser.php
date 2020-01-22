@@ -7,7 +7,7 @@ use App\Entity\Parser\File;
 use App\Entity\User;
 use App\Enum\NodeLevel;
 use App\Enum\PaginationMode;
-use App\Model\ParserRequestModel;
+use App\Model\ParserRequest;
 use App\Model\SettingsModel;
 use App\Service\{FileCache, CurlRequest};
 use App\Traits\PageLoaderTrait;
@@ -44,7 +44,7 @@ class AbstractParser
     /** @var User */
     private $user;
 
-    // local folders folders
+    // local folders
     protected $thumbnailTempDir;
     protected $thumbnailFolder;
     protected $previewTempDir;
@@ -106,17 +106,37 @@ class AbstractParser
         $this->clearCache();
     }
 
+    /**
+     * Generates CURL request for file download and defines file locations (temporary and target);
+     *
+     * @param File $file
+     * @return File
+     */
     public function generateFileCurlRequest(File &$file): File
     {
+        $curlService = new CurlRequest();
         $ds = DIRECTORY_SEPARATOR;
         $fs = new Filesystem();
-        $curlService = new CurlRequest();
+
         $targetDirectory = $this->settings->getCommonSetting('downloadDirectory');
         $targetDirectory .= $ds.$this->parserName;
 
         if ($parserDownloadFolder = $this->settings->getParserSetting($this->parserName, 'downloadFolder')) {
-            $targetDirectory .= $ds.$this->prepareParserDownloadFolder($parserDownloadFolder);
+            preg_match_all('/\%[a-zA-Z0-9]{1,}\%/', $parserDownloadFolder, $variables);
+
+            // replacing url phrases with config values
+            if ($variables[0] && count($variables[0]) > 0) {
+                foreach ($variables[0] as $variable) {
+                    $variableName = str_replace('%', '', $variable);
+                    $configValue = $this->settings->getParserSetting($this->parserName, $variableName);
+                    $parserDownloadFolder = str_replace($parserDownloadFolder, $variable, $configValue);
+                }
+            }
+
+            $targetDirectory .= $ds.str_replace('%', '', $parserDownloadFolder);
         }
+
+        $targetDirectory .= $this->determineFileSubfolder($file);
 
         if (!$fs->exists($targetDirectory)) {
             $fs->mkdir($targetDirectory, 0777);
@@ -124,25 +144,18 @@ class AbstractParser
 
         $file->setTargetFilePath($targetDirectory.$ds.$file->getName().'.jpg');
         $file->setTempFilePath($this->previewTempDir.$file->getName().'.'.$file->getExtension());
-        $file->setCurlRequest($curlService->prepareCurlRequest($file->getFileUrl()));
+        $file->setCurlRequest(
+            $curlService->prepareCurlRequest(
+                $file->getFileUrl() ?? $file->getUrl()
+            )
+        );
 
         return $file;
     }
 
-    protected function prepareParserDownloadFolder(string $rawDownloadFolder): ?string
+    public function determineFileSubfolder(File $file): ?string
     {
-        preg_match_all('/\%[a-zA-Z0-9]{1,}\%/', $rawDownloadFolder, $variables);
-
-        if ($variables[0] && count($variables[0]) > 0) {
-            foreach ($variables[0] as $variable) {
-                $variableName = str_replace('%', '', $variable);
-                $configValue = $this->settings->getParserSetting($this->parserName, $variableName);
-
-                $rawDownloadFolder = str_replace($rawDownloadFolder, $variable, $configValue);
-            }
-        }
-
-        return str_replace('%', '', $rawDownloadFolder);
+        return '';
     }
 
     /**
@@ -250,25 +263,22 @@ class AbstractParser
     /**
      * Read cache data based on request;
      *
-     * @param ParserRequestModel $parserRequestModel
-     * @return ParserRequestModel
+     * @param ParserRequest $parserRequest
+     * @return ParserRequest
      * @throws \Exception
      */
-    protected function getParserCache(ParserRequestModel &$parserRequestModel) : ?ParserRequestModel
+    protected function getParserCache(ParserRequest &$parserRequest) : ?ParserRequest
     {
-        if (!$parserRequestModel->ignoreCache) {
-            $cacheKey = $this->determineCacheKey($parserRequestModel);
+        if (!$parserRequest->ignoreCache) {
+            $cacheKey = $this->determineCacheKey($parserRequest);
 
             if ($this->cache->has($cacheKey)) {
-                $parserRequestModel->parsedNodes = [];
-                $parserRequestModel->files = [];
-
                 $cacheData = $this->cache->get($cacheKey);
 
                 if (!empty($cacheData)) {
-                    $this->modelConverter->setData($cacheData, $parserRequestModel, true);
+                    $this->modelConverter->setData($cacheData, $parserRequest, true);
 
-                    return $parserRequestModel;
+                    return $parserRequest;
                 }
             }
         }
@@ -282,32 +292,12 @@ class AbstractParser
      * @param string $key
      * @param $value
      * @param int $expirationTime (0 - unlimited)
+     * @throws \ReflectionException
      */
-    protected function setParserCache(ParserRequestModel &$parserRequestModel, $expirationTime = 10) : void
+    protected function setParserCache(ParserRequest &$parserRequest, $expirationTime = 10) : void
     {
-        $key = $this->determineCacheKey($parserRequestModel);
-        $data = [
-            'parsedNodes' => [],
-            'files' => [],
-            'pagination' => [
-                'mode' => null
-            ]
-        ];
-
-        switch ($parserRequestModel->level) {
-            case NodeLevel::Owner:
-            case NodeLevel::BoardsList:
-            case NodeLevel::Board:
-                $data['parsedNodes'] = $parserRequestModel->parsedNodes;
-                break;
-
-            case NodeLevel::Gallery:
-                $data['files'] = $parserRequestModel->files;
-                break;
-        }
-
-        $data['pagination']['active'] = json_decode(json_encode($parserRequestModel->pagination->active), true);
-        $data['pagination']['mode'] = json_decode(json_encode($parserRequestModel->pagination->mode), true);
+        $key = $this->determineCacheKey($parserRequest);
+        $data = $this->modelConverter->convert($parserRequest);
 
         $this->cache->set($key, $data, $expirationTime);
     }
@@ -315,15 +305,15 @@ class AbstractParser
     /**
      * Determines cache key based on ParserRequestModel
      *
-     * @param ParserRequestModel $parserRequestModel
+     * @param ParserRequest $parserRequest
      * @return string - cache key
      */
-    protected function determineCacheKey(ParserRequestModel $parserRequestModel) : string
+    protected function determineCacheKey(ParserRequest $parserRequest) : string
     {
-        $cacheKey = $this->parserName.'_'.$parserRequestModel->level;
+        $cacheKey = $this->parserName.'_'.$parserRequest->currentNode->getLevel();
 
-        if ($parserRequestModel->pagination->active) {
-            $pagination = $parserRequestModel->pagination;
+        if ($parserRequest->pagination->active) {
+            $pagination = $parserRequest->pagination;
 
             switch ($pagination->mode) {
                 case PaginationMode::Letters:
@@ -340,8 +330,8 @@ class AbstractParser
             }
         }
 
-        if ($parserRequestModel->currentNode->identifier) {
-            $cacheKey .= '_'.$parserRequestModel->currentNode->identifier;
+        if ($parserRequest->currentNode->getIdentifier()) {
+            $cacheKey .= '_'.$parserRequest->currentNode->getIdentifier();
         }
 
         return $cacheKey;

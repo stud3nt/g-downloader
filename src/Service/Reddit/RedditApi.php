@@ -2,7 +2,7 @@
 
 namespace App\Service\Reddit;
 
-use App\Model\ParserRequestModel;
+use App\Model\ParserRequest;
 use App\Model\SettingsModel;
 use GuzzleHttp\Client;
 use Symfony\Component\Cache\CacheItem;
@@ -51,15 +51,15 @@ class RedditApi
     }
 
     /**
-     * @param ParserRequestModel $parserRequestModel
+     * @param ParserRequest $parserRequest
      * @param string|null $after
      * @return bool|mixed|string
      * @throws \Psr\Cache\InvalidArgumentException
      */
-    public function getSubreddit(ParserRequestModel $parserRequestModel)
+    public function getSubreddit(ParserRequest $parserRequest)
     {
         $callOptions = array(
-            'after' => $parserRequestModel->tokens->after,
+            'after' => $parserRequest->tokens->after,
             'before' => null,
             'count' => 100,
             //'limit' => 100,
@@ -78,7 +78,7 @@ class RedditApi
             'thumbnail_width' => 200
         );
 
-        return $this->apiCall('/'.$parserRequestModel->currentNode->url."/new", "GET", $callOptions);
+        return $this->apiCall('/'.$parserRequest->currentNode->url."/new", "GET", $callOptions);
     }
 
     /**

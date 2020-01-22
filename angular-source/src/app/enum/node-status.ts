@@ -7,4 +7,27 @@ export class NodeStatus {
 	public static Saved: string = 'saved'; // saved in database;
 	public static Downloaded: string = 'downloaded'; // downloaded;
 	public static NewContent: string = 'new_content'; // new content available
+
+	public static buttonStatusClass(status: string): string {
+		switch (status) {
+			case NodeStatus.Waiting:
+				return 'btn-default';
+
+			case NodeStatus.Blocked:
+				return 'btn-danger';
+
+			case NodeStatus.Downloaded:
+			case NodeStatus.NewContent:
+			case NodeStatus.Finished:
+				return 'btn-success';
+
+			case NodeStatus.Queued:
+			case NodeStatus.Favorited:
+			case NodeStatus.Saved:
+				return 'btn-primary';
+
+		}
+
+		return 'btn-default';
+	}
 }

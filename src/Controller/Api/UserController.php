@@ -3,13 +3,10 @@
 namespace App\Controller\Api;
 
 use App\Controller\Api\Base\Controller;
-use App\Entity\User;
 use App\Enum\CacheType;
 use App\Service\FileCache;
-use App\Utils\CacheHelper;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 
 class UserController extends Controller
@@ -19,12 +16,15 @@ class UserController extends Controller
      * @IsGranted("ROLE_ADMIN")
      * @throws \Exception
      */
-    public function pageProgress() : JsonResponse
+    public function pageProgress(): JsonResponse
     {
         $fileCache = new FileCache($this->getUser());
 
-        return $this->json(
-            $fileCache->get(CacheType::PageLoaderStatus)
+        return $this->jsonSuccess(
+            $fileCache->get(CacheType::PageLoaderStatus, [
+                'progress' => 1,
+                'description' => ''
+            ])
         );
     }
 
@@ -32,13 +32,23 @@ class UserController extends Controller
      * @Route("/api/user/progress_reset", name="api_user_reset_operation_progress", methods={"GET"}, options={"expose":true})
      * @IsGranted("ROLE_ADMIN")
      */
-    public function pageProgressReset() : JsonResponse
+    public function pageProgressReset(): JsonResponse
     {
         $fileCache = new FileCache($this->getUser());
         $fileCache->remove(CacheType::PageLoaderStatus);
 
-        return $this->json([
-            'status' => 1
-        ]);
+        return $this->jsonSuccess();
+    }
+
+    /**
+     * @Route("/api/user/clear_cache", name="api_user_clear_cache", methods={"GET"}, options={"expose":true})
+     * @IsGranted("ROLE_ADMIN")
+     */
+    public function clearCache(): JsonResponse
+    {
+        $fileCache = new FileCache($this->getUser());
+        $fileCache->removeAll();
+
+        return $this->jsonSuccess();
     }
 }

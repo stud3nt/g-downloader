@@ -163,4 +163,16 @@ class Setting extends AbstractEntity
 
         return $this;
     }
+
+    public function getLevel(): ?int
+    {
+        return $this->level;
+    }
+
+    public function setLevel(?int $level): self
+    {
+        $this->level = $level;
+
+        return $this;
+    }
 }

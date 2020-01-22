@@ -114,9 +114,9 @@ class FileCache
             $expirationTimestamp = $this->getExpirationTimestamp($key);
 
             if ($expirationTimestamp === 0 || (new \DateTime())->setTimestamp($expirationTimestamp) >= (new \DateTime())) {
-                return $data;
+                return $data ? $data : $defaultValue;
             } else {
-                $this->clearCacheData($key);
+                $this->remove($key);
             }
         }
 
@@ -154,7 +154,7 @@ class FileCache
     {
         if ($this->expirationData) {
             foreach ($this->expirationData as $key => $timestamp) {
-                $this->clearCacheData($key);
+                $this->remove($key);
             }
         }
 

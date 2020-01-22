@@ -4,15 +4,13 @@ namespace App\Controller\Api;
 
 use App\Controller\Api\Base\Controller;
 use App\Converter\ModelConverter;
-use App\Enum\{NodeLevel, SettingsType};
+use App\Enum\{NodeLevel};
+use App\Factory\ParsedNodeFactory;
+use App\Factory\ParserRequestFactory;
 use App\Manager\Object\FileManager;
 use App\Manager\Object\NodeManager;
-use App\Manager\SettingsManager;
 use App\Model\ParsedNode;
-use App\Model\ParserRequestModel;
-use App\Parser\Base\ParserInterface;
 use App\Service\ParserService;
-use App\Utils\StringHelper;
 use Doctrine\ORM\ORMException;
 use Psr\Container\ContainerInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
@@ -53,37 +51,39 @@ class ParserController extends Controller
      */
     public function parsingAction(Request $request, ParserService $parserService) : JsonResponse
     {
-        $parserRequestModel = new ParserRequestModel();
-        $modelConverter = $this->get(ModelConverter::class);
-        $modelConverter->setData($request->request->all(), $parserRequestModel);
+        $parserRequest = (new ParserRequestFactory())->buildFromRequestData(
+            $request->request->all()
+        );
 
-        $parser = $parserService->loadParser($parserRequestModel->parser);
+        $this->nodeManager->completeCurrentNodeDataFromDb($parserRequest);
 
-        switch ($parserRequestModel->level) { // execute parser action
+        $parser = $parserService->loadParser($parserRequest->currentNode->parser);
+
+        switch ($parserRequest->currentNode->level) { // execute parser action - load nodes or files;
             case NodeLevel::Owner:
-                $parser->loadOwnersList($parserRequestModel);
+                $parser->getOwnersList($parserRequest);
                 break;
 
             case NodeLevel::BoardsList:
-                $parser->getBoardsListData($parserRequestModel);
+                $parser->getBoardsListData($parserRequest);
                 break;
 
             case NodeLevel::Board:
-                $parser->getBoardData($parserRequestModel);
+                $parser->getBoardData($parserRequest);
                 break;
 
             case NodeLevel::Gallery:
-                $parser->getGalleryData($parserRequestModel);
+                $parser->getGalleryData($parserRequest);
                 break;
         }
 
-        $this->nodeManager->completeParsedStatuses($parserRequestModel);
-        $this->fileManager->completeParsedStatuses($parserRequestModel);
+        $this->nodeManager->completeParsedNodes($parserRequest);
+        $this->fileManager->completeParsedStatuses($parserRequest);
 
-        $parserRequestModel->ignoreCache = false;
+        $parserRequest->ignoreCache = false;
 
         return $this->json(
-            $modelConverter->convert($parserRequestModel)
+            $this->modelConverter->convert($parserRequest)
         );
     }
 
@@ -99,9 +99,7 @@ class ParserController extends Controller
      */
     public function markNode(Request $request) : JsonResponse
     {
-        $nodeModel = new ParsedNode();
-        $this->modelConverter->setData($request->request->all(), $nodeModel);
-        $nodeModel->setStatusesFromArray();
+        $nodeModel = (new ParsedNodeFactory())->buildFromRequestData($request->request->all());
 
         $this->nodeManager->updateNodeInDatabase(
             $this->modelConverter->convert($nodeModel)

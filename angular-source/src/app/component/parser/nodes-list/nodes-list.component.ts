@@ -1,34 +1,34 @@
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { ParserRequest } from "../../../model/parser-request";
 import { NodeStatus } from "../../../enum/node-status";
 import { ParserService } from "../../../service/parser.service";
-import { PageLoaderDataService } from "../../../service/data/page-loader-data.service";
 import { ParserNode } from "../../../model/parser-node";
+import { RouterService } from "../../../service/router.service";
+import { NodeLevel } from "../../../enum/node-level";
 
 @Component({
   selector: 'app-nodes-list',
   templateUrl: './nodes-list.component.html'
 })
-export class NodesListComponent {
+export class NodesListComponent implements OnInit {
 
 	@Input() parserRequest: ParserRequest;
-	@Output() openChildNode = new EventEmitter<ParserNode>();
 
 	public NodeStatus = NodeStatus;
+	public NodeLevel = NodeLevel;
 
+	// controller - if true, all tiles are locked (non-clickable);
 	public lockTiles = false;
 
-	public scrollY = 0;
+	public currentUrl: string = '';
 
-	constructor(private parserService: ParserService) { }
+	constructor(
+		private parserService: ParserService,
+		public routerService: RouterService
+	) { }
 
-	public openNode(childNode: ParserNode): void {
-		if (!this.lockTiles) {
-			this.parserRequest.resetNodes();
-			this.parserRequest.level = childNode.level;
-			this.parserRequest.currentNode = childNode;
-			this.openChildNode.emit(childNode);
-		}
+	ngOnInit(): void {
+		this.currentUrl = document.location.pathname;
 	}
 
 	/**
@@ -38,20 +38,13 @@ export class NodesListComponent {
 	 * @param status
 	 */
 	public markNode(node: ParserNode, status: string): void {
-		if (node.hasStatus(NodeStatus.Waiting)) {
+		let request = this.parserService.markNode(node, status);
+
+		if (!request)
 			return;
-		} else {
-			node.addStatus(NodeStatus.Waiting);
-		}
 
-		if (node.hasStatus(status)) {
-			node.removeStatus(status);
-		} else {
-			node.addStatus(status);
-		}
-
-		this.parserRequest.actionNode = node;
-		this.parserService.markNode(node).subscribe((response) => {
+		request.subscribe((response) => {
+			this.parserRequest.currentNode = node; // re-assign current node object
 			node.removeStatus(NodeStatus.Waiting);
 		}, (error) => {
 			node.removeStatus(NodeStatus.Waiting);
@@ -81,9 +74,26 @@ export class NodesListComponent {
 	 *
 	 * @param node
 	 * @param status
+	 * @param size
 	 * @return string
 	 */
-	public getNodeButtonClass(node: ParserNode, status: string): string {
-		return 'btn ' + ((node.hasStatus(status)) ? 'btn-success' : 'btn-default');
+	public getNodeButtonClass(node: ParserNode, status: string, size: string = 'normal'): string {
+		let buttonClasses = 'btn';
+
+		switch (size) {
+			case 'normal':
+				break;
+
+			case 'small':
+				buttonClasses += ' btn-sm';
+				break;
+		}
+
+		if (node.hasStatus(status))
+			buttonClasses += (' '+NodeStatus.buttonStatusClass(status));
+		else
+			buttonClasses += ' btn-default';
+
+		return buttonClasses;
 	}
 }

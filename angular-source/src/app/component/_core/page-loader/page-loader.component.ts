@@ -2,16 +2,16 @@ import { Component, OnInit } from '@angular/core';
 import { PageLoaderDataService } from "../../../service/data/page-loader-data.service";
 import { HttpClient } from "@angular/common/http";
 import { RouterService } from "../../../service/router.service";
-import { ConfigService } from "../../../service/config.service";
 import { PreloaderData } from "../../../model/preloader-data";
-import { map } from "rxjs/operators";
+import { JsonResponse } from "../../../model/json-response";
+import { HttpService } from "../../../service/http.service";
 
 @Component({
   	selector: 'app-page-loader',
   	templateUrl: './page-loader.component.html',
 	styleUrls: ['./page-loader.component.scss']
 })
-export class PageLoaderComponent implements OnInit {
+export class PageLoaderComponent extends HttpService implements OnInit {
 
 	public preloaderData: PreloaderData = new PreloaderData();
 
@@ -21,38 +21,39 @@ export class PageLoaderComponent implements OnInit {
 	constructor(
 		private pageLoaderDataService: PageLoaderDataService,
 		private router: RouterService,
-		private config: ConfigService,
-		private http: HttpClient
-	) { }
+		protected http: HttpClient
+	) {
+		super(http);
+	}
 
 	ngOnInit() {
-		// loader data - PreloaderData object
+		// loader data listener service - PreloaderData object
 		this.pageLoaderDataService.loaderData.subscribe((preloaderData: PreloaderData) => { // listen loader data changes
 			this.preloaderData = preloaderData;
 		});
 
-		// progress - number
+		// progress listener service - number
 		this.pageLoaderDataService.loaderProgress.subscribe((progress: number) => {
 			this.preloaderData.progress = progress;
 		});
 
-		// description - string
+		// description listener service - string
 		this.pageLoaderDataService.loaderDescription.subscribe((description: string) => {
 			this.preloaderData.description = description;
 		});
 
-		// loader progress from api (true|false)
+		// loader progress from api (true|false) listener service
 		this.pageLoaderDataService.loaderProgressFromApi.subscribe((checkProgressFromApi: boolean) => {
 			this.preloaderData.checkProgressFromApi = checkProgressFromApi;
 
 			if (checkProgressFromApi) {
 				this.refreshDataFromApi();
-			} else {
+			} else if (!this.preloaderData.checkProgressFromApi) {
 				this.resetDataInApi();
 			}
 		});
 
-		// loader status - show/hide
+		// loader status - show/hide listener service
 		this.pageLoaderDataService.loaderStatus.subscribe((status: object) => { // listen loader status forcing
 			clearTimeout(this.statusTimeout);
 
@@ -79,21 +80,26 @@ export class PageLoaderComponent implements OnInit {
 			return;
 		}
 
-		this.http.get(
+		this.get(
 			this.router.generateUrl('api_user_operation_progress')
-		).pipe(
-			map((response:Response) => {
-				Object.assign(this.preloaderData, response);
-			})
-		).subscribe(response => {
-			clearTimeout(this.refreshDataTimeout);
+		).subscribe((response: JsonResponse) => {
+			if (response.success()) {
+				Object.assign(this.preloaderData, response.data);
 
-			if (this.preloaderData.progress < 100) {
-				this.refreshDataTimeout = setTimeout(() => {
-					this.refreshDataFromApi();
-				}, 1000);
+				if (this.preloaderData.progress > 0 && this.preloaderData.progress < 100)
+					this.preloaderData.visible = true;
+
+				clearTimeout(this.refreshDataTimeout);
+
+				if (this.preloaderData.progress < 100) {
+					this.refreshDataTimeout = setTimeout(() => {
+						this.refreshDataFromApi();
+					}, 1000);
+				} else {
+					this.resetDataInApi();
+				}
 			} else {
-				this.resetDataInApi();
+
 			}
 		});
 	}
@@ -101,9 +107,9 @@ export class PageLoaderComponent implements OnInit {
 	protected resetDataInApi() {
 		clearTimeout(this.statusTimeout);
 
-		this.http.get(
+		this.get(
 			this.router.generateUrl('api_user_reset_operation_progress')
-		).subscribe(response => {
+		).subscribe((response: JsonResponse) => {
 			this.preloaderData.reset();
 		});
 	}

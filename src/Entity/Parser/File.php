@@ -10,8 +10,9 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * Files
  *
- * @ORM\Table(name="files", indexes={
- *     @ORM\Index(name="identifier_idx", columns={"identifier"})
+ * @ORM\Table(name="parsed_files", indexes={
+ *     @ORM\Index(name="IDX__parsed_files__identifier", columns={"identifier"}),
+ *     @ORM\Index(name="IDX__parsed_files__node_id", columns={"node_id"})
  * })
  * @ORM\Entity(repositoryClass="App\Repository\FileRepository")
  */
@@ -117,6 +118,12 @@ class File extends AbstractEntity
      * @EntityVariable(convertable=true, writable=false, readable=true)
      */
     protected $textSize = '0 bytes';
+
+    /**
+     * @ORM\ManyToOne(targetEntity="App\Entity\Parser\Node", inversedBy="files")
+     * @ORM\JoinColumn(name="node_id", referencedColumnName="id", nullable=true)
+     */
+    protected $parentNode;
 
     protected $curlRequest;
     protected $tempFilePath;
@@ -404,6 +411,18 @@ class File extends AbstractEntity
     public function setTargetFilePath($targetFilePath): self
     {
         $this->targetFilePath = $targetFilePath;
+
+        return $this;
+    }
+
+    public function getParentNode(): ?Node
+    {
+        return $this->parentNode;
+    }
+
+    public function setParentNode(?Node $parentNode): self
+    {
+        $this->parentNode = $parentNode;
 
         return $this;
     }

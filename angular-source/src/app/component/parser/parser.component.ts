@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { NavigationEnd, Router } from "@angular/router";
+import { ActivatedRoute, NavigationEnd, Router } from "@angular/router";
 import { ContentHeaderDataService } from "../../service/data/content-header-data.service";
 import { ParserService } from "../../service/parser.service";
 import { ParserType } from "../../enum/parser-type";
@@ -8,11 +8,12 @@ import { NodeLevel } from "../../enum/node-level";
 import { ParserNode } from "../../model/parser-node";
 import { ParserRequest } from "../../model/parser-request";
 import { PageLoaderDataService } from "../../service/data/page-loader-data.service";
-import { ParserOperationStatus } from "../../enum/parser-operation-status";
-import { PaginationMode } from "../../enum/pagination-mode";
 import { Pagination } from "../../model/pagination";
 import { NodesListComponent } from "./nodes-list/nodes-list.component";
 import { NodeStatus } from "../../enum/node-status";
+import { RouterService } from "../../service/router.service";
+import {PaginationMode} from "../../enum/pagination-mode";
+import {ParsedFile} from "../../model/parsed-file";
 
 @Component({
 	selector: 'app-parser',
@@ -22,47 +23,49 @@ import { NodeStatus } from "../../enum/node-status";
 
 export class ParserComponent implements OnInit {
 
+	// current parser name
 	protected parserName: string = '';
-	protected parserEnumData = ParserType.getData();
-
-	protected cacheKeys = {
-		parsedNodes: <string>'',
-		currentNode: <string>''
-	};
+	// current node level
+	protected nodeLevel: string = '';
+	// current node identifier
+	protected nodeIdentifier: string = '';
 
 	protected parserSettings = this.config.parsers;
 
+	protected scrollY = 0;
+
 	public parserRequest: ParserRequest = new ParserRequest();
 
-	public ParserOperationStatus = ParserOperationStatus;
+	public parserRequestAction: boolean = false;
+
 	public NodeLevel = NodeLevel;
 	public NodeStatus = NodeStatus;
 
-	public highestLevel = true;
 	public parserBreadcrumbs = [];
-
-	protected scrollY = 0;
 
 	/** Template variables **/
 	public actionBeltClass: string = ''; // classes for action belt
 	public actionBeltMaskClass: string = ''; // classes for action belt mask
-	public scrollTopVisible: boolean = false; // is 'scroll top' button visible?
-	public previousNodeAvailable: boolean = false; // is previous node button enabled/available?
-	public scrollValue = 0; // scroll value after loads nodes;
+	public scrollTopClass: string = ''; // classes for "scroll top" button
+	public previousNodeUrl: string = null;
+	public nextNodeUrl: string = null;
 
 	public nodesListComponent: NodesListComponent;
 
+	private filesTemp: ParsedFile[] = [];
+
 	constructor(
 		private headerData: ContentHeaderDataService,
+		private route: ActivatedRoute,
 		private router: Router,
 		private config: ConfigService,
 		private parserService: ParserService,
-		private pageLoaderDataService: PageLoaderDataService
+		private pageLoaderDataService: PageLoaderDataService,
+		public routerService: RouterService
 	) { }
 
 	ngOnInit() {
 		this.run();
-
 		this.router.events.forEach((event) => { // run on parser url address change;
 			if (event instanceof NavigationEnd) {
 				this.run();
@@ -74,11 +77,6 @@ export class ParserComponent implements OnInit {
 		window.removeEventListener('scroll', this.scrollEvent, true);
 	}
 
-	public scrollEvent = (event: any = null): void => {
-		this.scrollY = window.scrollY;
-		this.determineActionBeltClass();
-	};
-
 	/**
 	 * Initialization function.
 	 * Sets node data, names and sends initialize data request;
@@ -88,140 +86,50 @@ export class ParserComponent implements OnInit {
 
 		this.parserBreadcrumbs = [];
 
-		this.scrollEvent();
-		this.determineParserName();
-		this.setHeaderData();
+		this.previousNodeUrl = null;
+		this.nextNodeUrl = null;
 
+		this.scrollEvent();
+
+		this.determineParserData();
 		this.initializeParserRequestObject();
-		this.prepareParserRequest();
+		this.setHeaderData();
 		this.sendParserRequest();
 	}
 
 	/**
-	 * Sets specified node as 'current' and opens it.
+	 * Downloads data again for current node;
 	 *
-	 * @param node
+	 * @param reloadCache - true if reloading is 'hard' (cache must be refreshed too)
 	 */
-	public openNode(node: ParserNode = null) : void {
-		this.prepareParserRequest(node);
-		this.sendParserRequest(() => {
-			window.scrollTo(0, 0);
-		});
-	}
-
-	public openNodeFromBreadcrumb(breadcrumb: any): void {
-		this.prepareParserRequest();
-		this.parserRequest.currentNode = breadcrumb.node;
-		this.parserRequest.level = breadcrumb.node.level;
-		this.parserRequest.pagination = breadcrumb.pagination;
-		this.sendParserRequest(() => {
-			window.scrollTo(0, 0);
-		});
-	}
-
-	public reopenCurrentNode(ignoreCache: boolean = false): void {
-		this.prepareParserRequest();
-		this.parserRequest.ignoreCache = ignoreCache;
-		this.sendParserRequest(() => {
-			window.scrollTo(0, 0);
-		});
-	}
-
-	/**
-	 * 	Checks and opens previous node;
-	 *
-	 * 	@return number - index of previous index;
-	 */
-	public openPreviousNode(): void {
-		let lastBreadcrumbKey = Object.keys(this.parserBreadcrumbs).pop();
-		let lastBreadcrumbIndex = parseInt(lastBreadcrumbKey);
-
-		if (lastBreadcrumbKey && lastBreadcrumbIndex > 0) {
-			let previousBreadcrumb = this.parserBreadcrumbs[(lastBreadcrumbIndex - 1)];
-
-			this.prepareParserRequest(previousBreadcrumb.node);
-			this.sendParserRequest(() => {
-				setTimeout(function() { // simple delay for ngfor executing. @ViewChildren usage is too complicated for this case.
-					window.scrollTo(0, previousBreadcrumb.scrollY);
-				}, 250);
-			});
-		}
-	}
-
-	/**
-	 * Open current node storages in parserRequest
-	 */
-	public prepareParserRequest(node: ParserNode = null): void {
-		if (!this.parserRequest.currentNode || !this.parserRequest.currentNode.level) {
-			this.parserRequest.currentNode = this.initializeParserNodeObject();
-		}
-
-		if (node) {
-			this.parserRequest.currentNode = node;
-
-			if (node.nextLevel && this.parserRequest.level !== node.nextLevel) // change level if necessary
-				this.parserRequest.level = node.nextLevel;
-			else if (!node.nextLevel)
-				this.parserRequest.level = node.level;
-		}
-
+	public reopenCurrentNode(reloadCache: boolean = false): void {
 		this.parserRequest.clearParsedData();
-	}
-
-	/**
-	 *
-	 * 	@return number - index of previous index;
-	 */
-	private getCurrentBreadcrumbIndex(): number {
-		if (this.parserBreadcrumbs.length > 1) {
-			for (let x in this.parserBreadcrumbs) {
-				let index = parseInt(x);
-
-				if (this.parserBreadcrumbs[index].node === this.parserRequest.currentNode) {
-					return index;
-				}
-			}
-		}
-
-		return -1;
-	}
-
-	/**
-	 * Jumps to other node form the same level
-	 *
-	 * @param direction - next or previous
-	 */
-	public jumpBetweenNodes(direction: string) : void {
-
-	}
-
-	/**
-	 * Changes page of currently viewed node.
-	 *
-	 * @param pagination - pagination settings;
-	 */
-	public changeNodePage(pagination: Pagination) {
-		this.parserRequest.pagination = pagination;
-		this.prepareParserRequest();
-		this.sendParserRequest()
-	}
-
-	/**
-	 * Shows/hides modal with node settings;
-	 */
-	public toggleSettingsModal(): void {
-
+		this.parserRequest.ignoreCache = reloadCache;
+		this.sendParserRequest(() => {
+			window.scrollTo(0, 0);
+		});
 	};
 
+	/**
+	 * Adds/removes status in current node
+	 *
+	 * @param status
+	 */
 	public markCurrentNode(status: string): void {
-		this.nodesListComponent = new NodesListComponent(this.parserService);
-		this.nodesListComponent.parserRequest = this.parserRequest;
-		this.nodesListComponent.markNode(this.parserRequest.currentNode, status);
-		this.parserRequest = this.nodesListComponent.parserRequest;
-	}
+		this.parserService.markNode(this.parserRequest.currentNode, status).subscribe((response) => {
+			this.parserRequest.currentNode.removeStatus(NodeStatus.Waiting);
+		}, (error) => {
+			this.parserRequest.currentNode.removeStatus(NodeStatus.Waiting);
+		});
+	};
 
+	/**
+	 * Determines classes for current node;
+	 *
+	 * @param status
+	 */
 	public getCurrentNodeButtonClass(status: string): string {
-		this.nodesListComponent = new NodesListComponent(this.parserService);
+		this.nodesListComponent = new NodesListComponent(this.parserService, this.routerService);
 
 		return this.nodesListComponent.getNodeButtonClass(
 			this.parserRequest.currentNode, status
@@ -229,67 +137,86 @@ export class ParserComponent implements OnInit {
 	}
 
 	/**
-	 * Determine action belt classes based on current scroll value;
+	 * Determines classes for action belt based on current scrollY value;
 	 */
 	public determineActionBeltClass(): void {
 		this.actionBeltClass = 'actionbelt_container' + ((this.scrollY > 80) ? ' fixed' : '');
 		this.actionBeltMaskClass = 'actionbelt_mask' + ((this.scrollY > 80) ? ' visible' : '');
+		this.scrollTopClass = 'scroll-top-container'+((this.scrollY > 200) ? ' visible' : '');
 	}
+
+	public toggleSettingsModal(): void {
+
+	}
+
+	public scrollTop(): void {
+		window.scrollTo(0, 0);
+	};
+
+	/**
+	 * Changes page of currently viewed node.
+	 *
+	 * @param pagination - pagination settings;
+	 */
+	public changeNodePage(pagination: Pagination): void {
+		this.filesTemp = (pagination.mode === PaginationMode.LoadMore) // new files will be added to current;
+			? this.parserRequest.files
+			: null;
+
+		this.parserRequest.pagination = pagination;
+	 	this.parserRequest.clearParsedData();
+		this.sendParserRequest();
+	};
+
+	/**
+	 * Scrolling event function - saves scroll position and runs classes function for action belt;
+	 * @param event
+	 */
+	protected scrollEvent = (event: any = null): void => {
+		this.scrollY = window.scrollY;
+		this.determineActionBeltClass();
+	};
 
 	/**
 	 * Creates ParserRequest model with initial settings;
 	 */
 	private initializeParserRequestObject() : void {
 		this.parserRequest = new ParserRequest();
-		this.parserRequest.parser = this.parserName;
-		this.parserRequest.level = this.parserSettings[this.parserName]['initialLevel'];
+		this.parserRequest.currentNode = this.initializeParserNodeObject();
+	};
 
-		let initialParserPagination = this.parserSettings[this.parserName]['initialPagination'];
-
-		if (initialParserPagination !== 'none') {
-			this.parserRequest.pagination.active = true;
-			this.parserRequest.pagination.mode = initialParserPagination;
-		}
-	}
-
+	/**
+	 * Creates initial ParserNodeObject with absolutely basic datas;
+	 */
 	private initializeParserNodeObject() : ParserNode {
 		let node = new ParserNode();
 
 		node.parser = this.parserName;
-		node.level = this.parserSettings[this.parserName]['initialLevel'];
+		node.level = this.nodeLevel;
+		node.identifier = this.nodeIdentifier;
 
 		return node;
-	}
-
-	/**
-	 * Generates cache keys for current parser + level + page/letter.
-	 */
-	private generateCacheKeys() : void {
-		let keysSufix = '';
-
-		keysSufix += (this.parserRequest.pagination.mode === PaginationMode.Numbers)
-			? '.'+this.parserRequest.pagination.currentPage
-			: '';
-		keysSufix += (this.parserRequest.pagination.mode === PaginationMode.Letters)
-			? '.'+this.parserRequest.pagination.currentLetter
-			: '';
-
-		this.cacheKeys.parsedNodes = 'nodes.'+this.parserName.toLowerCase()+'.'+this.parserRequest.level+keysSufix;
-		this.cacheKeys.currentNode = 'node.'+this.parserName.toLowerCase()+'.'+this.parserRequest.level+keysSufix;
-	}
+	};
 
 	/**
 	 * Sends data to parser API
 	 */
 	private sendParserRequest(successFunction: () => any = null, errorFunction: () => any = null, completeFunction: () => any = null) {
-		this.pageLoaderDataService.setProgress(1).show().enableRefreshingFromApi();
-		this.saveScrollForLastBreadcrumb();
+		if (this.parserRequestAction) // only one action
+			return;
 
-		this.parserService.executeAction(this.parserRequest).subscribe((response : ParserRequest) => {
+		this.pageLoaderDataService.setProgress(1).show().enableRefreshingFromApi();
+
+		if (this.filesTemp) // adding new files at end of list;
+			this.parserRequest.files = this.filesTemp;
+
+		this.parserService.sendParserActionRequest(this.parserRequest).subscribe((response : ParserRequest) => {
 			this.parserRequest = response;
-			this.highestLevel = (this.parserRequest.currentNode.level === this.parserSettings[this.parserName]['initialLevel']);
-			this.setBreadcrumb(response.currentNode, response.pagination);
-			this.previousNodeAvailable = (this.getCurrentBreadcrumbIndex() > 0);
+			this.previousNodeUrl = (response.previousNode) ? this.routerService.generateNodeUrl(response.previousNode) : null;
+			this.nextNodeUrl = (response.nextNode) ? this.routerService.generateNodeUrl(response.nextNode) : null;
+
+			if (this.filesTemp) // adding new files at end of list;
+				this.parserRequest.files = [...this.filesTemp, ...this.parserRequest.files];
 
 			if (successFunction)
 				successFunction();
@@ -304,56 +231,19 @@ export class ParserComponent implements OnInit {
 			if (completeFunction)
 				completeFunction();
 		});
-	}
-
-	private saveScrollForLastBreadcrumb(): void {
-		let lastBreadcrumbKey = Object.keys(this.parserBreadcrumbs).pop();
-
-		if (lastBreadcrumbKey) {
-			this.parserBreadcrumbs[lastBreadcrumbKey].scrollY = window.scrollY;
-		}
-	}
-
-	private setBreadcrumb(node: ParserNode, pagination = null): void {
-		let nodeIntLevel = NodeLevel.getNodeIntLevel(node);
-		let previousBreadcrumbs = this.parserBreadcrumbs;
-		let newBreadcrumbEntry = {
-			node: node,
-			scrollY: 0,
-			pagination: (new Pagination(pagination)),
-			final: true // final breadcrumb -> font-weight: bold;
-		};
-
-		if (nodeIntLevel < 1)
-			return;
-		else
-			this.parserBreadcrumbs = [];
-
-		if (previousBreadcrumbs.length > 0) {
-			for (let prevBreadcrumbIndex in previousBreadcrumbs) {
-				let oldBreadcrumbEntry = previousBreadcrumbs[prevBreadcrumbIndex];
-				let oldBreadcrumbIntLevel = NodeLevel.getNodeIntLevel(oldBreadcrumbEntry.node);
-
-				oldBreadcrumbEntry.final = false; // not final breadcrumb -> font-weight: normal;
-
-				if (oldBreadcrumbIntLevel > nodeIntLevel) {
-					this.parserBreadcrumbs.push(oldBreadcrumbEntry);
-				}
-			}
-		}
-
-		this.parserBreadcrumbs.push(newBreadcrumbEntry);
-	}
+	};
 
 	/**
 	 * Determines parser name based by URL address;
 	 */
-	private determineParserName() : void {
+	private determineParserData() : void {
 		let urlArray = this.router.url.split('/');
 
 		urlArray.forEach((value, index) => {
 			if (value === 'parsers') {
 				this.parserName = urlArray[(index+1)];
+				this.nodeLevel = (typeof urlArray[(index+2)] !== 'undefined') ? urlArray[(index+2)] : null;
+				this.nodeIdentifier = (typeof urlArray[(index+3)] !== 'undefined') ? urlArray[(index+3)] : null;
 			}
 		});
 	}
@@ -364,6 +254,8 @@ export class ParserComponent implements OnInit {
 	 * IMPORTANT: data musts set AFTER initialize parser board data
 	 */
 	private setHeaderData() : void {
+		let parserEnumData = ParserType.getData();
+
 		this.headerData.setElement('title1', 'Parser');
 		this.headerData.setElement('title2', 'Scrapping images and movies');
 		this.headerData.clearBreadcrumbs();
@@ -376,8 +268,8 @@ export class ParserComponent implements OnInit {
 		this.headerData.addBreadcrumb({
 			route: 'app_parser',
 			routeParams: {'parserName':this.parserName},
-			label: (typeof this.parserEnumData[this.parserName] !== 'undefined')
-				? this.parserEnumData[this.parserName]
+			label: (typeof parserEnumData[this.parserName] !== 'undefined')
+				? parserEnumData[this.parserName]
 				: null,
 			icon: 'fa-dashboard'
 		});

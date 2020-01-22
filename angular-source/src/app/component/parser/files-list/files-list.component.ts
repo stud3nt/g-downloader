@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, Output} from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { ParserRequest } from "../../../model/parser-request";
 import { NodeStatus } from "../../../enum/node-status";
 import { ParsedFile } from "../../../model/parsed-file";
@@ -8,6 +8,8 @@ import { FileType } from "../../../enum/file-type";
 import { ModalDataService } from "../../../service/data/modal-data.service";
 import { ModalSize } from "../../../enum/modal-size";
 import { ModalType } from "../../../enum/modal-type";
+import { DownloaderDataService } from "../../../service/data/downloader-data.service";
+import { ToastrDataService } from "../../../service/data/toastr-data.service";
 
 @Component({
   selector: 'app-files-list',
@@ -26,6 +28,8 @@ export class FilesListComponent implements OnInit {
 
 	constructor(
 		protected nodeFileService: NodeFileService,
+		protected downloaderDataService: DownloaderDataService,
+		protected toastrService: ToastrDataService,
 		protected modal: ModalDataService
 	) { }
 
@@ -34,13 +38,11 @@ export class FilesListComponent implements OnInit {
 	public determineFileClass(file: ParsedFile) : string {
 		let nodeClass = 'tile tile-250';
 
-		if (file.hasStatus(FileStatus.Queued)) {
+		if (file.hasStatus(FileStatus.Queued))
 			nodeClass += ' queued';
-		}
 
-		if (file.hasStatus(FileStatus.Downloaded)) {
+		if (file.hasStatus(FileStatus.Downloaded))
 			nodeClass += ' downloaded';
-		}
 
 		return nodeClass;
 	}
@@ -51,22 +53,24 @@ export class FilesListComponent implements OnInit {
 	 * @param file
 	 */
 	public toggleFileQueue(file: ParsedFile) : void {
-		if (this.lockTiles || file.hasStatus(FileStatus.Waiting)) {
+		if (this.lockTiles || file.hasStatus(FileStatus.Waiting))
 			return;
-		}
 
+		file.parentNode = this.parserRequest.currentNode;
 		file.addStatus(FileStatus.Waiting);
 
 		this.nodeFileService.toggleFileQueue(file).subscribe((result: ParsedFile) => {
 			file.removeStatus(FileStatus.Waiting);
 
-			if (result.hasStatus(FileStatus.Queued)) {
+			if (result.hasStatus(FileStatus.Queued))
 				file.addStatus(FileStatus.Queued);
-			} else {
+			else
 				file.removeStatus(FileStatus.Queued);
-			}
+
+			this.downloaderDataService.touch();
 		}, (error) => {
 			file.removeStatus(FileStatus.Waiting);
+			this.toastrService.addError('An error occured.');
 		});
 	}
 
@@ -76,13 +80,12 @@ export class FilesListComponent implements OnInit {
 		this.modal.open(ModalType.Preview, modalTitle).showLoader();
 
 		this.nodeFileService.toggleFilePreview(file).subscribe((result: ParsedFile) => {
-			if (result.width < 600) {
+			if (result.width < 600)
 				this.modal.setSize(ModalSize.Small);
-			} else if (result.width > 600 && result.width < 1000) {
+			else if (result.width > 600 && result.width < 1000)
 				this.modal.setSize(ModalSize.Medium);
-			} else {
+			else
 				this.modal.setSize(ModalSize.Large);
-			}
 
 			this.modal.setBody(result.htmlPreview).hideLoader();
 		});

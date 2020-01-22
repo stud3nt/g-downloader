@@ -4,11 +4,12 @@ namespace App\Manager\Object;
 
 use App\Converter\EntityConverter;
 use App\Entity\Parser\File;
+use App\Entity\Parser\Node;
 use App\Enum\FileStatus;
 use App\Manager\Base\EntityManager;
 use App\Manager\SettingsManager;
 use App\Model\ParsedFile;
-use App\Model\ParserRequestModel;
+use App\Model\ParserRequest;
 use App\Repository\FileRepository;
 use App\Utils\FilesHelper;
 use Doctrine\ORM\AbstractQuery;
@@ -35,34 +36,36 @@ class FileManager extends EntityManager
     }
 
     /**
-     * @param ParserRequestModel $parserRequestModel
-     * @return ParserRequestModel
+     * @param ParserRequest $parserRequest
+     * @return ParserRequest
      */
-    public function completeParsedStatuses(ParserRequestModel &$parserRequestModel) : ParserRequestModel
+    public function completeParsedStatuses(ParserRequest &$parserRequest) : ParserRequest
     {
-        if ($parserRequestModel->files) {
-            $imagesUrls = [];
+        if ($parserRequest->files) {
+            $filesIdentifiers = [];
 
             /* @var ParsedFile $file */
-            foreach ($parserRequestModel->files as $file) {
-                $imagesUrls[] = $file['url'];
+            foreach ($parserRequest->files as $file) {
+                $filesIdentifiers[] = $file->getIdentifier();
             }
 
             $storedFilesArray = $this->repository->getQb()
-                ->where('f.url IN (:filesUrls)')
-                ->setParameter('filesUrls', $imagesUrls)
+                ->where('f.parser = :parserName')
+                ->andWhere('f.identifier IN (:filesIdentifiers)')
+                ->setParameter('parserName', $parserRequest->currentNode->parser)
+                ->setParameter('filesIdentifiers', $filesIdentifiers)
                 ->getQuery()->getArrayResult();
 
             if ($storedFilesArray) {
-                foreach ($parserRequestModel->files as $fileIndex => $file) {
-                    $parserRequestModel->files[$fileIndex]['statuses'] = [];
+                foreach ($parserRequest->files as $fileIndex => $file) {
+                    $parserRequest->files[$fileIndex]->clearStatuses();
 
                     foreach ($storedFilesArray as $storedFile) {
-                        if ($storedFile['identifier'] == $file['identifier']) {
-                            $parserRequestModel->files[$fileIndex]['statuses'][] = FileStatus::Queued;
+                        if ($storedFile['identifier'] == $file->getIdentifier()) {
+                            $parserRequest->files[$fileIndex]->addStatus(FileStatus::Queued);
 
                             if ($storedFile['downloadedAt']) {
-                                $parserRequestModel->files[$fileIndex]['statuses'][] = FileStatus::Downloaded;
+                                $parserRequest->files[$fileIndex]->addStatus(FileStatus::Downloaded);
                             }
                         }
                     }
@@ -70,7 +73,7 @@ class FileManager extends EntityManager
             }
         }
 
-        return $parserRequestModel;
+        return $parserRequest;
     }
 
     /**
@@ -78,7 +81,7 @@ class FileManager extends EntityManager
      * @return bool
      * @throws \ReflectionException
      */
-    public function toggleFileQueue(ParsedFile &$parsedFile): ParsedFile
+    public function toggleFileQueue(ParsedFile &$parsedFile, Node $parentNode = null): ParsedFile
     {
         $dbFile = $this->repository->findOneBy([
             'identifier' => $parsedFile->identifier,
@@ -89,6 +92,8 @@ class FileManager extends EntityManager
             $dbFile = new File();
 
             $this->entityConverter->setData($parsedFile, $dbFile);
+
+            $dbFile->setParentNode($parentNode);
 
             if ($this->save($dbFile)) {
                 $parsedFile->statuses[] = FileStatus::Queued;
@@ -148,7 +153,7 @@ class FileManager extends EntityManager
 
         $downloadedCounts = $this->repository->getFilesQb([
             'type' => 'downloaded',
-            'COUNT(f.id) as totalCount, SUM(f.size) as totalSize'
+            'select' => 'COUNT(f.id) as totalCount, SUM(f.size) as totalSize'
         ])->setMaxResults(1)->getQuery()->getOneOrNullResult(AbstractQuery::HYDRATE_ARRAY);
 
         return [

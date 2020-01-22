@@ -37,14 +37,14 @@ class DownloadController extends Controller
     /**
      * Starting download process
      *
-     * @Route("/api/downloader/change_status/{statusName}", name="api_downloader_change_status", options={"expose"=true}, methods={"GET"}, defaults={"status":null})
+     * @Route("/api/downloader/change_status/{statusName}", name="api_downloader_change_status", options={"expose"=true}, methods={"GET"}, defaults={"statusName":null})
      * @IsGranted("ROLE_ADMIN")
      */
     public function changeStatus(Request $request): JsonResponse
     {
         try {
             $cache = (new FileCache($this->getUser()));
-            $cache->set('downloader_status', $request->get('status'));
+            $cache->set('downloader_status', $request->get('statusName'));
 
             return $this->jsonSuccess();
         } catch (\Exception $e) {

@@ -8,6 +8,7 @@ use App\Enum\SettingsGroup;
 use App\Enum\SettingsLevel;
 use App\Enum\SettingsType;
 use App\Manager\SettingsManager;
+use App\Model\SettingsModel;
 use App\Utils\AppHelper;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\Filesystem\Filesystem;
@@ -61,14 +62,14 @@ class AngularConfigService
     public function generateInitialJsonConfigFile() : bool
     {
         $modelConverter = new ModelConverter();
-        $parserSettingsModel =$this->settingsManager->getSettings([
+        $parserSettingsModel = $this->settingsManager->getSettings([
             'group' => SettingsGroup::Parser,
             'level' => SettingsLevel::Public
         ]);
         $parserSettings = $modelConverter->convert($parserSettingsModel);
 
         $config = json_encode([
-            'menu' => $this->getMenuStructure(),
+            'menu' => $this->getMenuStructure($parserSettingsModel),
             'routing' => $this->getRouting(),
             'parsers' => $parserSettings['parsers']
         ]);
@@ -92,7 +93,7 @@ class AngularConfigService
         return false;
     }
 
-    protected function getMenuStructure(): array
+    protected function getMenuStructure(SettingsModel $settings): array
     {
         return [
             [
@@ -109,28 +110,32 @@ class AngularConfigService
                     [
                         'route' => 'app_parser',
                         'routeParams' => [
-                            'parserName' => ParserType::Imagefap
+                            'parserName' => ParserType::Imagefap,
+                            'nodeLevel' => $settings->getParserSetting(ParserType::Imagefap, 'initialLevel')
                         ],
                         'label' => 'ImageFap'
                     ],
                     [
                         'route' => 'app_parser',
                         'routeParams' => [
-                            'parserName' => ParserType::Boards4chan
+                            'parserName' => ParserType::Boards4chan,
+                            'nodeLevel' => $settings->getParserSetting(ParserType::Boards4chan, 'initialLevel')
                         ],
                         'label' => 'Boards 4Chan'
                     ],
                     [
                         'route' => 'app_parser',
                         'routeParams' => [
-                            'parserName' => ParserType::HentaiFoundry
+                            'parserName' => ParserType::HentaiFoundry,
+                            'nodeLevel' => $settings->getParserSetting(ParserType::HentaiFoundry, 'initialLevel')
                         ],
                         'label' => 'Hentai-Foundry'
                     ],
                     [
                         'route' => 'app_parser',
                         'routeParams' => [
-                            'parserName' => ParserType::Reddit
+                            'parserName' => ParserType::Reddit,
+                            'nodeLevel' => $settings->getParserSetting(ParserType::Reddit, 'initialLevel')
                         ],
                         'label' => 'Reddit'
                     ]

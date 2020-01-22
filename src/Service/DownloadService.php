@@ -22,6 +22,11 @@ class DownloadService
         $this->parserService = $parserService;
     }
 
+    /**
+     * @param array $filesList
+     * @return array
+     * @throws \Exception
+     */
     public function downloadQueuedParserFiles(array $filesList = []): array
     {
         $downloadedFiles = [];
@@ -39,28 +44,24 @@ class DownloadService
             $response = $curlService->executeRequests(); // executing download curls;
 
             foreach ($response as $fileKey => $fileResource) {
-                try {
-                    switch ($filesList[$fileKey]->getType()) {
-                        case FileType::Image:
-                            $result = (new ParsedImage())
-                                ->setResource($fileResource)
-                                ->setFileEntity($filesList[$fileKey])
-                                ->prepareTempFiles()
-                                ->optimize()
-                                ->saveTargetFile()
-                            ;
-                            break;
+                switch ($filesList[$fileKey]->getType()) {
+                    case FileType::Image:
+                        $result = (new ParsedImage())
+                            ->setResource($fileResource)
+                            ->setFileEntity($filesList[$fileKey])
+                            ->prepareTempFiles()
+                            ->optimize()
+                            ->saveTargetFile()
+                        ;
+                        break;
 
-                        case FileType::Video:
+                    case FileType::Video:
+                        
+                        break;
+                }
 
-                            break;
-                    }
-
-                    if ($result) {
-                        $downloadedFiles[] = $filesList[$fileKey];
-                    }
-                } catch (\Exception $ex) {
-
+                if ($result) {
+                    $downloadedFiles[] = $filesList[$fileKey];
                 }
             }
         }

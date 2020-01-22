@@ -72,8 +72,11 @@ class FilesHelper
     {
         $pathinfo = pathinfo($fileString);
 
-        if ($pathinfo['extension']) {
-            return strtolower($pathinfo['extension']);
+        if ($extension = $pathinfo['extension']) {
+            if ($queryStart = strpos($extension, '?'))
+                $extension = substr($extension, 0, $queryStart);
+
+            return strtolower($extension);
         }
 
         return '';
@@ -160,7 +163,7 @@ class FilesHelper
         $sizeSign = null;
 
         foreach ($tmp as $letter) {
-            if (preg_match('/[0-9]{1}/', $letter)) {
+            if (preg_match('/[0-9\,\.]{1}/', $letter)) {
                 $sizeValue .= $letter;
             } elseif (preg_match('/[a-zA-Z]{1}/', $letter)) {
                 $sizeSign .= $letter;
@@ -170,6 +173,8 @@ class FilesHelper
         if (empty($sizeSign)) {
             return (int)$sizeValue;
         }
+
+        $sizeValue = str_replace(',', '.', $sizeValue);
 
         foreach (self::$extendedFilesSizeUnits as $sizeKey => $sizeConfig) {
             $names = $sizeConfig['names'];
@@ -186,5 +191,12 @@ class FilesHelper
         }
 
         return (int)$sizeValue;
+    }
+
+    public static function createFolderNameFromString(string $customName): string
+    {
+        return mb_strtolower(
+            preg_replace('/[^a-zA-Z0-9\-\_ ]/', '_', $customName)
+        );
     }
 }

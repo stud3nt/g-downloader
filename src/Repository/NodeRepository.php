@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\Parser\Node;
+use App\Model\ParsedNode;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -17,5 +18,22 @@ class NodeRepository extends ServiceEntityRepository
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, Node::class);
+    }
+
+    public function findOneByParsedNode(ParsedNode $node)
+    {
+        return $this->findOneBy([
+            'parser' => $node->getParser(),
+            'level' => $node->getLevel(),
+            'identifier' => $node->getIdentifier()
+        ]);
+    }
+
+    public function findByParentAndIdentifiers(Node $parent = null, array $identifiers = [])
+    {
+        return $this->findBy([
+            'parentNode' => $parent,
+            'identifier' => $identifiers
+        ]);
     }
 }

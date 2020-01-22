@@ -2,19 +2,21 @@
 
 namespace App\Parser;
 
+use App\Entity\Parser\File;
 use App\Entity\User;
 use App\Enum\FileType;
 use App\Enum\NodeLevel;
 use App\Enum\ParserType;
 use App\Model\ParsedFile;
 use App\Model\ParsedNode;
-use App\Model\ParserRequestModel;
+use App\Model\ParserRequest;
 use App\Model\SettingsModel;
 use App\Parser\Base\AbstractParser;
 use App\Parser\Base\ParserInterface;
 use App\Service\Reddit\RedditApi;
 use App\Traits\CurrentUrlTrait;
 use App\Utils\FilesHelper;
+use PHPHtmlParser\Dom\HtmlNode;
 
 class RedditParser extends AbstractParser implements ParserInterface
 {
@@ -39,6 +41,12 @@ class RedditParser extends AbstractParser implements ParserInterface
         $this->redditApi = (new RedditApi())->init($this->settings);
     }
 
+    public function getOwnersList(ParserRequest &$parserRequest): ParserRequest
+    {
+        // NOTHING TO DO HERE
+        return $parserRequest;
+    }
+
     /**
      * Gets subreddits list
      *
@@ -49,29 +57,29 @@ class RedditParser extends AbstractParser implements ParserInterface
      * @throws \Psr\Cache\InvalidArgumentException
      * @throws \Exception
      */
-    public function getBoardsListData(ParserRequestModel &$parserRequestModel) : ParserRequestModel
+    public function getBoardsListData(ParserRequest &$parserRequest) : ParserRequest
     {
-        if (!$this->getParserCache($parserRequestModel)) {
+        $parserRequest->clearParsedData();
+
+        if (!$this->getParserCache($parserRequest)) {
             $after = null;
             $nextPage = true;
 
-            $parserRequestModel->parsedNodes = [];
-            $parserRequestModel->currentNode->url = $this->mainBoardUrl;
-            $parserRequestModel->pagination->disable();
+            $parserRequest->parsedNodes = [];
+            $parserRequest->currentNode->url = $this->mainBoardUrl;
+            $parserRequest->pagination->disable();
 
             while ($nextPage === true) {
                 $subreddits = $this->redditApi->getSubredditsList($after);
 
                 if ($subreddits && $subreddits->data && count($subreddits->data->children) > 0) {
                     foreach ($subreddits->data->children as $subreddit) {
-                        $parserRequestModel->parsedNodes[] = $this->modelConverter->convert(
-                            (new ParsedNode(ParserType::Reddit, NodeLevel::BoardsList))
-                                ->setName($subreddit->data->title)
-                                ->setDescription(trim($subreddit->data->public_description))
-                                ->setNextLevel(NodeLevel::Board)
-                                ->setUrl($subreddit->data->display_name_prefixed)
-                                ->setIdentifier($subreddit->data->display_name_prefixed)
-                                ->setNoImage(true)
+                        $parserRequest->addParsedNode((new ParsedNode(ParserType::Reddit, NodeLevel::Board))
+                            ->setName($subreddit->data->title)
+                            ->setDescription(trim($subreddit->data->public_description))
+                            ->setUrl($subreddit->data->display_name_prefixed)
+                            ->setIdentifier($subreddit->data->display_name_prefixed)
+                            ->setNoImage(true)
                         );
                     }
                 }
@@ -85,70 +93,73 @@ class RedditParser extends AbstractParser implements ParserInterface
                 $after = $subreddits->data->after;
             }
 
-            $this->setParserCache($parserRequestModel, 0);
+            $this->setParserCache($parserRequest, 0);
             $this->setPageLoaderProgress(90);
         }
 
-        return $parserRequestModel;
+        return $parserRequest;
     }
 
     /**
-     * @param ParserRequestModel $parserRequestModel
+     * @param ParserRequest $parserRequest
      * @return array
      * @throws \Psr\Cache\InvalidArgumentException
      * @throws \ReflectionException
      * @throws \Exception
      */
-    public function getBoardData(ParserRequestModel &$parserRequestModel) : ParserRequestModel
+    public function getBoardData(ParserRequest &$parserRequest) : ParserRequest
     {
-        $parserRequestModel->pagination->loadMorePagination();
+        $parserRequest->clearParsedData()
+            ->pagination->loadMorePagination();
 
-        if (!$this->getParserCache($parserRequestModel)) {
-            $parserRequestModel->parsedNodes = [];
-            $subreddit = $this->redditApi->getSubreddit($parserRequestModel);
+        $subreddit = $this->redditApi->getSubreddit($parserRequest);
 
-            $this->setPageLoaderProgress(90);
+        $this->setPageLoaderProgress(20);
 
-            if ($subreddit) {
-                foreach ($subreddit->data->children as $index => $child) {
-                    if (property_exists($child->data, 'crosspost_parent_list')) { // this is not post, but crosspost :/
-                        foreach ($child->data->crosspost_parent_list as $parentChild) {
-                            if (property_exists($parentChild, 'preview')) {
-                                $childData = $this->processBoardChildData($parentChild);
+        if ($subreddit) {
+            $this->startProgress('get_board_data', 100, 20, 90);
 
-                                if ($childData) {
-                                    foreach ($childData as $nodeObject) {
-                                        $parserRequestModel->files[] = $this->modelConverter->convert($nodeObject);
-                                    }
+            foreach ($subreddit->data->children as $childIndex => $child) {
+                if (property_exists($child->data, 'crosspost_parent_list')) { // this is not post, but crosspost :/
+                    foreach ($child->data->crosspost_parent_list as $parentChild) {
+                        if (property_exists($parentChild, 'preview')) {
+                            $childData = $this->processBoardChildData($parentChild);
+
+                            if ($childData) {
+                                foreach ($childData as $file) {
+                                    $parserRequest->addFile($file);
                                 }
                             }
                         }
-                    } else {
-                        if (property_exists($child->data, 'preview')) {
-                            $childData = $this->processBoardChildData($child->data);
+                    }
+                } else {
+                    if (property_exists($child->data, 'preview')) {
+                        $childData = $this->processBoardChildData($child->data);
 
-                            if ($childData) {
-                                foreach ($childData as $nodeObject) {
-                                    $parserRequestModel->files[] = $this->modelConverter->convert($nodeObject);
-                                }
+                        if ($childData) {
+                            foreach ($childData as $file) {
+                                $parserRequest->addFile($file);
                             }
                         }
                     }
                 }
 
-                $this->cache->set('listing.'.$this->getSubredditName($parserRequestModel), [
-                    'before' => $subreddit->data->before,
-                    'after' => $subreddit->data->after
-                ]);
-
-                $parserRequestModel->tokens->after = $subreddit->data->after;
-                $parserRequestModel->tokens->before = $subreddit->data->before;
-
-                $this->setParserCache($parserRequestModel, 90);
+                $this->progressStep('get_board_data');
             }
+
+            $this->endProgress('get_board_data');
+            $this->setPageLoaderProgress(95);
+
+            $this->cache->set('listing.'.$this->getSubredditName($parserRequest), [
+                'before' => $subreddit->data->before,
+                'after' => $subreddit->data->after
+            ]);
+
+            $parserRequest->tokens->after = $subreddit->data->after;
+            $parserRequest->tokens->before = $subreddit->data->before;
         }
 
-        return $parserRequestModel;
+        return $parserRequest;
     }
 
     /**
@@ -186,6 +197,7 @@ class RedditParser extends AbstractParser implements ParserInterface
             if ($child->domain === 'gfycat.com') {
                 $parsedFile->setUrl($child->url);
             } else {
+                $parsedFile->setUrl($image->source->url);
                 $parsedFile->setFileUrl($image->source->url);
             }
 
@@ -202,9 +214,9 @@ class RedditParser extends AbstractParser implements ParserInterface
         return $parsedFiles;
     }
 
-    public function getGalleryData(ParserRequestModel &$parserRequestModel = null) : ParserRequestModel
+    public function getGalleryData(ParserRequest &$parserRequest = null) : ParserRequest
     {
-        return $parserRequestModel;
+        return $parserRequest;
     }
 
     public function getFileData(ParsedFile &$parsedFile) : ParsedFile
@@ -212,12 +224,40 @@ class RedditParser extends AbstractParser implements ParserInterface
         return $parsedFile;
     }
 
+    /**
+     * @param ParsedFile $parsedFile
+     * @return ParsedFile
+     * @throws \PHPHtmlParser\Exceptions\ChildNotFoundException
+     * @throws \PHPHtmlParser\Exceptions\CircularException
+     * @throws \PHPHtmlParser\Exceptions\CurlException
+     * @throws \PHPHtmlParser\Exceptions\NotLoadedException
+     * @throws \PHPHtmlParser\Exceptions\StrictException
+     */
     public function getFilePreview(ParsedFile &$parsedFile) : ParsedFile
     {
         $this->clearCache();
 
-        if (!$parsedFile->getFileUrl() || !$parsedFile->getName() || $parsedFile->getExtension()) {
-            $this->getFileData($parsedFile);
+        // gfycat -> extract file url from page
+        if (parse_url($parsedFile->getUrl())['host'] === 'gfycat.com') {
+            $dom = $this->loadDomFromUrl($parsedFile->getUrl());
+            $videos = $dom->getElementsByTag('video');
+
+            /** @var HtmlNode $video */
+            /** @var HtmlNode $source */
+            foreach ($videos as $video) {
+                if ($video->getAttribute('class') === 'video media') {
+                    $sources = $video->find('source');
+
+                    foreach ($sources as $source) {
+                        $src = $source->getAttribute('src');
+
+                        if (strpos($src, 'giant.gfycat.com') && strpos($src, '.mp4')) {
+                            $parsedFile->setFileUrl($src);
+                            break;
+                        }
+                    }
+                }
+            }
         }
 
         $previewFilePath = $this->previewTempDir.$parsedFile->getFullFilename();
@@ -225,14 +265,14 @@ class RedditParser extends AbstractParser implements ParserInterface
 
         $parsedFile->setLocalUrl($previewWebPath);
 
-        $this->downloadFile($parsedFile->getFileUrl(), $previewFilePath);
+        $this->downloadFile($parsedFile->getFileUrl() ?? $parsedFile->getUrl(), $previewFilePath);
 
         return $parsedFile;
     }
 
-    public function getSubredditName(ParserRequestModel $parserRequestModel) : string
+    public function getSubredditName(ParserRequest $parserRequest) : string
     {
-        $urlArray = explode('/', $parserRequestModel->currentNode->url);
+        $urlArray = explode('/', $parserRequest->currentNode->url);
 
         if ($urlArray) {
             foreach ($urlArray as $key => $value) {
@@ -245,37 +285,16 @@ class RedditParser extends AbstractParser implements ParserInterface
         return '';
     }
 
-    private function getThumbnailsFromChild(\stdClass $child, bool $onlyFirst = false)
+    public function determineFileSubfolder(File $file): ?string
     {
-        $thumbnails = [];
+        $subfolder = '';
 
-        if ($child && $child->preview->images) {
-            foreach ($child->preview->images as $image) {
-                $thumbnail = null;
-
-                foreach ($image->resolutions as $imagePreview) {
-                    if ($imagePreview->width > 230 || $imagePreview->height > 260) {
-                        if ($onlyFirst) {
-                            return $imagePreview->url;
-                        } else {
-                            $thumbnail = $imagePreview->url;
-                        }
-
-                        break;
-                    }
-                }
-
-                // no image found? Get last;
-                if ($onlyFirst) {
-                    return end($image->resolutions)->url;
-                } elseif (empty($thumbnail)) {
-                    $thumbnails[] = (empty($thumbnail))
-                        ? end($image->resolutions)->url
-                        : $thumbnail;
-                }
+        if ($parentNode = $file->getParentNode()) {
+            if ($parentNode->getLevel() === NodeLevel::Board) {
+                $subfolder = DIRECTORY_SEPARATOR.FilesHelper::createFolderNameFromString($parentNode->getName());
             }
         }
 
-        return $thumbnails;
+        return $subfolder;
     }
 }

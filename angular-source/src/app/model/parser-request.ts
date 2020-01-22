@@ -1,95 +1,86 @@
 import { ParserNode } from "./parser-node";
 import { ParsedFile } from "./parsed-file";
 import { Pagination } from "./pagination";
+import { BaseModel } from "./base/base-model";
 
-export class ParserRequest {
+export class ParserRequest extends BaseModel {
 
 	constructor(obj?: any) {
+		super();
+
 		Object.assign(this, obj);
 
-		this.files = [];
-		this.parsedNodes = [];
-
-		this.jumpPrevious = (obj && (obj.jumpPrevious === 'true' || obj.jumpPrevious === true));
-		this.jumpNext = (obj && (obj.jumpNext === 'true' || obj.jumpNext === true));
+		this._files = [];
+		this._parsedNodes = [];
 
 		if (obj) {
 			if (obj.currentNode) {
-				this.currentNode = new ParserNode(obj.currentNode);
+				this._currentNode = new ParserNode(obj.currentNode);
 			}
 
 			if (obj.files) {
 				for (let parsedFile of obj.files) {
-					this.files.push(new ParsedFile(parsedFile));
+					this._files.push(new ParsedFile(parsedFile));
 				}
 			}
 
 			if (obj.parsedNodes) {
 				for (let parsedNode of obj.parsedNodes) {
-					this.parsedNodes.push(new ParserNode(parsedNode));
+					this._parsedNodes.push(new ParserNode(parsedNode));
 				}
 			}
 
 			if (obj.pagination) {
-				Object.assign(this.pagination, obj.pagination);
+				Object.assign(this._pagination, obj.pagination);
 			}
 		}
 	}
 
-	public scrollY: number = 0;
+	private _currentNode: ParserNode = null;
 
-	public actionNode: ParserNode = null;
+	private _parsedNodes: ParserNode[] = [];
 
-	public currentNode: ParserNode = new ParserNode();
+	private _files: ParsedFile[] = [];
 
-	public parsedNodes: ParserNode[] = [];
+	private _nextNode: ParserNode = null;
+	private _previousNode: ParserNode = null;
 
-	public files: ParsedFile[] = [];
+	// breadcrumbs - object with nodes
+	private _breadcrumbNodes: ParserNode[] = [];
 
-	public fileData: ParsedFile = null;
+	private _pagination: Pagination = new Pagination();
 
-	public jumpPrevious : boolean = false;
-	public jumpNext : boolean = false;
-
-	// parser name
-	public parser: string;
-
-	// current parser level
-	public level: string;
-
-	public pagination: Pagination = new Pagination();
-
-	public tokens = {
+	private _tokens = {
 		before: <string> null,
 		after: <string> null
 	};
 
-	public sorting = {
+	private _sorting = {
 		submit: <string> null,
 		page: <number> 0
 	};
 
 	// ignore cache data (refreshing);
-	public ignoreCache: boolean = false;
+	private _ignoreCache: boolean = false;
 
 	public clearParsedData() : void {
-		this.files = [];
-		this.parsedNodes = [];
+		this._files = [];
+		this._parsedNodes = [];
 	}
 
 	public resetNodes() {
-		this.parsedNodes = [];
-		this.currentNode = null;
+		this._parsedNodes = [];
+		this._currentNode = null;
 
 		return this;
 	}
 
 	public resetPagination() {
-		this.pagination = new Pagination();
+		this._pagination = new Pagination();
 		return this;
 	}
 	public resetSorting() {
-		this.sorting = {
+		this._sorting = {
 			submit: null,
 			page: 0
 		};
@@ -105,4 +96,83 @@ export class ParserRequest {
 			.resetSorting();
 	}
 
+	get currentNode(): ParserNode {
+		return this._currentNode;
+	}
+
+	set currentNode(value: ParserNode) {
+		this._currentNode = value;
+	}
+
+	get parsedNodes(): ParserNode[] {
+		return this._parsedNodes;
+	}
+
+	set parsedNodes(value: ParserNode[]) {
+		this._parsedNodes = value;
+	}
+
+	get files(): ParsedFile[] {
+		return this._files;
+	}
+
+	set files(value: ParsedFile[]) {
+		this._files = value;
+	}
+
+	get nextNode(): ParserNode {
+		return this._nextNode;
+	}
+
+	set nextNode(value: ParserNode) {
+		this._nextNode = value;
+	}
+
+	get previousNode(): ParserNode {
+		return this._previousNode;
+	}
+
+	set previousNode(value: ParserNode) {
+		this._previousNode = value;
+	}
+
+	get breadcrumbNodes(): ParserNode[] {
+		return this._breadcrumbNodes;
+	}
+
+	set breadcrumbNodes(value: ParserNode[]) {
+		this._breadcrumbNodes = value;
+	}
+
+	get pagination(): Pagination {
+		return this._pagination;
+	}
+
+	set pagination(value: Pagination) {
+		this._pagination = value;
+	}
+
+	get tokens(): { before: string; after: string } {
+		return this._tokens;
+	}
+
+	set tokens(value: { before: string; after: string }) {
+		this._tokens = value;
+	}
+
+	get sorting(): { submit: string; page: number } {
+		return this._sorting;
+	}
+
+	set sorting(value: { submit: string; page: number }) {
+		this._sorting = value;
+	}
+
+	get ignoreCache(): boolean {
+		return this._ignoreCache;
+	}
+
+	set ignoreCache(value: boolean) {
+		this._ignoreCache = value;
+	}
 }

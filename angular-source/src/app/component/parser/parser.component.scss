@@ -143,6 +143,23 @@
             height: 230px;
             overflow: hidden;
             text-align: center;
+            position: relative;
+
+            &-icon {
+                position: absolute;
+                top: 0;
+                width: 100%;
+                height: 100%;
+                display: table;
+
+                i {
+                    font-size: 120px;
+                    opacity: 0.4;
+                    color: #9800a7;
+                    display: table-cell;
+                    vertical-align: middle;
+                }
+            }
 
             div {
                 height: inherit;
@@ -161,6 +178,12 @@
         }
 
         .tile-data {
+            min-height: 76px;
+
+            &-empty {
+                min-height: 0;
+            }
+
             .single-row {
                 text-align: center;
             }
@@ -227,6 +250,30 @@
 
         .tile-header, .tile-header-image {
             background: #dbe4d9;
+        }
+    }
+}
+
+.scroll-top {
+    &-container {
+        position: absolute;
+        width: auto;
+        height: auto;
+        bottom: 30px;
+        right: 12px;
+    }
+
+    &-button {
+        background: #ffffff;
+        font-size: 32px;
+        width: 48px;
+        height: 48px;
+        font-weight: bold;
+        border: 1px #9e9e9e solid;
+        opacity: 0.3;
+
+        &:hover {
+            opacity: 1;
         }
     }
 }

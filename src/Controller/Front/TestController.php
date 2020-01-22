@@ -7,7 +7,7 @@ use App\Entity\Parser\Node;
 use App\Enum\ParserType;
 use App\Manager\Object\FileManager;
 use App\Model\ParsedFile;
-use App\Model\ParserRequestModel;
+use App\Model\ParserRequest;
 use App\Parser\Boards4chanParser;
 use App\Converter\EntityConverter;
 use App\Parser\HentaiFoundryParser;
@@ -37,8 +37,8 @@ class TestController extends Controller
         $stopwatch = new Stopwatch();
         $stopwatch->start($test);
 
-        $parserRequestModel = new ParserRequestModel();
-        $parserRequestModel->currentNode = new \stdClass();
+        $parserRequest = new ParserRequest();
+        $parserRequest->currentNode = new \stdClass();
 
         $parsedFile = new ParsedFile();
 
@@ -48,18 +48,18 @@ class TestController extends Controller
 
                 switch ($test) {
                     case 'load_boards_list':
-                        $parser->getBoardsListData($parserRequestModel);
+                        $parser->getBoardsListData($parserRequest);
                         break;
 
                     case 'load_galleries':
-                        $parserRequestModel->currentNode->url = 'https://boards.4chan.org/s/catalog';
-                        $parser->getBoardData($parserRequestModel);
+                        $parserRequest->currentNode->url = 'https://boards.4chan.org/s/catalog';
+                        $parser->getBoardData($parserRequest);
                         break;
 
 
                     case 'load_gallery':
-                        $parserRequestModel->currentNode->url = 'http://boards.4chan.org/s/thread/19147511';
-                        $parser->getGalleryData($parserRequestModel);
+                        $parserRequest->currentNode->url = 'http://boards.4chan.org/s/thread/19147511';
+                        $parser->getGalleryData($parserRequest);
                         break;
 
                 }
@@ -70,12 +70,12 @@ class TestController extends Controller
 
                 switch ($test) {
                     case 'load_subreddits':
-                        $parser->getBoardsListData($parserRequestModel);
+                        $parser->getBoardsListData($parserRequest);
                         break;
 
                     case 'load_subreddit':
-                        $parserRequestModel->currentNode->url = '/r/Boobies';
-                        $parser->getBoardData($parserRequestModel);
+                        $parserRequest->currentNode->url = '/r/Boobies';
+                        $parser->getBoardData($parserRequest);
                         break;
 
                     case 'load_gfycat_preview_data':
@@ -95,30 +95,30 @@ class TestController extends Controller
 
                 switch ($test) {
                     case 'load_users': // load users
-                        $parserRequestModel->sorting = ['page' => 0];
-                        $parser->loadOwnersList($parserRequestModel);
+                        $parserRequest->sorting = ['page' => 0];
+                        $parser->loadOwnersList($parserRequest);
                         break;
 
                     case 'load_users_boards': // load user boards
-                        $parserRequestModel->name = 'Jasondayfap83';
-                        $parserRequestModel->identifier = 1481674;
-                        $parser->getBoardData($parserRequestModel);
+                        $parserRequest->name = 'Jasondayfap83';
+                        $parserRequest->identifier = 1481674;
+                        $parser->getBoardData($parserRequest);
                         break;
 
                     case 'load_board_galleries': // load board galleries
-                        $parserRequestModel->currentNode->url = 'https://www.imagefap.com/showfavorites.php?userid=1613432&folderid=3023725';
-                        $parser->getBoardData($parserRequestModel);
+                        $parserRequest->currentNode->url = 'https://www.imagefap.com/showfavorites.php?userid=1613432&folderid=3023725';
+                        $parser->getBoardData($parserRequest);
                         break;
 
                     case 'load_gallery':
-                        $parserRequestModel->currentNode->imagesNo = 227;
-                        $parserRequestModel->currentNode->url = 'https://www.imagefap.com/pictures/4863376/Black-Babe---White-Cock-002';
-                        $parser->getGalleryData($parserRequestModel);
+                        $parserRequest->currentNode->imagesNo = 227;
+                        $parserRequest->currentNode->url = 'https://www.imagefap.com/pictures/4863376/Black-Babe---White-Cock-002';
+                        $parser->getGalleryData($parserRequest);
                         break;
 
                     case 'load_file_data':
-                        $parserRequestModel->currentNode->url = 'https://www.imagefap.com/photo/2045072831/?pgid=&gid=3121356&page=0&idx=27';
-                        $parser->getFileData($parserRequestModel);
+                        $parserRequest->currentNode->url = 'https://www.imagefap.com/photo/2045072831/?pgid=&gid=3121356&page=0&idx=27';
+                        $parser->getFileData($parserRequest);
                         break;
                 }
                 break;
@@ -129,17 +129,17 @@ class TestController extends Controller
 
                 switch($test) {
                     case 'load_board_data':
-                        $parser->getBoardData($parserRequestModel);
+                        $parser->getBoardData($parserRequest);
                         break;
 
                     case 'load_gallery':
-                        $parserRequestModel->currentNode->url = 'pictures/user/a-rimbaud';
-                        $parser->getGalleryData($parserRequestModel);
+                        $parserRequest->currentNode->url = 'pictures/user/a-rimbaud';
+                        $parser->getGalleryData($parserRequest);
                         break;
 
                     case 'load_file_data':
-                        $parserRequestModel->currentNode->url = 'pictures/user/sabudenego/733826/Zelda-Zelda-BotW';
-                        $parser->getFileData($parserRequestModel);
+                        $parserRequest->currentNode->url = 'pictures/user/sabudenego/733826/Zelda-Zelda-BotW';
+                        $parser->getFileData($parserRequest);
                         break;
                 }
                 break;
@@ -148,7 +148,7 @@ class TestController extends Controller
         if ($parsedFile->url) {
             var_dump($parsedFile);
         } else {
-            var_dump($parserRequestModel);
+            var_dump($parserRequest);
         }
 
         $event = $stopwatch->stop($test);

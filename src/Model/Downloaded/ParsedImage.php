@@ -99,9 +99,27 @@ class ParsedImage extends AbstractModel
                 break;
         }
 
-        $this->adjustCompression(5.2, (620*1024)); // max image size: 620KB
+        $this->adjustCompression(
+            $this->detectExpectedCompressionRatio(),
+            (620*1024)
+        ); // max image size: 620KB
 
         return $this;
+    }
+
+    public function detectExpectedCompressionRatio(): float
+    {
+        Image::open($this->tempFilePath)
+            ->grayscale()
+            ->saveJpeg($this->operationalFilePath, 80);
+
+        $tempFilesize = filesize($this->tempFilePath);
+        $operationalFilesize = filesize($this->tempFilePath);
+
+        if (($operationalFilesize * 1.2) < $tempFilesize)
+            return 4.3; // color image (big size loss after grayscaling);
+        else
+            return 5.2; // grayscale;
     }
 
     /**
@@ -124,10 +142,16 @@ class ParsedImage extends AbstractModel
         $imageWidth = $this->fileEntity->getWidth();
         $imageHeight = $this->fileEntity->getHeight();
 
-        $imageRatio = round(($imageWidth / $imageHeight), 2);
-        $expectedRatio = round(($expectedWidth / $expectedHeight), 2);
+        $this->width = $imageWidth;
+        $this->height = $imageHeight;
 
-        if ($imageRatio > $expectedRatio) { // obrazek jest szerszy, niż docelowe granice
+        $imagePixels = ($this->width * $this->height);
+        $imageRatio = round(($imageWidth / $imageHeight), 2);
+
+        $expectedRatio = round(($expectedWidth / $expectedHeight), 2);
+        $maxExpectedPixels = (($expectedWidth * $expectedHeight) * 1.1);
+
+        if ($imageRatio > $expectedRatio && $imagePixels > $maxExpectedPixels) { // obrazek jest szerszy, niż docelowe granice
             $this->height = round(($imageHeight * 1.25));
 
             if ($this->height > ($expectedHeight * 1.10) || ($this->height < ($expectedHeight * 0.94))) {
@@ -135,7 +159,7 @@ class ParsedImage extends AbstractModel
             }
 
             $this->width = round($imageWidth * ($this->height / $imageHeight));
-        } else { // obrazek jest węższy, niż docelowe granice
+        } elseif ($imageRatio < $expectedRatio && $imagePixels > $maxExpectedPixels) { // obrazek jest węższy, niż docelowe granice
             $this->width = round(($imageWidth * 1.4));
 
             if ($this->width > $expectedWidth) {
@@ -152,24 +176,29 @@ class ParsedImage extends AbstractModel
             ->saveJpeg($this->operationalFilePath, 80);
     }
 
+    /**
+     * @param float $minCompressionRatio
+     * @param int $maxFileSize
+     * @throws \Exception
+     */
     public function adjustCompression(float $minCompressionRatio, int $maxFileSize): void
     {
-        $filesize = filesize($this->tempFilePath);
-        $compressionRatio = (($this->width * $this->height) / $filesize);
+        $fileSize = filesize($this->tempFilePath);
+        $compressionRatio = (($this->width * $this->height) / $fileSize);
 
-        if ($compressionRatio < $minCompressionRatio || $filesize > $maxFileSize) {
+        if ($compressionRatio < $minCompressionRatio || $fileSize > $maxFileSize) {
             for ($i = 1; $i <= 8; $i++) {
                 $testWidth = round($this->width / (1 + (0.3 * $i)));
                 $testHeight = round($this->height / (1 + (0.3 * $i)));
 
                 Image::open($this->tempFilePath)
                     ->scaleResize($testWidth, $testHeight)
-                    ->save($this->operationalFilePath, 'jpg', (80 - (1*$i)));
+                    ->save($this->operationalFilePath, 'jpg', (80 - (2*$i)));
 
                 $controlFilesize = filesize($this->operationalFilePath);
                 $controlCompressionRatio = (($testWidth * $testHeight) / $controlFilesize);
 
-                if ($controlCompressionRatio > $minCompressionRatio) {
+                if ($controlCompressionRatio > $minCompressionRatio && $controlFilesize < $maxFileSize) {
                     copy($this->operationalFilePath, $this->tempFilePath);
                     unlink($this->operationalFilePath);
                     break;

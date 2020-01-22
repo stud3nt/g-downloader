@@ -8,94 +8,118 @@ use App\Enum\NodeStatus;
 class ParsedNode extends AbstractModel
 {
     /**
-     * @ModelVariable()
+     * @var string
+     * @ModelVariable(type="string")
      */
     public $name;
 
     /**
-     * @ModelVariable()
+     * @var string
+     * @ModelVariable(type="string")
+     */
+    public $label;
+
+    /**
+     * @var string
+     * @ModelVariable(type="string")
      */
     public $identifier;
 
     /**
-     * @ModelVariable()
+     * @var string
+     * @ModelVariable(type="string")
      */
     public $parser;
 
     /**
-     * @ModelVariable()
+     * @var string
+     * @ModelVariable(type="string")
      */
     public $level;
 
     /**
-     * @ModelVariable()
-     */
-    public $nextLevel;
-
-    /**
-     * @ModelVariable()
+     * @var string
+     * @ModelVariable(type="string")
      */
     public $description;
 
     /**
-     * @ModelVariable()
+     * @var string
+     * @ModelVariable(type="string")
      */
     public $url;
 
     /**
-     * @ModelVariable()
+     * @var integer
+     * @ModelVariable(type="integer")
      */
     public $ratio = 0;
 
     /**
-     * @ModelVariable()
+     * @var integer
+     * @ModelVariable(type="integer")
      */
     public $imagesNo = 0;
 
     /**
-     * @ModelVariable()
+     * @var integer
+     * @ModelVariable(type="integer")
      */
     public $commentsNo = 0;
 
     /**
+     * @var array
      * @ModelVariable(type="array")
      */
     public $thumbnails = [];
 
     /**
+     * @var array
      * @ModelVariable(type="array")
      */
     public $localThumbnails = [];
 
     /**
+     * @var array
      * @ModelVariable(type="array")
      */
     public $statuses = [];
 
     /**
+     * @var bool
      * @ModelVariable(type="boolean")
      */
     public $noImage = false;
 
     /**
+     * @var bool
      * @ModelVariable(type="boolean")
      */
     public $queued = false;
 
     /**
+     * @var bool
      * @ModelVariable(type="boolean")
      */
     public $blocked = false;
 
     /**
+     * @var bool
      * @ModelVariable(type="boolean")
      */
-    public $favorited;
+    public $favorited = false;
 
     /**
+     * @var bool
      * @ModelVariable(type="boolean")
      */
-    public $finished;
+    public $finished = false;
+    
+    /**
+     * @var integer
+     * @ModelVariable(type="integer")
+     */
+    public $expirationTime = 0;
 
     private $statusesNames = [
         NodeStatus::Queued,
@@ -104,20 +128,35 @@ class ParsedNode extends AbstractModel
         NodeStatus::Finished
     ];
 
-    public function __construct(string $parser = null, string $level = null)
+    public function __construct(string $parser = null, string $level = null, string $identifier = null)
     {
-        if ($parser) {
-            $this->setParser($parser);
-        }
-
-        if ($level) {
-            $this->setLevel($level);
-
-            // TODO: autodetect next level?
-        }
+        $this->setParser($parser);
+        $this->setLevel($level);
+        $this->setIdentifier($identifier);
     }
 
-    public function emptyStatuses() : bool
+    /**
+     * Checks if ParsedNode has defined minimum data for creating/saving Node entity;
+     *
+     * @return bool
+     */
+    public function hasMinimumEntityData(): bool
+    {
+        foreach (['name', 'url', 'identifier', 'parser', 'level'] as $requiredField) {
+            $getter = 'get'.ucfirst($requiredField);
+
+            if ($this->$getter() === null) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * @return bool
+     */
+    public function emptyStatuses(): bool
     {
         if (!empty($this->statuses))
             return false;
@@ -132,7 +171,10 @@ class ParsedNode extends AbstractModel
         return false;
     }
 
-    public function setStatusesFromArray() : self
+    /**
+     * @return ParsedNode
+     */
+    public function setStatusesFromArray(): self
     {
         if ($this->getStatuses()) {
             foreach ($this->statusesNames as $statusName) {
@@ -149,37 +191,56 @@ class ParsedNode extends AbstractModel
     }
 
     /**
-     * @return mixed
+     * @return string
      */
-    public function getName()
+    public function getName(): ?string
     {
         return $this->name;
     }
 
     /**
-     * @param mixed $name
+     * @param string $name
      * @return $this;
      */
-    public function setName($name): self
+    public function setName(string $name = null, bool $skipIfNotNull = false): self
     {
-        $this->name = $name;
+        $this->name = ($skipIfNotNull && $this->name) ? $this->name : $name;
 
         return $this;
     }
 
     /**
-     * @return mixed
+     * @return string
      */
-    public function getIdentifier()
+    public function getLabel(): ?string
+    {
+        return $this->label;
+    }
+
+    /**
+     * @param string $label
+     * @return $this;
+     */
+    public function setLabel(string $label = null): self
+    {
+        $this->label = $label;
+
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getIdentifier(): ?string
     {
         return $this->identifier;
     }
 
     /**
-     * @param mixed $identifier
+     * @param string $identifier
      * @return $this;
      */
-    public function setIdentifier($identifier): self
+    public function setIdentifier(string $identifier = null): self
     {
         $this->identifier = preg_replace('/[^a-zA-Z0-9\-\_]/', '_', $identifier);
 
@@ -187,18 +248,18 @@ class ParsedNode extends AbstractModel
     }
 
     /**
-     * @return mixed
+     * @return string
      */
-    public function getParser()
+    public function getParser(): ?string
     {
         return $this->parser;
     }
 
     /**
-     * @param mixed $parser
+     * @param string $parser
      * @return $this;
      */
-    public function setParser($parser): self
+    public function setParser(string $parser = null): self
     {
         $this->parser = $parser;
 
@@ -206,15 +267,15 @@ class ParsedNode extends AbstractModel
     }
 
     /**
-     * @return mixed
+     * @return string
      */
-    public function getLevel()
+    public function getLevel(): ?string
     {
         return $this->level;
     }
 
     /**
-     * @param mixed $level
+     * @param string $level
      * @return $this;
      */
     public function setLevel($level): self
@@ -225,37 +286,18 @@ class ParsedNode extends AbstractModel
     }
 
     /**
-     * @return mixed
+     * @return string
      */
-    public function getNextLevel()
-    {
-        return $this->nextLevel;
-    }
-
-    /**
-     * @param mixed $nextLevel
-     * @return $this;
-     */
-    public function setNextLevel($nextLevel): self
-    {
-        $this->nextLevel = $nextLevel;
-
-        return $this;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getDescription()
+    public function getDescription(): ?string
     {
         return $this->description;
     }
 
     /**
-     * @param mixed $description
+     * @param string $description
      * @return $this;
      */
-    public function setDescription($description): self
+    public function setDescription(string $description = null): self
     {
         $this->description = $description;
 
@@ -263,37 +305,37 @@ class ParsedNode extends AbstractModel
     }
 
     /**
-     * @return mixed
+     * @return string
      */
-    public function getUrl()
+    public function getUrl(): ?string
     {
         return $this->url;
     }
 
     /**
-     * @param mixed $url
+     * @param string $url
      * @return $this;
      */
-    public function setUrl($url): self
+    public function setUrl(string $url = null, bool $skipIfNotNull = false): self
     {
-        $this->url = $url;
+        $this->url = ($skipIfNotNull && $this->url) ? $this->url : $url;
 
         return $this;
     }
 
     /**
-     * @return mixed
+     * @return int
      */
-    public function getRatio()
+    public function getRatio(): int
     {
         return $this->ratio;
     }
 
     /**
-     * @param mixed $ratio
+     * @param int $ratio
      * @return $this;
      */
-    public function setRatio($ratio): self
+    public function setRatio(int $ratio = 0): self
     {
         $this->ratio = $ratio;
 
@@ -301,18 +343,18 @@ class ParsedNode extends AbstractModel
     }
 
     /**
-     * @return mixed
+     * @return int
      */
-    public function getImagesNo()
+    public function getImagesNo(): int
     {
         return $this->imagesNo;
     }
 
     /**
-     * @param mixed $imagesNo
+     * @param int $imagesNo
      * @return $this;
      */
-    public function setImagesNo($imagesNo): self
+    public function setImagesNo(int $imagesNo = 0): self
     {
         $this->imagesNo = $imagesNo;
 
@@ -320,18 +362,18 @@ class ParsedNode extends AbstractModel
     }
 
     /**
-     * @return mixed
+     * @return int
      */
-    public function getCommentsNo()
+    public function getCommentsNo(): int
     {
         return $this->commentsNo;
     }
 
     /**
-     * @param mixed $commentsNo
+     * @param int $commentsNo
      * @return $this;
      */
-    public function setCommentsNo($commentsNo): self
+    public function setCommentsNo(int $commentsNo = 0): self
     {
         $this->commentsNo = $commentsNo;
 
@@ -339,25 +381,29 @@ class ParsedNode extends AbstractModel
     }
 
     /**
-     * @return mixed
+     * @return array
      */
-    public function getThumbnails()
+    public function getThumbnails(): array
     {
         return $this->thumbnails;
     }
 
     /**
-     * @param mixed $thumbnails
+     * @param array $thumbnails
      * @return $this;
      */
-    public function setThumbnails($thumbnails): self
+    public function setThumbnails(array $thumbnails = []): self
     {
         $this->thumbnails = $thumbnails;
 
         return $this;
     }
 
-    public function addThumbnail(string $thumbnail) : self
+    /**
+     * @param string $thumbnail
+     * @return ParsedNode
+     */
+    public function addThumbnail(string $thumbnail): self
     {
         $this->thumbnails[] = $thumbnail;
 
@@ -365,9 +411,9 @@ class ParsedNode extends AbstractModel
     }
 
     /**
-     * @return mixed
+     * @return array
      */
-    public function getLocalThumbnails()
+    public function getLocalThumbnails(): array
     {
         return $this->localThumbnails;
     }
@@ -383,6 +429,10 @@ class ParsedNode extends AbstractModel
         return $this;
     }
 
+    /**
+     * @param string $localThumbnail
+     * @return ParsedNode
+     */
     public function addLocalThumbnail(string $localThumbnail) : self
     {
         $this->localThumbnails[] = $localThumbnail;
@@ -391,11 +441,41 @@ class ParsedNode extends AbstractModel
     }
 
     /**
-     * @return mixed
+     * @return array
      */
-    public function getStatuses()
+    public function getStatuses(): ?array
     {
         return $this->statuses;
+    }
+
+    /**
+     * @param string $status
+     * @param bool $unique - param is unique?
+     * @return ParsedNode
+     */
+    public function addStatus(string $status, bool $unique = true): self
+    {
+        if (!$unique || !$this->hasStatus($status))
+            $this->statuses[] = $status;
+
+        return $this;
+    }
+
+    /**
+     * @param string $checkedStatus
+     * @return bool
+     */
+    public function hasStatus(string $checkedStatus): bool
+    {
+        if ($this->statuses) {
+            foreach ($this->statuses as $status) {
+                if ($status == $checkedStatus) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -429,18 +509,26 @@ class ParsedNode extends AbstractModel
     }
 
     /**
-     * @return mixed
+     * @return boolean
      */
-    public function getQueued()
+    public function getQueued(): bool
     {
         return $this->queued;
     }
 
     /**
-     * @param mixed $queued
+     * @return bool
+     */
+    public function isQueued(): bool
+    {
+        return $this->queued;
+    }
+
+    /**
+     * @param bool $queued
      * @return $this
      */
-    public function setQueued($queued): self
+    public function setQueued(bool $queued): self
     {
         $this->queued = $queued;
 
@@ -448,9 +536,9 @@ class ParsedNode extends AbstractModel
     }
 
     /**
-     * @return mixed
+     * @return bool
      */
-    public function getBlocked()
+    public function getBlocked(): bool
     {
         return $this->blocked;
     }
@@ -467,9 +555,17 @@ class ParsedNode extends AbstractModel
     }
 
     /**
-     * @return mixed
+     * @return bool
      */
-    public function getFavorited()
+    public function getFavorited(): bool
+    {
+        return $this->favorited;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isFavorited(): bool
     {
         return $this->favorited;
     }
@@ -486,9 +582,17 @@ class ParsedNode extends AbstractModel
     }
 
     /**
-     * @return mixed
+     * @return bool
      */
-    public function getFinished()
+    public function getFinished(): bool
+    {
+        return $this->finished;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isFinished(): bool
     {
         return $this->finished;
     }

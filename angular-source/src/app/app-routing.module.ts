@@ -7,7 +7,7 @@ import { SettingsComponent } from "./component/settings/settings.component";
 import { ListComponent as UsersListComponent } from "./component/users/list/list.component";
 import { EditorComponent as UsersEditorComponent } from "./component/users/list/editor/editor.component";
 import { GroupsComponent as UsersGroupsComponent } from "./component/users/groups/groups.component";
-import {LoginComponent} from "./component/security/login/login.component";
+import { LoginComponent } from "./component/security/login/login.component";
 
 @NgModule({
 	imports: [
@@ -34,6 +34,14 @@ export const routes : Routes = [
 	},
 	{
 		path: 'parsers/:parserName',
+		component: ParserComponent
+	},
+	{
+		path: 'parsers/:parserName/:nodeLevel',
+		component: ParserComponent
+	},
+	{
+		path: 'parsers/:parserName/:nodeLevel/:nodeIdentifier',
 		component: ParserComponent
 	},
 	{

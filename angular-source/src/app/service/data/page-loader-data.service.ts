@@ -14,7 +14,7 @@ export class PageLoaderDataService {
 	});
 	private loaderProgressSource = new BehaviorSubject(<number>0);
 	private loaderDescriptionSource = new BehaviorSubject(<string>'');
-	private loaderProgressFromApiSource = new BehaviorSubject(<boolean>false);
+	private loaderProgressFromApiSource = new BehaviorSubject(<boolean>true);
 
 	public loaderData = this.loaderDataSource.asObservable();
 	public loaderStatus = this.loaderStatusSource.asObservable();

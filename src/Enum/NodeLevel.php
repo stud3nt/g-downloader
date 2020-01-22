@@ -22,4 +22,19 @@ abstract class NodeLevel extends Enum
             self::Owner => 4
         ];
     }
+
+    public static function determineNextLevel(string $baseLevel): ?string
+    {
+        $level = null;
+
+        foreach (self::getLevelValue() as $levelName => $levelValue) {
+            if ($level)
+                return $levelName;
+
+            if ($levelName === $baseLevel)
+                $level = $levelName;
+        }
+
+        return $level;
+    }
 }

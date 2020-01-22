@@ -3,11 +3,10 @@
 namespace App\Controller\Api\Base;
 
 use App\Converter\ModelConverter;
+use App\Entity\User;
 use App\Manager\Object\FileManager;
 use App\Manager\Object\NodeManager;
 use App\Manager\SettingsManager;
-use App\Parser\Base\ParserInterface;
-use App\Utils\StringHelper;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController as BaseController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -92,5 +91,33 @@ class Controller extends BaseController
             ModelConverter::class,
             FileManager::class
         ]);
+    }
+
+    /**
+     * Get a user from the Security Token Storage.
+     *
+     * @return object|null
+     *
+     * @throws \LogicException If SecurityBundle is not available
+     *
+     * @see TokenInterface::getUser()
+     *
+     * @final
+     */
+    protected final function getUser(): ?User
+    {
+        if (!$this->container->has('security.token_storage')) {
+            throw new \LogicException('The SecurityBundle is not registered in your application. Try running "composer require symfony/security-bundle".');
+        }
+
+        if (null === $token = $this->container->get('security.token_storage')->getToken()) {
+            return null;
+        }
+
+        if (!\is_object($user = $token->getUser())) {
+            return null;
+        }
+
+        return $user;
     }
 }
