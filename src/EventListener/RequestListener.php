@@ -5,6 +5,7 @@ namespace App\EventListener;
 use App\Entity\User;
 use Symfony\Component\HttpKernel\Event\RequestEvent;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorage;
+use Symfony\Component\Security\Core\Authentication\Token\Storage\UsageTrackingTokenStorage;
 
 class RequestListener
 {
@@ -24,7 +25,12 @@ class RequestListener
         'api_user_operation_progress'
     ];
 
-    public function setTokenStorage(TokenStorage $tokenStorage)
+    /**
+     *
+     *
+     * @param UsageTrackingTokenStorage $tokenStorage
+     */
+    public function setTokenStorage(UsageTrackingTokenStorage $tokenStorage)
     {
         $this->tokenStorage = $tokenStorage;
     }
@@ -47,7 +53,7 @@ class RequestListener
                     $cookies = $event->getRequest()->cookies;
                     $csrfToken = $cookies->get('X-CSRF-TOKEN');
 
-                    if (!$csrfToken || !($csrfToken === $user->getToken())) {
+                    if (!$csrfToken || !($csrfToken === $user->getApiToken())) {
                         throw new \ErrorException('Method not allowed');
                     }
                 }

@@ -5,7 +5,6 @@ namespace App\Manager\Object;
 use App\Converter\EntityConverter;
 use App\Converter\ModelConverter;
 use App\Entity\Parser\Node;
-use App\Enum\NodeLevel;
 use App\Enum\NodeStatus;
 use App\Manager\Base\EntityManager;
 use App\Model\ParsedNode;

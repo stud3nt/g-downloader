@@ -9,7 +9,6 @@ use App\Factory\ParsedNodeFactory;
 use App\Factory\ParserRequestFactory;
 use App\Manager\Object\FileManager;
 use App\Manager\Object\NodeManager;
-use App\Model\ParsedNode;
 use App\Service\ParserService;
 use Doctrine\ORM\ORMException;
 use Psr\Container\ContainerInterface;

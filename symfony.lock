@@ -1,4 +1,7 @@
 {
+    "cboden/ratchet": {
+        "version": "v0.4.1"
+    },
     "doctrine/annotations": {
         "version": "1.0",
         "recipe": {
@@ -90,14 +93,17 @@
     "egulias/email-validator": {
         "version": "2.1.8"
     },
-    "fig/link-util": {
-        "version": "1.0.0"
+    "evenement/evenement": {
+        "version": "v3.0.1"
     },
-    "gregwar/cache": {
-        "version": "v1.0.12"
+    "gos/pubsub-router-bundle": {
+        "version": "v2.0.0"
     },
-    "gregwar/image": {
-        "version": "v2.0.25"
+    "gos/web-socket-bundle": {
+        "version": "v2.1.0"
+    },
+    "gos/websocket-client": {
+        "version": "v0.3.1"
     },
     "guzzlehttp/guzzle": {
         "version": "6.3.3"
@@ -155,6 +161,30 @@
     },
     "ralouphie/getallheaders": {
         "version": "2.0.5"
+    },
+    "ratchet/rfc6455": {
+        "version": "v0.2.6"
+    },
+    "react/cache": {
+        "version": "v1.0.0"
+    },
+    "react/dns": {
+        "version": "v1.2.0"
+    },
+    "react/event-loop": {
+        "version": "v1.1.1"
+    },
+    "react/promise": {
+        "version": "v2.7.1"
+    },
+    "react/promise-timer": {
+        "version": "v1.5.1"
+    },
+    "react/socket": {
+        "version": "v1.3.0"
+    },
+    "react/stream": {
+        "version": "v1.1.0"
     },
     "sensio/framework-extra-bundle": {
         "version": "5.2",
@@ -231,6 +261,9 @@
     },
     "symfony/dotenv": {
         "version": "v4.3.1"
+    },
+    "symfony/error-handler": {
+        "version": "v4.4.3"
     },
     "symfony/event-dispatcher": {
         "version": "v4.3.1"
