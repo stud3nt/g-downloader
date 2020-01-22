@@ -28,8 +28,15 @@ class UrlHelper
         return ($code === 403);
     }
 
-    public static function fixUrl(string $url) : string
+    public static function fixUrl(string $url, bool $cutOffQuery = true) : string
     {
+        if ($cutOffQuery) {
+            $parseUrl = parse_url($url);
+
+            if (array_key_exists('query', $parseUrl))
+                $url = str_replace('?'.$parseUrl['query'], '', $url);
+        }
+
         return str_replace([' '], ['%20'], $url);
     }
 }

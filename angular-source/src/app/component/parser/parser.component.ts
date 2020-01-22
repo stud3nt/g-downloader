@@ -218,8 +218,6 @@ export class ParserComponent implements OnInit {
 			if (this.filesTemp) // adding new files at end of list;
 				this.parserRequest.files = [...this.filesTemp, ...this.parserRequest.files];
 
-			console.log(this.parserRequest.files);
-
 			if (successFunction)
 				successFunction();
 		}, () => {

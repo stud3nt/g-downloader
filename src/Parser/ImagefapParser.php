@@ -453,7 +453,7 @@ class ImagefapParser extends AbstractParser implements ParserInterface
 
             return $parsedFile
                 ->setIdentifier(FilesHelper::getFileName($json['contentUrl']))
-                ->setFileUrl(UrlHelper::fixUrl($json['contentUrl']))
+                ->setFileUrl(UrlHelper::fixUrl($json['contentUrl'], false)) // don't cut off query string, contains security token :(
                 ->setName(FilesHelper::getFileName($json['contentUrl']))
                 ->setExtension(FilesHelper::getFileExtension($json['contentUrl']))
                 ->setWidth((int)$json['width'])

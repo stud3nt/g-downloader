@@ -219,7 +219,7 @@ class Boards4chanParser extends AbstractParser implements ParserInterface
             $this->startProgress('get_gallery_data', count($divs), 20, 90);
 
             foreach ($divs as $div) {
-                if ($div->getAttribute('class') == 'postContainer replyContainer') {
+                if (in_array($div->getAttribute('class'), ['postContainer replyContainer', 'postContainer opContainer'])) {
                     foreach ($div->find('a') as $anchor) {
                         if ($anchor->getAttribute('class') == 'fileThumb') { // filethumb
                             $thumbnail = $anchor->find('img'); // thumb image;

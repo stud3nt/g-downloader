@@ -56,7 +56,7 @@ class DownloadService
                         break;
 
                     case FileType::Video:
-
+                        
                         break;
                 }
 

@@ -2,6 +2,7 @@
 
 namespace App\Parser;
 
+use App\Entity\Parser\File;
 use App\Enum\FileType;
 use App\Enum\NodeLevel;
 use App\Enum\ParserType;
@@ -297,7 +298,7 @@ class HentaiFoundryParser extends AbstractParser implements ParserInterface
         /** @var HtmlNode $time */
         $time = $dom->find('time')[0];
 
-        $imageUrl = $image->getAttribute('src');
+        $imageUrl = 'https:'.$image->getAttribute('src');
         $imageName = FilesHelper::getFileName($imageUrl);
         $imageIdentifier = explode('-', $imageName)[1];
 
@@ -334,6 +335,21 @@ class HentaiFoundryParser extends AbstractParser implements ParserInterface
         $this->downloadFile($parsedFile->getFileUrl(), $previewFilePath);
 
         return $parsedFile;
+    }
+
+    /**
+     * @param File $file
+     * @return string|null
+     */
+    public function determineFileSubfolder(File $file): ?string
+    {
+        $subfolder = '';
+
+        if ($user = $file->getParentNode()) {
+            $subfolder = DIRECTORY_SEPARATOR.$user->getName();
+        }
+
+        return $subfolder;
     }
 
     /**

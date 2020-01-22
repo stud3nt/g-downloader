@@ -72,8 +72,11 @@ class FilesHelper
     {
         $pathinfo = pathinfo($fileString);
 
-        if ($pathinfo['extension']) {
-            return strtolower($pathinfo['extension']);
+        if ($extension = $pathinfo['extension']) {
+            if ($queryStart = strpos($extension, '?'))
+                $extension = substr($extension, 0, $queryStart);
+
+            return strtolower($extension);
         }
 
         return '';
