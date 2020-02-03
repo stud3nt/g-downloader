@@ -14,6 +14,6 @@ export class User {
 
 	thumbnail: string = null;
 
-	token: string = null;
+	apiToken: string = null;
 
 }

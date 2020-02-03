@@ -3,7 +3,7 @@ import { BehaviorSubject } from "rxjs";
 import {PreloaderData} from "../../model/preloader-data";
 
 @Injectable({
-  providedIn: 'root'
+	providedIn: 'root'
 })
 
 export class PageLoaderDataService {
@@ -46,16 +46,6 @@ export class PageLoaderDataService {
 			status: 'hide', timeout: timeout
 		});
   		return this;
-	}
-
-	public enableRefreshingFromApi() : PageLoaderDataService {
-  		this.loaderProgressFromApiSource.next(true);
-  		return this;
-	}
-
-	public disableRefreshingFromApi() : PageLoaderDataService {
-		this.loaderProgressFromApiSource.next(false);
-		return this;
 	}
 
 	public setProgress(progress: number = 0): PageLoaderDataService {

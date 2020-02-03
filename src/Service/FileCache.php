@@ -201,28 +201,6 @@ class FileCache
     }
 
     /**
-     * Automatic saving page loader progress;
-     *
-     * @param int $progress - page progress in percent (0-100)
-     * @throws \Exception
-     */
-    public function savePageLoaderProgress(int $progress = 0): void
-    {
-        $pageLoaderData = $this->get('page_loader_status');
-
-        if ($pageLoaderData) {
-            $pageLoaderData['progress'] = $progress;
-        } else {
-            $pageLoaderData = [
-                'progress' => $progress,
-                'description' => ''
-            ];
-        }
-
-        $this->set('page_loader_status', $pageLoaderData);
-    }
-
-    /**
      * Automatic save page loader description
      *
      * @param string $description

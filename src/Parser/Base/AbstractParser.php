@@ -5,12 +5,10 @@ namespace App\Parser\Base;
 use App\Converter\ModelConverter;
 use App\Entity\Parser\File;
 use App\Entity\User;
-use App\Enum\NodeLevel;
 use App\Enum\PaginationMode;
 use App\Model\ParserRequest;
 use App\Model\SettingsModel;
 use App\Service\{FileCache, CurlRequest};
-use App\Traits\PageLoaderTrait;
 use App\Utils\AppHelper;
 use GuzzleHttp\Client;
 use PHPHtmlParser\Dom;
@@ -18,8 +16,6 @@ use Symfony\Component\Filesystem\Filesystem;
 
 class AbstractParser
 {
-    use PageLoaderTrait;
-
     // parser name
     protected $parserName = 'parser_name';
 
@@ -93,8 +89,6 @@ class AbstractParser
         if (!file_exists($this->previewTempDir)) {
             mkdir($this->previewTempDir, 0777);
         }
-
-        $this->setPageLoaderProgress(5);
     }
 
     /**
@@ -102,7 +96,6 @@ class AbstractParser
      */
     public function __destruct()
     {
-        $this->setPageLoaderProgress(100);
         $this->clearCache();
     }
 

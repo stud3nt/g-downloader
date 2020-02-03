@@ -5,6 +5,7 @@ namespace App\Parser\Base;
 use App\Entity\Parser\File;
 use App\Model\ParsedFile;
 use App\Model\ParserRequest;
+use Ratchet\ConnectionInterface;
 
 /**
  * Interface ParserInterface

@@ -3,17 +3,25 @@ import { ActivatedRoute, NavigationEnd, Router } from "@angular/router";
 import { ContentHeaderDataService } from "../../service/data/content-header-data.service";
 import { ParserService } from "../../service/parser.service";
 import { ParserType } from "../../enum/parser-type";
-import { ConfigService } from "../../service/config.service";
-import { NodeLevel } from "../../enum/node-level";
 import { ParserNode } from "../../model/parser-node";
 import { ParserRequest } from "../../model/parser-request";
+import { ParsedFile } from "../../model/parsed-file";
+import { ConfigService } from "../../service/config.service";
+import { NodeLevel } from "../../enum/node-level";
 import { PageLoaderDataService } from "../../service/data/page-loader-data.service";
 import { Pagination } from "../../model/pagination";
 import { NodesListComponent } from "./nodes-list/nodes-list.component";
 import { NodeStatus } from "../../enum/node-status";
 import { RouterService } from "../../service/router.service";
-import {PaginationMode} from "../../enum/pagination-mode";
-import {ParsedFile} from "../../model/parsed-file";
+import { PaginationMode } from "../../enum/pagination-mode";
+import { webSocket } from "rxjs/webSocket";
+import { WebsocketAddress } from "../../enum/websocket-address";
+import { HttpHelper } from "../../helper/http-helper";
+import { AuthService } from "../../service/auth.service";
+import {ToastrDataService} from "../../service/data/toastr-data.service";
+import {Status} from "../../model/status";
+import {StatusCode} from "../../enum/status-code";
+import {JsonResponse} from "../../model/json-response";
 
 @Component({
 	selector: 'app-parser',
@@ -30,7 +38,7 @@ export class ParserComponent implements OnInit {
 	// current node identifier
 	protected nodeIdentifier: string = '';
 
-	protected parserSettings = this.config.parsers;
+	private parserWebsocket;
 
 	protected scrollY = 0;
 
@@ -58,34 +66,18 @@ export class ParserComponent implements OnInit {
 		private headerData: ContentHeaderDataService,
 		private route: ActivatedRoute,
 		private router: Router,
+		private auth: AuthService,
 		private config: ConfigService,
 		private parserService: ParserService,
+		private toastrService: ToastrDataService,
 		private pageLoaderDataService: PageLoaderDataService,
 		public routerService: RouterService
-	) { }
+	) {}
 
 	ngOnInit() {
-		this.run();
-		this.router.events.forEach((event) => { // run on parser url address change;
-			if (event instanceof NavigationEnd) {
-				this.run();
-			}
-		});
-	};
-
-	ngOnDestroy() {
-		window.removeEventListener('scroll', this.scrollEvent, true);
-	}
-
-	/**
-	 * Initialization function.
-	 * Sets node data, names and sends initialize data request;
-	 */
-	public run() : void {
 		window.addEventListener('scroll', this.scrollEvent, true);
 
 		this.parserBreadcrumbs = [];
-
 		this.previousNodeUrl = null;
 		this.nextNodeUrl = null;
 
@@ -94,7 +86,12 @@ export class ParserComponent implements OnInit {
 		this.determineParserData();
 		this.initializeParserRequestObject();
 		this.setHeaderData();
+
 		this.sendParserRequest();
+	};
+
+	ngOnDestroy() {
+		window.removeEventListener('scroll', this.scrollEvent, true);
 	}
 
 	/**
@@ -183,6 +180,7 @@ export class ParserComponent implements OnInit {
 	private initializeParserRequestObject() : void {
 		this.parserRequest = new ParserRequest();
 		this.parserRequest.currentNode = this.initializeParserNodeObject();
+		this.parserRequest.apiToken = this.auth.user.apiToken;
 	};
 
 	/**
@@ -201,19 +199,18 @@ export class ParserComponent implements OnInit {
 	/**
 	 * Sends data to parser API
 	 */
-	private sendParserRequest(successFunction: () => any = null, errorFunction: () => any = null, completeFunction: () => any = null) {
-		if (this.parserRequestAction) // only one action
+	private sendParserRequest(successFunction: () => any = null, errorFunction: () => any = null, completeFunction: () => any = null): void {
+		if (this.parserRequestAction) // only one action at same time
 			return;
 
-		this.pageLoaderDataService.setProgress(1).show().enableRefreshingFromApi();
-
-		if (this.filesTemp) // adding new files at end of list;
-			this.parserRequest.files = this.filesTemp;
+		this.parserRequestAction = true;
+		this.filesTemp = this.parserRequest.files;
 
 		this.parserService.sendParserActionRequest(this.parserRequest).subscribe((response : ParserRequest) => {
 			this.parserRequest = response;
 			this.previousNodeUrl = (response.previousNode) ? this.routerService.generateNodeUrl(response.previousNode) : null;
 			this.nextNodeUrl = (response.nextNode) ? this.routerService.generateNodeUrl(response.nextNode) : null;
+			this.parserRequestAction = false;
 
 			if (this.filesTemp) // adding new files at end of list;
 				this.parserRequest.files = [...this.filesTemp, ...this.parserRequest.files];
@@ -221,17 +218,74 @@ export class ParserComponent implements OnInit {
 			if (successFunction)
 				successFunction();
 		}, () => {
-			this.pageLoaderDataService.disableRefreshingFromApi().setProgress(100).hide();
+			this.pageLoaderDataService.hide();
+			this.parserRequestAction = false;
 
 			if (errorFunction)
 				errorFunction();
 		}, () => {
-			this.pageLoaderDataService.disableRefreshingFromApi().setProgress(100).hide();
+			this.pageLoaderDataService.setProgress(100).hide();
+			this.parserRequestAction = false;
 
 			if (completeFunction)
 				completeFunction();
 		});
-	};
+
+		setTimeout(() => {
+			this.parserStatusListener();
+		}, 200);
+	}
+
+	private parserStatusListener(): void {
+		if (!this.parserWebsocket) {
+			this.parserWebsocket = webSocket(WebsocketAddress.ParsingNode);
+			this.parserWebsocket.subscribe((response) => {
+				let recursive = true;
+
+				if (typeof response === 'object') {
+					let jsonResponse = new JsonResponse(response);
+
+					if (jsonResponse.success()) {
+						let status = new Status(jsonResponse.data);
+
+						switch (status.code) {
+							case StatusCode.NoEffect:
+							case StatusCode.OperationStarted:
+								this.pageLoaderDataService.show().setProgress(status.progress);
+								break;
+
+							case StatusCode.OperationInProgress:
+								this.pageLoaderDataService.show().setProgress(status.progress);
+								break;
+
+							case StatusCode.OperationEnded:
+								this.pageLoaderDataService.hide();
+								recursive = false;
+								break;
+						}
+					}
+				} else {
+					this.pageLoaderDataService.hide();
+				}
+
+				if (recursive) {
+					setTimeout(() => {
+						this.parserStatusListener();
+					}, 250);
+				}
+			}, (error) => {
+				this.toastrService.addError('PARSER ERROR', error.message);
+				console.log(error);
+			}, () => {
+
+			});
+		}
+
+		this.parserWebsocket.next({
+			_token: this.auth.user.apiToken,
+			parserRequest: (HttpHelper.convert(this.parserRequest, HttpHelper.Object))
+		});
+	}
 
 	/**
 	 * Determines parser name based by URL address;

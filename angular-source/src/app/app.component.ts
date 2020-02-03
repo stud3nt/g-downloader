@@ -41,7 +41,7 @@ export class IndexComponent implements OnInit{
 				this.authService.isLoggedIn = true;
 
 				if (!this.cookie.get('X-CSRF-TOKEN')) {
-					this.cookie.set('X-CSRF-TOKEN', user.token, 0);
+					this.cookie.set('X-CSRF-TOKEN', user.apiToken, 0);
 					this.router.navigate(['/']);
 				}
 			} else { // used is logged out - deleting objects and clearing cookie;

@@ -6,10 +6,10 @@ import { ParserRequest } from "../model/parser-request";
 import { ParserNode } from "../model/parser-node";
 import { HttpHelper } from "../helper/http-helper";
 import { map } from "rxjs/operators";
-import {NodeStatus} from "../enum/node-status";
+import { NodeStatus } from "../enum/node-status";
 
 @Injectable({
-  providedIn: 'root'
+	providedIn: 'root'
 })
 export class ParserService {
 
@@ -17,7 +17,7 @@ export class ParserService {
 		private http: HttpClient,
 		private router: RouterService,
 		private auth: AuthService
-	) { }
+	) {}
 
 	/**
 	 * Parser action request
@@ -25,7 +25,7 @@ export class ParserService {
 	 * @param parserRequest
 	 */
 	public sendParserActionRequest(parserRequest: ParserRequest) {
-		let formData = HttpHelper.convertObjectToFormData(parserRequest);
+		let formData = HttpHelper.convert(parserRequest);
 
 		return this.http.post(this.router.generateUrl('api_parsers_action'), formData).pipe(
 			map((response:Response) => new ParserRequest(response))
@@ -51,7 +51,7 @@ export class ParserService {
 			node.addStatus(status);
 		}
 
-		let formData = HttpHelper.convertObjectToFormData(node);
+		let formData = HttpHelper.convert(node);
 
 		return this.http.post(this.router.generateUrl('api_parsers_mark_node'), formData);
 	}

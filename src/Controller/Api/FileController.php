@@ -27,7 +27,10 @@ class FileController extends Controller
             $request->request->all()
         );
 
-        $parser = $parserService->loadParser($parsedFile->getParser());
+        $parser = $parserService->loadParser(
+            $parsedFile->getParser(),
+            $this->getUser()
+        );
         $parser->getFileData($parsedFile);
 
         $parentNode = $this->get(NodeManager::class)->getOneByParsedNode($parsedFile->getParentNode());
@@ -50,7 +53,10 @@ class FileController extends Controller
             $request->request->all()
         );
 
-        $parser = $parserService->loadParser($parsedFile->getParser());
+        $parser = $parserService->loadParser(
+            $parsedFile->getParser(),
+            $this->getUser()
+        );
         $parser->getFilePreview($parsedFile);
         $parsedFile->setHtmlPreview(
             $this->get('twig')->render('file_preview/'.$parsedFile->getType().'.html.twig', [

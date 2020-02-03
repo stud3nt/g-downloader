@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "c612c344bf12ab1ef3f47e76510a9b2b",
+    "content-hash": "3b81611807d0f15210d62a5e9b8feec7",
     "packages": [
         {
             "name": "cboden/ratchet",
@@ -1303,207 +1303,27 @@
             "time": "2017-07-23T21:35:13+00:00"
         },
         {
-            "name": "gos/pubsub-router-bundle",
-            "version": "v2.0.0",
+            "name": "gregwar/cache",
+            "version": "v1.0.12",
+            "target-dir": "Gregwar/Cache",
             "source": {
                 "type": "git",
-                "url": "https://github.com/GeniusesOfSymfony/PubSubRouterBundle.git",
-                "reference": "4125f752e2a8560ab46eac644da5237d8be66479"
+                "url": "https://github.com/Gregwar/Cache.git",
+                "reference": "305d0f5a12c0beecbbd7e1de236f59f39e0c0ac3"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/GeniusesOfSymfony/PubSubRouterBundle/zipball/4125f752e2a8560ab46eac644da5237d8be66479",
-                "reference": "4125f752e2a8560ab46eac644da5237d8be66479",
+                "url": "https://api.github.com/repos/Gregwar/Cache/zipball/305d0f5a12c0beecbbd7e1de236f59f39e0c0ac3",
+                "reference": "305d0f5a12c0beecbbd7e1de236f59f39e0c0ac3",
                 "shasum": ""
             },
             "require": {
-                "php": "^7.2",
-                "symfony/config": "^4.4|^5.0",
-                "symfony/console": "^4.4|^5.0",
-                "symfony/dependency-injection": "^4.4|^5.0",
-                "symfony/framework-bundle": "^4.4|^5.0",
-                "symfony/http-foundation": "^4.4|^5.0",
-                "symfony/http-kernel": "^4.4|^5.0",
-                "symfony/yaml": "^4.4|^5.0"
-            },
-            "require-dev": {
-                "friendsofphp/php-cs-fixer": "^2.16",
-                "matthiasnoback/symfony-dependency-injection-test": "^4.1",
-                "phpstan/extension-installer": "^1.0.3",
-                "phpstan/phpstan": "^0.12.3",
-                "phpstan/phpstan-phpunit": "^0.12.2",
-                "phpstan/phpstan-symfony": "^0.12.1",
-                "phpunit/phpunit": "^8.5"
-            },
-            "type": "symfony-bundle",
-            "extra": {
-                "branch-alias": {
-                    "dev-master": "2.x-dev"
-                }
-            },
-            "autoload": {
-                "psr-4": {
-                    "Gos\\Bundle\\PubSubRouterBundle\\": "src/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Johann Saunier",
-                    "email": "johann_27@hotmail.fr"
-                }
-            ],
-            "description": "Symfony PubSub Router Bundle",
-            "homepage": "https://github.com/GeniusesOfSymfony/PubSubRouterBundle",
-            "keywords": [
-                "PubSub Bundle",
-                "WAMP",
-                "bundle",
-                "pubsub",
-                "redis",
-                "zmq"
-            ],
-            "time": "2019-12-28T19:42:28+00:00"
-        },
-        {
-            "name": "gos/web-socket-bundle",
-            "version": "v2.1.0",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/GeniusesOfSymfony/WebSocketBundle.git",
-                "reference": "fe80a51c9def5f309de6ee4baa02f4c0f7aef8c2"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/GeniusesOfSymfony/WebSocketBundle/zipball/fe80a51c9def5f309de6ee4baa02f4c0f7aef8c2",
-                "reference": "fe80a51c9def5f309de6ee4baa02f4c0f7aef8c2",
-                "shasum": ""
-            },
-            "require": {
-                "cboden/ratchet": "^0.4.1",
-                "gos/pubsub-router-bundle": "^1.0 || ^2.0",
-                "gos/websocket-client": "^0.3",
-                "ocramius/proxy-manager": "~0.4 || ^1.0 || ^2.0",
-                "php": "^7.2",
-                "psr/log": "^1.1",
-                "react/event-loop": "^1.0",
-                "symfony/config": "^3.4 || ^4.4 || ^5.0",
-                "symfony/console": "^3.4 || ^4.4 || ^5.0",
-                "symfony/dependency-injection": "^3.4 || ^4.4 || ^5.0",
-                "symfony/event-dispatcher": "^3.4 || ^4.4",
-                "symfony/http-foundation": "^3.4 || ^4.4 || ^5.0",
-                "symfony/http-kernel": "^3.4 || ^4.4 || ^5.0",
-                "symfony/security-core": "^3.4 || ^4.4 || ^5.0",
-                "symfony/serializer": "^3.4 || ^4.4 || ^5.0"
-            },
-            "conflict": {
-                "gos/react-amqp": "<0.3"
-            },
-            "require-dev": {
-                "doctrine/cache": "^1.8",
-                "doctrine/dbal": "^2.9",
-                "friendsofphp/php-cs-fixer": "^2.16",
-                "matthiasnoback/symfony-dependency-injection-test": "^4.1",
-                "phpstan/extension-installer": "^1.0.3",
-                "phpstan/phpstan": "^0.12.3",
-                "phpstan/phpstan-phpunit": "^0.12.2",
-                "phpstan/phpstan-symfony": "^0.12.1",
-                "phpunit/phpunit": "^8.5",
-                "predis/predis": "^1.1",
-                "symfony/cache": "^3.4 || ^4.4 || ^5.0",
-                "symfony/monolog-bundle": "^3.0",
-                "symfony/options-resolver": "^3.4 || ^4.4 || ^5.0",
-                "symfony/polyfill-php73": "^1.13",
-                "symfony/stopwatch": "^3.4 || ^4.4 || ^5.0",
-                "symfony/twig-bundle": "^3.4 || ^4.4 || ^5.0",
-                "symfony/web-profiler-bundle": "^3.4 || ^4.4 || ^5.0"
-            },
-            "suggest": {
-                "doctrine/cache": "to use doctrine/cache as a client driver",
-                "doctrine/dbal": "to use Doctrine ping services",
-                "ext-amqp": "* to use the amqp pusher",
-                "ext-pdo": "* to use PDO ping services",
-                "gos/react-amqp": "to use the amqp server push handler",
-                "predis/predis": "to use Predis as a client driver",
-                "symfony/cache": "to use symfony/cache as a client driver",
-                "symfony/options-resolver": "to use the pushers",
-                "symfony/polyfill-php73": "if using PHP 7.2",
-                "symfony/serializer": "to use the pushers",
-                "symfony/stopwatch": "to use the data collectors"
-            },
-            "type": "symfony-bundle",
-            "extra": {
-                "branch-alias": {
-                    "dev-2.x": "2.x-dev"
-                }
-            },
-            "autoload": {
-                "psr-4": {
-                    "Gos\\Bundle\\WebSocketBundle\\": ""
-                },
-                "exclude-from-classmap": [
-                    "/Tests/"
-                ]
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Jeremy Dare",
-                    "email": "jeremy.d.dare@gmail.com"
-                },
-                {
-                    "name": "Johann Saunier",
-                    "email": "johann_27@hotmail.fr"
-                }
-            ],
-            "description": "Symfony Web Socket Bundle",
-            "homepage": "https://github.com/GeniusesOfSymfony/WebSocketBundle",
-            "keywords": [
-                "Ratchet",
-                "WAMP",
-                "Web Socket Bundle",
-                "io",
-                "websocket"
-            ],
-            "time": "2020-01-07T20:26:52+00:00"
-        },
-        {
-            "name": "gos/websocket-client",
-            "version": "v0.3.1",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/GeniusesOfSymfony/WebSocketPhpClient.git",
-                "reference": "512882926c3279d6f7d18c16f8eac9aee5acc172"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/GeniusesOfSymfony/WebSocketPhpClient/zipball/512882926c3279d6f7d18c16f8eac9aee5acc172",
-                "reference": "512882926c3279d6f7d18c16f8eac9aee5acc172",
-                "shasum": ""
-            },
-            "require": {
-                "ext-json": "*",
-                "php": ">=7.2",
-                "psr/log": "^1.0"
-            },
-            "require-dev": {
-                "friendsofphp/php-cs-fixer": "^2.16.1"
+                "php": ">=5.3"
             },
             "type": "library",
-            "extra": {
-                "branch-alias": {
-                    "dev-master": "0.3.x-dev"
-                }
-            },
             "autoload": {
-                "psr-4": {
-                    "Gos\\Component\\WebSocketClient\\": "src/"
+                "psr-0": {
+                    "Gregwar\\Cache": ""
                 }
             },
             "notification-url": "https://packagist.org/downloads/",
@@ -1512,21 +1332,70 @@
             ],
             "authors": [
                 {
-                    "name": "Martin Bažík",
-                    "email": "martin@bazo.sk"
-                },
-                {
-                    "name": "Johann Saunier",
-                    "email": "johann_27@hotmail.fr"
+                    "name": "Gregwar",
+                    "email": "g.passault@gmail.com"
                 }
             ],
-            "description": "WAMP client in PHP",
+            "description": "A lightweight file-system cache system",
             "keywords": [
-                "Ratchet",
-                "WAMP",
-                "websocket"
+                "cache",
+                "caching",
+                "file-system",
+                "system"
             ],
-            "time": "2019-12-20T16:33:41+00:00"
+            "time": "2016-09-23T08:16:04+00:00"
+        },
+        {
+            "name": "gregwar/image",
+            "version": "v2.0.25",
+            "target-dir": "Gregwar/Image",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/Gregwar/Image.git",
+                "reference": "03534d5760cbea5c96e6292041ff81a3bb205c36"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/Gregwar/Image/zipball/03534d5760cbea5c96e6292041ff81a3bb205c36",
+                "reference": "03534d5760cbea5c96e6292041ff81a3bb205c36",
+                "shasum": ""
+            },
+            "require": {
+                "ext-gd": "*",
+                "gregwar/cache": "^1.0.6",
+                "php": "^5.3 || ^7.0"
+            },
+            "require-dev": {
+                "sllh/php-cs-fixer-styleci-bridge": "~1.0",
+                "symfony/phpunit-bridge": "^2.7.4 || ^3.0"
+            },
+            "suggest": {
+                "behat/transliterator": "Transliterator provides ability to set non-latin1 pretty names"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-0": {
+                    "Gregwar\\Image": ""
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Grégoire Passault",
+                    "email": "g.passault@gmail.com",
+                    "homepage": "http://www.gregwar.com/"
+                }
+            ],
+            "description": "Image handling",
+            "homepage": "https://github.com/Gregwar/Image",
+            "keywords": [
+                "gd",
+                "image"
+            ],
+            "time": "2019-03-01T15:55:29+00:00"
         },
         {
             "name": "guzzlehttp/guzzle",
@@ -2215,6 +2084,56 @@
             ],
             "description": "A PSR-5 based resolver of Class names, Types and Structural Element Names",
             "time": "2019-08-22T18:11:29+00:00"
+        },
+        {
+            "name": "predis/predis",
+            "version": "v1.1.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/nrk/predis.git",
+                "reference": "f0210e38881631afeafb56ab43405a92cafd9fd1"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/nrk/predis/zipball/f0210e38881631afeafb56ab43405a92cafd9fd1",
+                "reference": "f0210e38881631afeafb56ab43405a92cafd9fd1",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.3.9"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "~4.8"
+            },
+            "suggest": {
+                "ext-curl": "Allows access to Webdis when paired with phpiredis",
+                "ext-phpiredis": "Allows faster serialization and deserialization of the Redis protocol"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Predis\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Daniele Alessandri",
+                    "email": "suppakilla@gmail.com",
+                    "homepage": "http://clorophilla.net"
+                }
+            ],
+            "description": "Flexible and feature-complete Redis client for PHP and HHVM",
+            "homepage": "http://github.com/nrk/predis",
+            "keywords": [
+                "nosql",
+                "predis",
+                "redis"
+            ],
+            "time": "2016-06-16T16:22:20+00:00"
         },
         {
             "name": "psr/cache",

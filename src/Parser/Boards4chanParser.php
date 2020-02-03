@@ -53,35 +53,42 @@ class Boards4chanParser extends AbstractParser implements ParserInterface
         $parserRequest->clearParsedData();
 
         if (!$this->getParserCache($parserRequest)) {
-            // @var HtmlNode $column
-            // @var HtmlNode $anchor
+            $parserRequest->getStatus()
+                ->updateProgress(30)
+                ->send();
+
+            /** @var HtmlNode $column **/
+            /** @var HtmlNode $anchor **/
             $dom = $this->loadDomFromUrl($this->mainBoardUrl);
             $name = $dom->find('title')[0]->text();
 
-            $parserRequest->pagination->disable();
-            $parserRequest->currentNode->setUrl($this->mainBoardUrl)
+            $parserRequest->getPagination()->disable();
+            $parserRequest->getCurrentNode()
+                ->setUrl($this->mainBoardUrl)
                 ->setName($name, true)
                 ->setLabel($name);
 
             $domColumns = $dom->find('div.column');
 
-            $this->setPageLoaderProgress(50);
+            $parserRequest->getStatus()
+                ->updateProgress(50)
+                ->send();
 
             foreach ($domColumns as $column) {
                 if ($column->find('h3')->text() === 'Adult') {
                     foreach ($column->find('a.boardlink') as $anchor) {
-                        $parserRequest->addParsedNode((new ParsedNode(ParserType::Boards4chan, NodeLevel::Board))
-                            ->setName($anchor->text())
-                            ->setUrl('https:'.$anchor->getAttribute('href').'catalog')
-                            ->setIdentifier($this->getBoardSymbol($anchor->getAttribute('href')))
-                            ->setNoImage(true)
+                        $parserRequest->addParsedNode(
+                            (new ParsedNode(ParserType::Boards4chan, NodeLevel::Board))
+                                ->setName($anchor->text())
+                                ->setUrl('https:'.$anchor->getAttribute('href').'catalog')
+                                ->setIdentifier($this->getBoardSymbol($anchor->getAttribute('href')))
+                                ->setNoImage(true)
                         );
                     }
                 }
             }
 
             $this->setParserCache($parserRequest, 0);
-            $this->setPageLoaderProgress(100);
         }
 
         return $parserRequest;
@@ -95,16 +102,17 @@ class Boards4chanParser extends AbstractParser implements ParserInterface
      */
     public function getBoardData(ParserRequest &$parserRequest) : ParserRequest
     {
-        $parserRequest->clearParsedData()
-            ->pagination
-            ->disable();
+        $parserRequest->clearParsedData();
+        $parserRequest->getPagination()->disable();
 
         $this->updateUrlsFromBoardUrls($parserRequest->currentNode->getUrl());
 
         if (!$this->getParserCache($parserRequest)) {
             $html = $this->loadHtmlFromUrl($parserRequest->currentNode->getUrl());
 
-            $this->setPageLoaderProgress(20);
+            $parserRequest->getStatus()
+                ->updateProgress(20)
+                ->send();
 
             if ($html) {
                 $stringStart = ';var catalog = ';
@@ -116,16 +124,17 @@ class Boards4chanParser extends AbstractParser implements ParserInterface
                 $dom = $this->loadDomFromHTML($html);
 
                 $name = $dom->find('title')[0]->text();
-                $parserRequest->currentNode
+                $parserRequest->getCurrentNode()
                     ->setName($name, true)
                     ->setLabel($name);
 
                 if ($arrayContent['threads']) {
-                    $this->startProgress('get_board_data', count($arrayContent['threads']), 20, 90);
+                    $parserRequest->getStatus()
+                        ->startSteppedProgress('get_board_data', count($arrayContent['threads']), 20, 90);
 
                     foreach ($arrayContent['threads'] as $galleryId => $galleryData) {
                         if ((int)$galleryData['i'] <= 2) {
-                            $this->progressStep('get_board_data');
+                            $parserRequest->getStatus()->executeSteppedProgressStep('get_board_data');
                             continue; // skip empty threads
                         }
 
@@ -159,11 +168,11 @@ class Boards4chanParser extends AbstractParser implements ParserInterface
                         }
 
                         $parserRequest->addParsedNode($node);
-                        $this->progressStep('get_board_data');
+                        $parserRequest->getStatus()->executeSteppedProgressStep('get_board_data');
                     }
                 }
 
-                $this->endProgress('get_board_data');
+                $parserRequest->getStatus()->endSteppedProgress('get_board_data');
             }
 
             $this->setParserCache($parserRequest, 180);
@@ -215,8 +224,8 @@ class Boards4chanParser extends AbstractParser implements ParserInterface
                 ->setName($galleryName, true)
                 ->setLabel($galleryName);
 
-            $this->setPageLoaderProgress(20);
-            $this->startProgress('get_gallery_data', count($divs), 20, 90);
+            $parserRequest->getStatus()
+                ->startSteppedProgress('get_gallery_data', count($divs), 20, 90);
 
             foreach ($divs as $div) {
                 if (in_array($div->getAttribute('class'), ['postContainer replyContainer', 'postContainer opContainer'])) {
@@ -251,12 +260,14 @@ class Boards4chanParser extends AbstractParser implements ParserInterface
                             }
 
                             $parsedFile->setLocalThumbnail(UrlHelper::prepareLocalUrl($localThumbnailUrl));
+
                             $parserRequest->addFile($parsedFile);
                         }
                     }
                 }
 
-                $this->progressStep('get_gallery_data');
+                $parserRequest->getStatus()->executeSteppedProgressStep('get_gallery_data');
+                usleep(200);
             }
 
             $this->setParserCache($parserRequest, 300);

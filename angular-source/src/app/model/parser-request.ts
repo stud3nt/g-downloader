@@ -2,6 +2,8 @@ import { ParserNode } from "./parser-node";
 import { ParsedFile } from "./parsed-file";
 import { Pagination } from "./pagination";
 import { BaseModel } from "./base/base-model";
+import { Status } from "./status";
+import { StatusCode } from "../enum/status-code";
 
 export class ParserRequest extends BaseModel {
 
@@ -13,26 +15,25 @@ export class ParserRequest extends BaseModel {
 		this._files = [];
 		this._parsedNodes = [];
 
+		this.status = new Status();
+
 		if (obj) {
-			if (obj.currentNode) {
+			if (obj.currentNode)
 				this._currentNode = new ParserNode(obj.currentNode);
-			}
 
-			if (obj.files) {
-				for (let parsedFile of obj.files) {
+			if (obj.files)
+				for (let parsedFile of obj.files)
 					this._files.push(new ParsedFile(parsedFile));
-				}
-			}
 
-			if (obj.parsedNodes) {
-				for (let parsedNode of obj.parsedNodes) {
+			if (obj.parsedNodes)
+				for (let parsedNode of obj.parsedNodes)
 					this._parsedNodes.push(new ParserNode(parsedNode));
-				}
-			}
 
-			if (obj.pagination) {
+			if (obj.pagination)
 				Object.assign(this._pagination, obj.pagination);
-			}
+
+			if (obj.status)
+				Object.assign(this.status, obj.status);
 		}
 	}
 
@@ -63,6 +64,18 @@ export class ParserRequest extends BaseModel {
 	// ignore cache data (refreshing);
 	private _ignoreCache: boolean = false;
 
+	private _status: Status = null;
+
+	// current api token
+	private _apiToken: string = null;
+
+	// request identifier
+	private _requestIdentifier: string = null;
+
+	public onSuccess: () => any = null;
+	public onError: (error) => any = null;
+	public onComplete: () => any = null;
+
 	public clearParsedData() : void {
 		this._files = [];
 		this._parsedNodes = [];
@@ -86,6 +99,22 @@ export class ParserRequest extends BaseModel {
 		};
 
 		return this;
+	}
+
+	public isRequestDuplicated(): boolean {
+		return (this._status.code === StatusCode.DuplicatedOperation);
+	}
+
+	public isRequestEnded(): boolean {
+		return (this._status.code === StatusCode.OperationEnded);
+	}
+
+	public isRequestInProgress(): boolean {
+		return (this._status.code === StatusCode.OperationInProgress);
+	}
+
+	public isRequestStarted(): boolean {
+		return (this._status.code === StatusCode.OperationStarted);
 	}
 
 	public resetAll() {
@@ -174,5 +203,35 @@ export class ParserRequest extends BaseModel {
 
 	set ignoreCache(value: boolean) {
 		this._ignoreCache = value;
+	}
+
+	get status(): Status {
+		return this._status;
+	}
+
+	set status(value: Status) {
+		this._status = value;
+	}
+
+	get apiToken(): string {
+		return this._apiToken;
+	}
+
+	set apiToken(apiToken: string) {
+		this._apiToken = apiToken;
+		this._requestIdentifier = this._currentNode.parser+'_'+this._currentNode.level;
+
+		if (this._currentNode.identifier)
+			this._requestIdentifier += '_'+this._currentNode.identifier;
+
+		this._requestIdentifier += '_'+apiToken
+	}
+
+	get requestIdentifier(): string {
+		return this._requestIdentifier;
+	}
+
+	set requestIdentifier(value: string) {
+		this._requestIdentifier = value;
 	}
 }

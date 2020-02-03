@@ -7,6 +7,7 @@ use App\Converter\ModelConverter;
 use App\Entity\Parser\Node;
 use App\Enum\NodeStatus;
 use App\Manager\Base\EntityManager;
+use App\Model\AbstractModel;
 use App\Model\ParsedNode;
 use App\Model\ParserRequest;
 use App\Repository\NodeRepository;
@@ -44,7 +45,7 @@ class NodeManager extends EntityManager
     /**
      * Completes node object with database data (if exists);
      *
-     * @param ParserRequest $parserRequest
+     * @param ParserRequest|AbstractModel $parserRequest
      * @return ParserRequest
      * @throws ReflectionException
      */
@@ -92,7 +93,7 @@ class NodeManager extends EntityManager
      * Loads and compares data in nodes from database.
      * Saves new nodes.
      *
-     * @param ParserRequest $parserRequest
+     * @param ParserRequest|AbstractModel $parserRequest
      * @return ParserRequest
      * @throws \Doctrine\ORM\ORMException
      * @throws \Doctrine\ORM\OptimisticLockException

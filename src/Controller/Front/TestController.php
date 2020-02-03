@@ -5,6 +5,7 @@ namespace App\Controller\Front;
 use App\Controller\Front\Base\Controller;
 use App\Entity\Parser\Node;
 use App\Enum\ParserType;
+use App\Factory\RedisFactory;
 use App\Manager\Object\FileManager;
 use App\Model\ParsedFile;
 use App\Model\ParserRequest;
@@ -15,13 +16,14 @@ use App\Parser\ImagefapParser;
 use App\Parser\RedditParser;
 use App\Service\DownloadService;
 use App\Service\FileCache;
+use App\Utils\StringHelper;
 use Doctrine\Common\Util\Debug;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Stopwatch\Stopwatch;
 
-class TestController extends Controller
+class TestController extends \App\Controller\Api\Base\Controller
 {
     /**
      * @Route("/tester/parser_test/{parser}/{test}", name="app_parser_test_function")
@@ -210,7 +212,8 @@ class TestController extends Controller
     public function cacheTest(Request $request)
     {
         $test = $request->get('test');
-        $cache = new FileCache();
+        $user = $this->getUser();
+        $cache = new FileCache($user);
 
         switch ($test) {
             case 'cache_read_write':
@@ -230,9 +233,32 @@ class TestController extends Controller
                 var_dump($cache->read('test-value'));
 
                 break;
+
+            case 'redis_test':
+                $randomString1 = StringHelper::randomStr(28);
+                $randomString2 = StringHelper::randomStr(30);
+
+                var_dump($randomString1);
+                echo "<br/>";
+                var_dump($randomString2);
+                echo "<br/>";
+
+                $redis = (new RedisFactory())->initializeConnection();
+                $redis->set('test_key_1', $randomString1); echo "<br/>";
+                sleep(2);
+                var_dump($redis->get('test_key_1')); echo "<br/>";
+                $redis->expire('test_key_1', 1);
+                usleep(200);
+                var_dump("AFTER 200MS: ");
+                var_dump($redis->get('test_key_1')); echo "<br/>";
+                sleep(1);
+                var_dump($redis->get('test_key_1')); echo "<br/>";
+
+
+                echo "<br/>";
+
+                break;
         }
-
-
 
         return new \Symfony\Component\HttpFoundation\Response('TEST_DONE');
     }

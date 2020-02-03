@@ -54,32 +54,29 @@ class ParserController extends Controller
             $request->request->all()
         );
 
-        $this->nodeManager->completeCurrentNodeDataFromDb($parserRequest);
-
-        $parser = $parserService->loadParser($parserRequest->currentNode->parser);
-
-        switch ($parserRequest->currentNode->level) { // execute parser action - load nodes or files;
-            case NodeLevel::Owner:
-                $parser->getOwnersList($parserRequest);
-                break;
-
-            case NodeLevel::BoardsList:
-                $parser->getBoardsListData($parserRequest);
-                break;
-
-            case NodeLevel::Board:
-                $parser->getBoardData($parserRequest);
-                break;
-
-            case NodeLevel::Gallery:
-                $parser->getGalleryData($parserRequest);
-                break;
+        if ($parserRequest->getStatus()->checkIfRequestDuplicated()) {
+            return $this->jsonError('REQUEST_DUPLICATED');
+        } else {
+            $parserRequest->getStatus()->start();
         }
 
-        $this->nodeManager->completeParsedNodes($parserRequest);
-        $this->fileManager->completeParsedStatuses($parserRequest);
+        $fileManager = $this->container->get(FileManager::class);
+        $nodeManager = $this->container->get(NodeManager::class);
+        $nodeManager->completeCurrentNodeDataFromDb($parserRequest);
 
-        $parserRequest->ignoreCache = false;
+        try {
+            $parserService->executeRequestedAction($parserRequest, $this->getUser());
+        } catch (\Exception $ex) {
+            $parserRequest->getStatus()->end();
+            throw $ex;
+        }
+
+        $nodeManager->completeParsedNodes($parserRequest); // complete nodes statuses from db data;
+        $fileManager->completeParsedStatuses($parserRequest); // complete files statuses from db data;
+
+        $parserRequest->setIgnoreCache(false)
+            ->getStatus()
+            ->end();
 
         return $this->json(
             $this->modelConverter->convert($parserRequest)

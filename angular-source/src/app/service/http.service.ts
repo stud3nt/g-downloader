@@ -20,7 +20,7 @@ export class HttpService {
 	}
 
 	protected post(url: string, data: any) {
-		let httpForm = HttpHelper.convertObjectToFormData(data);
+		let httpForm = HttpHelper.convert(data);
 
 		return this.http.post(url, httpForm).pipe(
 			map((response:Response) => new JsonResponse(response))

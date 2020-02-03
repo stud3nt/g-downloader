@@ -3,6 +3,8 @@
 namespace App\Model;
 
 use App\Annotation\ModelVariable;
+use App\Converter\ModelConverter;
+use App\Entity\User;
 
 class ParserRequest extends AbstractModel
 {
@@ -83,9 +85,24 @@ class ParserRequest extends AbstractModel
      */
     public $sorting = [];
 
-    public function __construct()
+    /**
+     * @var Status
+     * @ModelVariable(converter="Model", converterOptions={"class":"App\Model\Status"})
+     */
+    public $status;
+
+    /**
+     * @var string
+     * @ModelVariable()
+     */
+    public $requestIdentifier = null;
+
+    public function __construct(User $user = null)
     {
         $this->clearData();
+
+        $this->modelConverter = new ModelConverter();
+        $this->status = new Status();
     }
 
     /**
@@ -95,7 +112,6 @@ class ParserRequest extends AbstractModel
     {
         $this->data = new \stdClass();
         $this->tokens = new \stdClass();
-        $this->pagination = new \stdClass();
         $this->letteration = new \stdClass();
         $this->parsedNodes = [];
         $this->files = [];
@@ -456,6 +472,46 @@ class ParserRequest extends AbstractModel
     public function setSorting(array $sorting): self
     {
         $this->sorting = $sorting;
+
+        return $this;
+    }
+
+    /**
+     * @return Status
+     */
+    public function getStatus(): Status
+    {
+        return $this->status;
+    }
+
+    /**
+     * @param Status $status
+     * @return $this;
+     */
+    public function setStatus(Status $status): self
+    {
+        $this->status = $status;
+
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getRequestIdentifier(): string
+    {
+        return $this->requestIdentifier;
+    }
+
+    /**
+     * @param string $requestIdentifier
+     * @return $this;
+     */
+    public function setRequestIdentifier(string $requestIdentifier): self
+    {
+        $this->requestIdentifier = $requestIdentifier;
+
+        $this->getStatus()->setRequestIdentifier($requestIdentifier);
 
         return $this;
     }

@@ -43,8 +43,7 @@ class ClearUserCacheCommand extends Command
         if ($users) {
             /** @var User $user */
             foreach ($users as $user) {
-                $token = $user->getToken();
-                $cache = new FileCache($token);
+                $cache = new FileCache($user);
                 $cache->removeAll();
             }
         }

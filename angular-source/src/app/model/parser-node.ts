@@ -1,6 +1,6 @@
 import { BaseModel } from "./base/base-model";
 
-export class ParserNode extends BaseModel{
+export class ParserNode extends BaseModel {
 
 	constructor(obj?: any) {
 		super();
@@ -51,54 +51,6 @@ export class ParserNode extends BaseModel{
 	private _favorited: boolean = false;
 	private _finished: boolean = false;
 	private _blocked: boolean = false;
-
-	/**
-	 * Adds status to library
-	 *
-	 * @param addedStatus
-	 */
-	public addStatus(addedStatus: string): ParserNode {
-		if (!this.hasStatus(addedStatus)) {
-			this._statuses.push(addedStatus);
-		}
-
-		return this;
-	}
-
-	/**
-	 * Removes status from library
-	 *
-	 * @param removedStatus
-	 */
-	public removeStatus(removedStatus: string): ParserNode {
-		if (this._statuses.length > 0) {
-			for (let index in this._statuses) {
-				if (this._statuses[index] === removedStatus) {
-					this._statuses.splice(parseInt(index), 1);
-				}
-			}
-		}
-
-		return this;
-	}
-
-	/**
-	 * Checks if status exists in library;
-	 *
-	 * @param checkedStatus
-	 */
-	public hasStatus(checkedStatus: string): boolean {
-		if (this._statuses.length > 0) {
-			for (let statusKey in this._statuses) {
-				if (this._statuses[statusKey] === checkedStatus) {
-					return true;
-				}
-			}
-		}
-
-		return false;
-	}
-
 
 	get id(): number {
 		return this._id;
@@ -274,5 +226,76 @@ export class ParserNode extends BaseModel{
 
 	set blocked(value: boolean) {
 		this._blocked = value;
+	}
+
+	/**
+	 * Adds status to library
+	 *
+	 * @param addedStatus
+	 */
+	private _addStatus = (addedStatus: string): ParserNode => {
+		if (!this._hasStatus(addedStatus)) {
+			this._statuses.push(addedStatus);
+		}
+
+		return this;
+	};
+
+	/**
+	 * Removes status from library
+	 *
+	 * @param removedStatus
+	 */
+	private _removeStatus = (removedStatus: string): ParserNode => {
+		if (this._statuses.length > 0) {
+			for (let index in this._statuses) {
+				if (this._statuses[index] === removedStatus) {
+					this._statuses.splice(parseInt(index), 1);
+				}
+			}
+		}
+
+		return this;
+	};
+
+	/**
+	 * Checks if status exists in library;
+	 *
+	 * @param checkedStatus
+	 */
+	private _hasStatus = (checkedStatus: string): boolean => {
+		if (this._statuses.length > 0) {
+			for (let statusKey in this._statuses) {
+				if (this._statuses[statusKey] === checkedStatus) {
+					return true;
+				}
+			}
+		}
+
+		return false;
+	};
+
+	get addStatus(): (addedStatus: string) => ParserNode {
+		return this._addStatus;
+	}
+
+	set addStatus(value: (addedStatus: string) => ParserNode) {
+		this._addStatus = value;
+	}
+
+	get removeStatus(): (removedStatus: string) => ParserNode {
+		return this._removeStatus;
+	}
+
+	set removeStatus(value: (removedStatus: string) => ParserNode) {
+		this._removeStatus = value;
+	}
+
+	get hasStatus(): (checkedStatus: string) => boolean {
+		return this._hasStatus;
+	}
+
+	set hasStatus(value: (checkedStatus: string) => boolean) {
+		this._hasStatus = value;
 	}
 }

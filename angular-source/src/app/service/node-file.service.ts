@@ -16,7 +16,7 @@ export class NodeFileService {
 	) {}
 
 	public toggleFileQueue(file: ParsedFile) {
-		let httpParams = HttpHelper.convertObjectToFormData(file);
+		let httpParams = HttpHelper.convert(file);
 
 		return this.http.post(
 			this.router.generateUrl('api_file_toggle_queue'), httpParams
@@ -26,7 +26,7 @@ export class NodeFileService {
 	}
 
 	public toggleFilePreview(file: ParsedFile) {
-		let httpParams = HttpHelper.convertObjectToFormData(file);
+		let httpParams = HttpHelper.convert(file);
 
 		return this.http.post(
 			this.router.generateUrl('api_file_toggle_preview'), httpParams

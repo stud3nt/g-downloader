@@ -8,6 +8,7 @@ use App\Entity\Parser\Node;
 use App\Enum\FileStatus;
 use App\Manager\Base\EntityManager;
 use App\Manager\SettingsManager;
+use App\Model\AbstractModel;
 use App\Model\ParsedFile;
 use App\Model\ParserRequest;
 use App\Repository\FileRepository;
@@ -36,7 +37,7 @@ class FileManager extends EntityManager
     }
 
     /**
-     * @param ParserRequest $parserRequest
+     * @param ParserRequest|AbstractModel $parserRequest
      * @return ParserRequest
      */
     public function completeParsedStatuses(ParserRequest &$parserRequest) : ParserRequest

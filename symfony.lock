@@ -96,14 +96,11 @@
     "evenement/evenement": {
         "version": "v3.0.1"
     },
-    "gos/pubsub-router-bundle": {
-        "version": "v2.0.0"
+    "gregwar/cache": {
+        "version": "v1.0.12"
     },
-    "gos/web-socket-bundle": {
-        "version": "v2.1.0"
-    },
-    "gos/websocket-client": {
-        "version": "v0.3.1"
+    "gregwar/image": {
+        "version": "v2.0.25"
     },
     "guzzlehttp/guzzle": {
         "version": "6.3.3"
@@ -143,6 +140,9 @@
     },
     "phpdocumentor/type-resolver": {
         "version": "0.4.0"
+    },
+    "predis/predis": {
+        "version": "v1.1.1"
     },
     "psr/cache": {
         "version": "1.0.1"
