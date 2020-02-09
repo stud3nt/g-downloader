@@ -238,6 +238,9 @@ export class ParserNode extends BaseModel {
 			this._statuses.push(addedStatus);
 		}
 
+		if (this[addedStatus] !== 'undefined')
+			this[addedStatus] = true;
+
 		return this;
 	};
 
@@ -254,6 +257,9 @@ export class ParserNode extends BaseModel {
 				}
 			}
 		}
+
+		if (this[removedStatus] !== 'undefined')
+			this[removedStatus] = false;
 
 		return this;
 	};

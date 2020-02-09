@@ -24,11 +24,15 @@ export class ModalDataService {
 
 	private modalBodySource = new BehaviorSubject(<string>'');
 
+	private modalLoaderTextSource = new BehaviorSubject(<string>'');
+
 	private modalTypeSource = new BehaviorSubject(<string>ModalType.Preview);
 
 	public modalSize = this.modalSizeSource.asObservable();
 
 	public modalLoader = this.modalLoaderSource.asObservable();
+
+	public modalLoaderText = this.modalLoaderTextSource.asObservable();
 
 	public modalShow = this.modalShowSource.asObservable();
 
@@ -60,6 +64,11 @@ export class ModalDataService {
 
 	public showLoader(): this {
 		this.modalLoaderSource.next(true);
+		return this;
+	}
+
+	public setLoaderText(text: string = ''): this {
+		this.modalLoaderTextSource.next(text);
 		return this;
 	}
 

@@ -17,21 +17,15 @@ export class DownloaderService extends HttpService {
 		super(http);
 	}
 
-	public setDownloaderStatus(downloadStatus:string) {
+	public startDownloadProcess() {
 		return this.get(
-			this.router.generateUrl('api_downloader_change_status', {'statusName':downloadStatus})
+			this.router.generateUrl('api_start_downloader_process')
 		);
 	}
 
-	public checkDownloaderStatus() {
+	public stopDownloadProcess() {
 		return this.get(
-			this.router.generateUrl('api_downloader_check_status')
-		);
-	}
-
-	public downloadProcess() {
-		return this.get(
-			this.router.generateUrl('api_downloader_process')
+			this.router.generateUrl('api_stop_downloader_process')
 		);
 	}
 }

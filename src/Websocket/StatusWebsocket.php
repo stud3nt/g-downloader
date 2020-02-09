@@ -2,11 +2,18 @@
 
 namespace App\Websocket;
 
+use App\Entity\User;
+use App\Enum\WebsocketOperation;
+use App\Factory\ParsedFileFactory;
+use App\Factory\ParserRequestFactory;
+use App\Manager\DownloadManager;
+use App\Manager\Object\FileManager;
+use App\Model\Status;
 use App\Websocket\Base\BaseWebsocket;
 use Ratchet\ConnectionInterface;
 use Ratchet\MessageComponentInterface;
 
-class ParserWebsocket extends BaseWebsocket implements MessageComponentInterface
+class StatusWebsocket extends BaseWebsocket implements MessageComponentInterface
 {
     /** @var ConnectionInterface */
     public $connection;
@@ -37,18 +44,41 @@ class ParserWebsocket extends BaseWebsocket implements MessageComponentInterface
      */
     public function onMessage(ConnectionInterface $connection, $message): void
     {
-        $this->decodeMessage($message);
+        /** @var User|null $user */
+        $msg = json_decode($message);
+        $user = $this->userManager->getOneBy([
+            'apiToken' => ($msg->_token ?? null)
+        ]);
 
-        if ($this->user) {
-            if ($this->parserRequest) {
-                $status = $this->parserRequest->getStatus()->read();
+        if ($user) {
+            $response = null;
 
-                if ($status)
-                    $connection->send(
-                        $this->jsonSuccess(
-                            $status
-                        )
-                    );
+            switch ($msg->_operation) {
+                case WebsocketOperation::ParserProgress:
+                    $parserRequest = (new ParserRequestFactory())->buildFromRequestData($msg->_data);
+                    $status = $parserRequest->getStatus()->read();
+
+                    if (!$status)
+                        $status = $this->modelConverter->convert((new Status()));
+
+                    $response = $status;
+                    break;
+
+                case WebsocketOperation::DownloadListStatus:
+                    $response = $this->container->get(DownloadManager::class)->getStatusData($user);
+                    break;
+
+                case WebsocketOperation::DownloadFileStatus:
+                    $parsedFile = (new ParsedFileFactory())->buildFromRequestData($msg->_data);
+                    $status = $this->container->get(FileManager::class)->getFileDownloadStatus($parsedFile);
+                    $response = $this->modelConverter->convert($status);
+                    break;
+            }
+
+            if ($response) {
+                $connection->send(
+                    $this->jsonSuccess($response)
+                );
             } else {
                 $connection->send(
                     $this->jsonError('WRONG PARSER REQUEST.')

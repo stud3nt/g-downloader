@@ -138,6 +138,11 @@ class File extends AbstractEntity
         $this->updatedAt = new \DateTime();
     }
 
+    public function getRedisDownloadKey()
+    {
+        return 'file_download_'.$this->getIdentifier();
+    }
+
     public function getExtension(): ?string
     {
         return $this->extension;

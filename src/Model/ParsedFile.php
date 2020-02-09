@@ -3,9 +3,10 @@
 namespace App\Model;
 
 use App\Annotation\ModelVariable;
+use App\Model\Interfaces\StatusInterface;
 use App\Utils\FilesHelper;
 
-class ParsedFile extends AbstractModel
+class ParsedFile extends AbstractModel implements StatusInterface
 {
     /**
      * @ModelVariable()
@@ -133,6 +134,12 @@ class ParsedFile extends AbstractModel
      */
     public $parentNode = null;
 
+    /**
+     * @var Status
+     * @ModelVariable(converter="Model", converterOptions={"class":"App\Model\Status"})
+     */
+    public $status;
+
     public function __construct(string $parser = null, string $type = null)
     {
         if ($parser) {
@@ -142,6 +149,13 @@ class ParsedFile extends AbstractModel
         if ($type) {
             $this->setType($type);
         }
+
+        $this->status = new Status();
+    }
+
+    public function getRedisPreviewKey()
+    {
+        return 'file_preview_'.$this->getIdentifier();
     }
 
     /**
@@ -663,12 +677,31 @@ class ParsedFile extends AbstractModel
     }
 
     /**
-     * @param ParsedNode $parentNode
+     * @param ParsedNode|null $parentNode
      * @return ParsedNode
      */
-    public function setParentNode(ParsedNode $parentNode): self
+    public function setParentNode(ParsedNode $parentNode = null): self
     {
         $this->parentNode = $parentNode;
+
+        return $this;
+    }
+
+    /**
+     * @return Status
+     */
+    public function getStatus(): Status
+    {
+        return $this->status;
+    }
+
+    /**
+     * @param Status $status
+     * @return $this;
+     */
+    public function setStatus(Status $status): self
+    {
+        $this->status = $status;
 
         return $this;
     }

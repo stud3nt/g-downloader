@@ -6,6 +6,8 @@ use App\Entity\Parser\File;
 use App\Enum\FileType;
 use App\Enum\NodeLevel;
 use App\Enum\ParserType;
+use App\Factory\RedisFactory;
+use App\Model\Interfaces\StatusInterface;
 use App\Model\ParsedFile;
 use App\Model\ParsedNode;
 use App\Model\ParserRequest;
@@ -57,7 +59,7 @@ class HentaiFoundryParser extends AbstractParser implements ParserInterface
     public function getBoardData(ParserRequest &$parserRequest) : ParserRequest
     {
         if (!$this->getParserCache($parserRequest)) {
-            $this->login();
+            $this->login($parserRequest);
 
             $page = 1;
             $letter = $parserRequest->pagination->currentLetter;
@@ -73,14 +75,17 @@ class HentaiFoundryParser extends AbstractParser implements ParserInterface
                 ->setName($boardName, true)
                 ->setLabel($boardName);
 
-            $this->setPageLoaderProgress(20);
+            $parserRequest->getStatus()
+                ->updateProgress(20)
+                ->send();
 
             if ($dom->find('.last')) {
                 $lastHref = $dom->find('.last')->find('a')->getAttribute('href');
                 $lastHrefArray = explode('/', $lastHref);
                 $limit = (int)end($lastHrefArray);
 
-                $this->startProgress('get_board_data', $limit, 20, 90);
+                $parserRequest->getStatus()
+                    ->startSteppedProgress('get_board_data', $limit, 20, 90);
 
                 if ($limit > 1) {
                     for ($pageNo = 2; $pageNo <= $limit; $pageNo++) {
@@ -98,12 +103,13 @@ class HentaiFoundryParser extends AbstractParser implements ParserInterface
                             }
                         }
 
-                        $this->progressStep('get_board_data');
+                        $parserRequest->getStatus()->executeSteppedProgressStep('get_board_data');
                     }
                 }
 
+                $parserRequest->getStatus()->endSteppedProgress('get_board_data');
+
                 $this->setParserCache($parserRequest, 0);
-                $this->endProgress('get_board_data');
             }
         }
 
@@ -163,21 +169,22 @@ class HentaiFoundryParser extends AbstractParser implements ParserInterface
                 'direction' => 'DESC',
             ], $parserRequest->sorting);
 
-            $this->login();
+            $this->login($parserRequest);
 
             $page = 1;
-            $files = [];
 
             $galleryUrl = $this->mainBoardUrl.$parserRequest->currentNode->getUrl().'/page/'.$page;
             $dom = $this->loadDomFromUrl($galleryUrl);
             $galleryName = $dom->find('title')[0]->text();
             $galleryName = substr($galleryName, 0, strpos($galleryName, "'s Profile"));
 
-            $parserRequest->currentNode
+            $parserRequest->getCurrentNode()
                 ->setName($galleryName, true)
                 ->setLabel($galleryName);
 
-            $this->setPageLoaderProgress(20);
+            $parserRequest->getStatus()
+                ->updateProgress(20)
+                ->send();
 
             $parsedFiles = $this->parseFilesPageData($dom);
 
@@ -198,7 +205,8 @@ class HentaiFoundryParser extends AbstractParser implements ParserInterface
             }
 
             if ($parsedFiles) {
-                $this->startProgress('get_gallery_data', count($parsedFiles), 20, 90);
+                $parserRequest->getStatus()
+                    ->startSteppedProgress('get_gallery_data', count($parsedFiles), 20, 90);
 
                 if (strtoupper($options['direction']) == 'ASC') { // reverse array order;
                     $parsedFiles = array_reverse($parsedFiles, false);
@@ -253,27 +261,26 @@ class HentaiFoundryParser extends AbstractParser implements ParserInterface
 
                             $parsedFile = $parsedFiles[$resultKey];
 
-                            $files[$resultKey] = $parsedFile->setUploadedAt($imageUploadedAt)
-                                ->setFileUrl($imageSrc)
-                                ->setThumbnail($thumbnailUrl)
-                                ->setName(FilesHelper::getFileName($imageSrc))
-                                ->setExtension(FilesHelper::getFileExtension($imageSrc))
-                                ->setWidth((int)$image->getAttribute('width'))
-                                ->setHeight((int)$image->getAttribute('height'))
-                                ->setSize($headersData['size'])
-                                ->setMimeType($headersData['mimeType'])
-                                ->setType(FileType::Image)
-                            ;
+                            $parserRequest->addFile(
+                                $parsedFile->setUploadedAt($imageUploadedAt)
+                                    ->setFileUrl($imageSrc)
+                                    ->setThumbnail($thumbnailUrl)
+                                    ->setName(FilesHelper::getFileName($imageSrc))
+                                    ->setExtension(FilesHelper::getFileExtension($imageSrc))
+                                    ->setWidth((int)$image->getAttribute('width'))
+                                    ->setHeight((int)$image->getAttribute('height'))
+                                    ->setSize($headersData['size'])
+                                    ->setMimeType($headersData['mimeType'])
+                                    ->setType(FileType::Image)
+                            );
 
                             $convertedFileIndex++;
                         }
                     }
 
-
-                    $this->progressStep('get_gallery_data');
+                    $parserRequest->getStatus()->executeSteppedProgressStep('get_gallery_data');
                 }
 
-                $parserRequest->files = $files;
                 $this->setParserCache($parserRequest, 3600);
             }
         }
@@ -288,7 +295,7 @@ class HentaiFoundryParser extends AbstractParser implements ParserInterface
      */
     public function getFileData(ParsedFile &$parsedFile) : ParsedFile
     {
-        $this->login();
+        $this->login($parsedFile);
 
         $url = $this->mainBoardUrl.$parsedFile->url;
         $dom = $this->loadDomFromUrl($url);
@@ -320,7 +327,7 @@ class HentaiFoundryParser extends AbstractParser implements ParserInterface
      */
     public function getFilePreview(ParsedFile &$parsedFile) : ParsedFile
     {
-        $this->login();
+        $this->login($parsedFile);
         $this->clearCache();
 
         if (!$parsedFile->getFileUrl() || !$parsedFile->getName() || $parsedFile->getExtension()) {
@@ -332,7 +339,13 @@ class HentaiFoundryParser extends AbstractParser implements ParserInterface
 
         $parsedFile->setLocalUrl($previewWebPath);
 
-        $this->downloadFile($parsedFile->getFileUrl(), $previewFilePath);
+        $this->downloadFile($parsedFile->getFileUrl(), $previewFilePath, function($resource, $downloadSize, $downloaded, $uploadSize, $uploaded) use ($parsedFile) {
+            if ($downloadSize > 0) {
+                $redis = (new RedisFactory())->initializeConnection();
+                $redis->set($parsedFile->getRedisPreviewKey(), round(($downloaded / $downloadSize) * 100));
+                $redis->expire($parsedFile->getRedisPreviewKey(), 10);
+            }
+        });
 
         return $parsedFile;
     }
@@ -401,6 +414,7 @@ class HentaiFoundryParser extends AbstractParser implements ParserInterface
     }
 
     /**
+     * @param StatusInterface $parserRequest
      * @throws \Exception
      * @throws \PHPHtmlParser\Exceptions\ChildNotFoundException
      * @throws \PHPHtmlParser\Exceptions\CircularException
@@ -408,58 +422,56 @@ class HentaiFoundryParser extends AbstractParser implements ParserInterface
      * @throws \PHPHtmlParser\Exceptions\NotLoadedException
      * @throws \PHPHtmlParser\Exceptions\StrictException
      */
-    private function login()
+    private function login(StatusInterface &$parserRequest)
     {
-        $this->setPageLoaderProgress(10);
+        $parserRequest->getStatus()
+            ->updateProgress(10)
+            ->send();
 
-        if ($this->isLoggedIn()) {
-            $this->setPageLoaderProgress(15);
-            return;
+        if (!$this->isLoggedIn()) {
+            $username = "stud3nt";
+            $password = "4710bbb";
+
+            $tokenUrl = $this->mainBoardUrl.'?enterAgree=1&size=0';
+            $loginUrl = $this->mainBoardUrl.'site/login';
+
+            $ch = curl_init();
+
+            curl_setopt($ch, CURLOPT_URL, $tokenUrl);
+            curl_setopt($ch, CURLOPT_COOKIEJAR, $this->curlRequest->getCookieFile());
+            curl_setopt($ch, CURLOPT_COOKIEFILE, $this->curlRequest->getCookieFile());
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+
+            $response = curl_exec($ch);
+
+            $dom = $this->loadDomFromHTML($response);
+            $token = $dom->find('[name=YII_CSRF_TOKEN]')->getAttribute('value');
+            $params = [
+                'LoginForm[username]' => $username,
+                'LoginForm[password]' => $password,
+                'LoginForm[rememberMe]' => 1,
+                'YII_CSRF_TOKEN' => $token
+            ];
+
+            curl_setopt($ch, CURLOPT_URL, $loginUrl);
+            curl_setopt($ch, CURLOPT_POST, true);
+            curl_setopt($ch, CURLOPT_USERAGENT, "Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 6.0)");
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYHOST,false);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER,false);
+            curl_setopt($ch, CURLOPT_MAXREDIRS, 10);
+            curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
+            curl_setopt($ch, CURLOPT_COOKIEJAR, $this->curlRequest->getCookieFile());
+            curl_setopt($ch, CURLOPT_COOKIEFILE, $this->curlRequest->getCookieFile());
+            curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($params));
+
+            curl_exec($ch);
+            curl_close($ch);
         }
 
-        $username = "stud3nt";
-        $password = "4710bbb";
-
-        $tokenUrl = $this->mainBoardUrl.'?enterAgree=1&size=0';
-        $loginUrl = $this->mainBoardUrl.'site/login';
-
-        $ch = curl_init();
-
-        curl_setopt($ch, CURLOPT_URL, $tokenUrl);
-        curl_setopt($ch, CURLOPT_COOKIEJAR, $this->curlRequest->getCookieFile());
-        curl_setopt($ch, CURLOPT_COOKIEFILE, $this->curlRequest->getCookieFile());
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-
-        $response = curl_exec($ch);
-
-        $dom = $this->loadDomFromHTML($response);
-        $token = $dom->find('[name=YII_CSRF_TOKEN]')->getAttribute('value');
-        $params = [
-            'LoginForm[username]' => $username,
-            'LoginForm[password]' => $password,
-            'LoginForm[rememberMe]' => 1,
-            'YII_CSRF_TOKEN' => $token
-        ];
-
-        curl_setopt($ch, CURLOPT_URL, $loginUrl);
-        curl_setopt($ch, CURLOPT_POST, true);
-        curl_setopt($ch, CURLOPT_USERAGENT, "Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 6.0)");
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST,false);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER,false);
-        curl_setopt($ch, CURLOPT_MAXREDIRS, 10);
-        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
-        curl_setopt($ch, CURLOPT_COOKIEJAR, $this->curlRequest->getCookieFile());
-        curl_setopt($ch, CURLOPT_COOKIEFILE, $this->curlRequest->getCookieFile());
-        curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($params));
-
-        curl_exec($ch);
-
-        //$this->cache->save('parser.hentai_foundry.cookie_time', time() + 3600);
-
-        curl_close($ch);
-
-        $this->setPageLoaderProgress(15);
+        $parserRequest->getStatus()
+            ->updateProgress(15)
+            ->send();
     }
 
     /**

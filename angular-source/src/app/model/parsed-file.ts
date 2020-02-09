@@ -1,5 +1,6 @@
 import { ParserNode } from "./parser-node";
 import { BaseModel } from "./base/base-model";
+import {Status} from "./status";
 
 export class ParsedFile extends BaseModel {
 
@@ -8,9 +9,11 @@ export class ParsedFile extends BaseModel {
 
 		Object.assign(this, obj);
 
-		if (!obj.statuses || obj.statuses.length === 0) {
+		if (!obj.statuses || obj.statuses.length === 0)
 			this._statuses = [];
-		}
+
+		if (obj.status)
+			this._status = new Status(obj.status);
 	}
 
 	private _name: string;
@@ -57,6 +60,9 @@ export class ParsedFile extends BaseModel {
 
 	// statuses library
 	private _statuses = [];
+
+	// request status
+	private _status: Status = null;
 
 	private _parentNode: ParserNode = null;
 
@@ -283,5 +289,13 @@ export class ParsedFile extends BaseModel {
 
 	set mimeType(value: string) {
 		this._mimeType = value;
+	}
+
+	get status(): Status {
+		return this._status;
+	}
+
+	set status(value: Status) {
+		this._status = value;
 	}
 }

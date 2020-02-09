@@ -23,6 +23,8 @@ export class ModalComponent implements OnInit {
 	public modalBody: string = '';
 	public modalType: string = '';
 
+	public modalLoaderText: string = 'Loading...';
+
 	public modalButtons = {
 		ok: false,
 		save: false,
@@ -55,6 +57,10 @@ export class ModalComponent implements OnInit {
 
 		this.modalDataService.modalLoader.subscribe((loaderIsVisible: boolean) => {
 			this.loaderVisible = loaderIsVisible;
+		});
+
+		this.modalDataService.modalLoaderText.subscribe((modalLoaderText: string = null) => {
+			this.modalLoaderText = (modalLoaderText ? modalLoaderText : 'Loading...');
 		});
 
 		this.modalDataService.modalTitle.subscribe((modalTitle: string) => {

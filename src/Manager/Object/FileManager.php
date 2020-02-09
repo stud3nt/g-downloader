@@ -3,15 +3,21 @@
 namespace App\Manager\Object;
 
 use App\Converter\EntityConverter;
+use App\Converter\ModelConverter;
 use App\Entity\Parser\File;
 use App\Entity\Parser\Node;
+use App\Entity\User;
 use App\Enum\FileStatus;
+use App\Factory\RedisFactory;
 use App\Manager\Base\EntityManager;
 use App\Manager\SettingsManager;
 use App\Model\AbstractModel;
+use App\Model\Download\DownloadStatus;
 use App\Model\ParsedFile;
 use App\Model\ParserRequest;
+use App\Model\Status;
 use App\Repository\FileRepository;
+use App\Service\FileCache;
 use App\Utils\FilesHelper;
 use Doctrine\ORM\AbstractQuery;
 use Doctrine\ORM\NonUniqueResultException;
@@ -29,11 +35,19 @@ class FileManager extends EntityManager
     /** @var EntityConverter */
     protected $entityConverter;
 
+    /** @var ModelConverter */
+    protected $modelConverter;
+
+    /** @var \Predis\ClientInterface|\Redis|\RedisCluster */
+    protected $redis;
+
     /** @required */
     public function init(SettingsManager $settingsManager, EntityConverter $entityConverter)
     {
         $this->settingsManager = $settingsManager;
         $this->entityConverter = $entityConverter;
+        $this->modelConverter = (new ModelConverter());
+        $this->redis = (new RedisFactory())->initializeConnection();
     }
 
     /**
@@ -79,37 +93,106 @@ class FileManager extends EntityManager
 
     /**
      * @param ParsedFile $parsedFile
-     * @return bool
-     * @throws \ReflectionException
+     * @return File|null
      */
-    public function toggleFileQueue(ParsedFile &$parsedFile, Node $parentNode = null): ParsedFile
+    public function getQueueFileByParsedFile(ParsedFile $parsedFile): ?File
     {
-        $dbFile = $this->repository->findOneBy([
+        $file = $this->repository->findOneBy([
             'identifier' => $parsedFile->identifier,
             'parser' => $parsedFile->parser
         ]);
 
-        if (!$dbFile) {
-            $dbFile = new File();
+        /** @var File $file */
+        return $file;
+    }
 
-            $this->entityConverter->setData($parsedFile, $dbFile);
+    /**
+     * @param ParsedFile $parsedFile
+     * @return bool
+     * @throws \ReflectionException
+     */
+    public function addParsedFileToQueue(ParsedFile &$parsedFile, Node $parentNode = null): ParsedFile
+    {
+        $dbFile = new File();
 
-            $dbFile->setParentNode($parentNode);
+        $this->entityConverter->setData($parsedFile, $dbFile);
 
-            if ($this->save($dbFile)) {
-                $parsedFile->statuses[] = FileStatus::Queued;
-            }
-        } else {
-            $this->remove($dbFile);
+        $dbFile->setParentNode($parentNode);
 
-            foreach ($parsedFile->statuses as $statusIndex => $status) {
-                if ($status == FileStatus::Queued) {
-                    unset($parsedFile->statuses[$statusIndex]);
-                }
-            }
+        if ($this->save($dbFile)) {
+            $parsedFile->addStatus(FileStatus::Queued);
         }
 
         return $parsedFile;
+    }
+
+    public function removeParsedFileFromQueue(ParsedFile &$parsedFile, File $dbFile): ParsedFile
+    {
+        $this->remove($dbFile);
+
+        $parsedFile->removeStatus(FileStatus::Queued);
+
+        return $parsedFile;
+    }
+
+    /**
+     * Gets queued files data (count and size);
+     *
+     * @return \stdClass
+     * @throws NonUniqueResultException
+     */
+    public function getQueuedFilesData(): \stdClass
+    {
+        $queuedData = $this->repository->getFilesQb([
+            'select' => 'COUNT(f.id) as totalCount, SUM(f.size) as totalSize',
+            'type' => 'queued'
+        ])->setMaxResults(1)->getQuery()->getOneOrNullResult(AbstractQuery::HYDRATE_ARRAY);
+
+        $queuedObject = new \stdClass();
+        $queuedObject->count = $queuedData['totalCount'];
+        $queuedObject->size = $queuedData['totalSize'];
+
+        return $queuedObject;
+    }
+
+    /**
+     * Gets downloaded files data (count and size);
+     *
+     * @return \stdClass
+     * @throws NonUniqueResultException
+     */
+    public function getDownloadedFilesData(): \stdClass
+    {
+        $downloadedData = $this->repository->getFilesQb([
+            'type' => 'downloaded',
+            'select' => 'COUNT(f.id) as totalCount, SUM(f.size) as totalSize'
+        ])->setMaxResults(1)->getQuery()->getOneOrNullResult(AbstractQuery::HYDRATE_ARRAY);
+
+        $downloadedObject = new \stdClass();
+        $downloadedObject->count = $downloadedData['totalCount'];
+        $downloadedObject->size = $downloadedData['totalSize'];
+
+        return $downloadedObject;
+    }
+
+    /**
+     * @param ParsedFile $file
+     * @return Status
+     * @throws \ReflectionException
+     */
+    public function getFileDownloadStatus(ParsedFile $file): Status
+    {
+        $status = new Status();
+
+        if ($this->redis->exists($file->getRedisPreviewKey())) {
+            $status->setProgress(
+                $this->redis->get(
+                    $file->getRedisPreviewKey()
+                )
+            );
+        }
+
+        return $status;
     }
 
     /**
@@ -130,7 +213,7 @@ class FileManager extends EntityManager
         if ($queuedFiles) {
             foreach ($queuedFiles as $key => $queuedFile) {
                 if ($asArray)
-                    $queuedFiles[$key]['textSize'] = FilesHelper::bytesToSize($queuedFile['size']);
+                    $queuedFiles[$key]['textSize'] = FilesHelper::bytesToSize($queuedFile->getSize());
                 else
                     $queuedFiles[$key]->setTextSize(FilesHelper::bytesToSize($queuedFile->getSize()));
             }
@@ -140,13 +223,15 @@ class FileManager extends EntityManager
     }
 
     /**
-     * Return count of all queued files
-     *
+     * @param User $user
      * @return array
      * @throws NonUniqueResultException
+     * @throws \ReflectionException
      */
-    public function getBasicFilesData() : array
+    public function setStatusData(User $user): array
     {
+        $redisKey = 'downloader_data_'.$user->getApiToken();
+
         $queuedCounts = $this->repository->getFilesQb([
             'select' => 'COUNT(f.id) as totalCount, SUM(f.size) as totalSize',
             'type' => 'queued'
@@ -157,12 +242,18 @@ class FileManager extends EntityManager
             'select' => 'COUNT(f.id) as totalCount, SUM(f.size) as totalSize'
         ])->setMaxResults(1)->getQuery()->getOneOrNullResult(AbstractQuery::HYDRATE_ARRAY);
 
-        return [
-            'queuedFilesCount' => $queuedCounts['totalCount'],
-            'queuedFilesSize' => FilesHelper::bytesToSize($queuedCounts['totalSize']),
-            'downloadedFilesCount' => $downloadedCounts['totalCount'],
-            'downloadedFilesSize' => FilesHelper::bytesToSize($downloadedCounts['totalSize'])
-        ];
+        $downloadStatus = (new DownloadStatus())
+            ->setQueuedFilesCount($queuedCounts['totalCount'])
+            ->setQueuedFilesSize(FilesHelper::bytesToSize($queuedCounts['totalSize']))
+            ->setDownloadedFilesCount($downloadedCounts['totalCount'])
+            ->setDownloadedFilesSize(FilesHelper::bytesToSize($downloadedCounts['totalSize']))
+        ;
+
+        $data = $this->modelConverter->convert($downloadStatus);
+
+        $this->redis->set($redisKey, json_encode($data));
+
+        return $data;
     }
 
     /**

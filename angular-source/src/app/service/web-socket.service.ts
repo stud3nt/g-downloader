@@ -1,7 +1,6 @@
 import { Injectable } from '@angular/core';
-import { Observable, Observer } from "rxjs";
 import { webSocket } from "rxjs/webSocket";
-import { map } from "rxjs/operators";
+import { HttpHelper } from "../helper/http-helper";
 
 @Injectable({
 	providedIn: 'root'
@@ -9,36 +8,45 @@ import { map } from "rxjs/operators";
 
 export class WebSocketService {
 
-	public messages: Observable<any>;
+	private _websockets = {};
 
-	public websocket;
-
-	constructor() { }
-
-	public connect(url: string): Observable<any> {
-		this.websocket = webSocket(url);
-
-		return this.create(url);
+	public connect(connectionName: string = ''): void {
+		this._websockets[connectionName] = webSocket('ws://127.0.0.1:2002');
 	}
 
-	private create(url: string): Observable<any> {
-		this.messages = Observable.create(
-			(observer: Observer<MessageEvent>) => {
-				this.websocket.onmessage = observer.next.bind(observer);
-				this.websocket.onerror = observer.error.bind(observer);
-				this.websocket.onclose = observer.complete.bind(observer);
-			}
-		).pipe(
-			map((response: any) => {
-				return response.data
-			})
-		);
+	public createListener(connectionName: string = '', successFunction: (response) => any, errorFunction: (error) => any, completeFunction: () => any) {
+		if (!this.isConnected(connectionName))
+			this.connect(connectionName);
 
-		return this.messages;
+		this._websockets[connectionName].subscribe((response) => {
+			successFunction(response);
+		}, (error) => {
+			errorFunction(error);
+		}, () => {
+			completeFunction();
+		});
+	};
+
+	public isConnected(connectionName: string = ''): boolean {
+		return (typeof this._websockets[connectionName] !== 'undefined');
 	}
 
-	public close(): void {
-		this.websocket.close();
+	public disconnect(connectionName: string = ''): void {
+		if (this.isConnected(connectionName)) {
+			this._websockets[connectionName].unsubscribe();
+			delete this._websockets[connectionName];
+		}
+	}
+
+	public sendRequest(connectionName: string = '', operationName: string = null, token: string = null, data: any = {}) {
+		if (!this.isConnected(connectionName))
+			this.connect(connectionName);
+
+		this._websockets[connectionName].next({
+			_operation: operationName,
+			_token: token,
+			_data: (data ? (HttpHelper.convert(data, HttpHelper.Object)) : null)
+		});
 	}
 
 }

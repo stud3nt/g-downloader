@@ -26,7 +26,7 @@
                 </button>
             </div>
 
-            <input [(ngModel)]="parserRequest.currentNode.url" type="text" class="form-control">
+            <input [value]="parserRequest.currentNode ? parserRequest.currentNode.url : ''" type="text" class="form-control">
 
             <div class="input-group-btn">
                 <button type="button" [disabled]="parserRequest.currentNode.identifier === null" (click)="markCurrentNode(NodeStatus.Queued)" [ngClass]="getCurrentNodeButtonClass(NodeStatus.Queued)">

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Model\Downloaded;
+namespace App\Model\Download;
 
 use App\Annotation\ModelVariable;
 use App\Entity\Parser\File;

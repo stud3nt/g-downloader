@@ -7,7 +7,6 @@ use App\Service\AngularConfigService;
 use App\Utils\AppHelper;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 
 class IndexController extends Controller
 {

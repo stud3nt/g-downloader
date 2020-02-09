@@ -5,14 +5,21 @@ namespace App\Model;
 use App\Annotation\ModelVariable;
 use App\Converter\ModelConverter;
 use App\Entity\User;
+use App\Model\Interfaces\StatusInterface;
 
-class ParserRequest extends AbstractModel
+class ParserRequest extends AbstractModel implements StatusInterface
 {
     /**
      * @var string
      * @ModelVariable()
      */
     public $actionName;
+
+    /**
+     * @var string
+     * @ModelVariable()
+     */
+    public $apiToken;
 
     /**
      * @var ParsedNode
@@ -93,11 +100,11 @@ class ParserRequest extends AbstractModel
 
     /**
      * @var string
-     * @ModelVariable()
+     * @ModelVariable(type="string")
      */
     public $requestIdentifier = null;
 
-    public function __construct(User $user = null)
+    public function __construct()
     {
         $this->clearData();
 
@@ -147,7 +154,7 @@ class ParserRequest extends AbstractModel
      * @param string $actionName
      * @return self
      */
-    public function setActionName(string $actionName): self
+    public function setActionName(string $actionName = null): self
     {
         $this->actionName = $actionName;
 
@@ -269,7 +276,7 @@ class ParserRequest extends AbstractModel
      * @param ParsedNode $nextNode
      * @return self
      */
-    public function setNextNode(ParsedNode $nextNode): self
+    public function setNextNode(ParsedNode $nextNode = null): self
     {
         $this->nextNode = $nextNode;
 
@@ -288,7 +295,7 @@ class ParserRequest extends AbstractModel
      * @param ParsedNode $previousNode
      * @return self
      */
-    public function setPreviousNode(ParsedNode $previousNode): self
+    public function setPreviousNode(ParsedNode $previousNode = null): self
     {
         $this->previousNode = $previousNode;
 
@@ -307,7 +314,7 @@ class ParserRequest extends AbstractModel
      * @param ParsedNode[] $breadcrumbNodes
      * @return self
      */
-    public function setBreadcrumbNodes(array $breadcrumbNodes): self
+    public function setBreadcrumbNodes(array $breadcrumbNodes = null): self
     {
         $this->breadcrumbNodes = $breadcrumbNodes;
 
@@ -337,7 +344,7 @@ class ParserRequest extends AbstractModel
      * @param ParsedFile[] $files
      * @return self
      */
-    public function setFiles(array $files): self
+    public function setFiles(array $files = null): self
     {
         $this->files = $files;
 
@@ -374,7 +381,7 @@ class ParserRequest extends AbstractModel
      * @param mixed $fileData
      * @return self
      */
-    public function setFileData($fileData): ?self
+    public function setFileData($fileData = null): ?self
     {
         $this->fileData = $fileData;
 
@@ -412,7 +419,7 @@ class ParserRequest extends AbstractModel
      * @param mixed $tokens
      * @return self
      */
-    public function setTokens($tokens): self
+    public function setTokens($tokens = null): self
     {
         $this->tokens = $tokens;
 
@@ -431,7 +438,7 @@ class ParserRequest extends AbstractModel
      * @param bool $ignoreCache
      * @return self
      */
-    public function setIgnoreCache(bool $ignoreCache): self
+    public function setIgnoreCache(bool $ignoreCache = false): self
     {
         $this->ignoreCache = $ignoreCache;
 
@@ -450,7 +457,7 @@ class ParserRequest extends AbstractModel
      * @param bool $cachedData
      * @return self
      */
-    public function setCachedData(bool $cachedData): self
+    public function setCachedData(bool $cachedData = false): self
     {
         $this->cachedData = $cachedData;
 
@@ -492,13 +499,19 @@ class ParserRequest extends AbstractModel
     {
         $this->status = $status;
 
+        if ($this->getRequestIdentifier())
+            $this->getStatus()->setRequestIdentifier(
+                $this->getRequestIdentifier()
+            );
+
+
         return $this;
     }
 
     /**
-     * @return string
+     * @return string|null
      */
-    public function getRequestIdentifier(): string
+    public function getRequestIdentifier(): ?string
     {
         return $this->requestIdentifier;
     }
@@ -510,8 +523,26 @@ class ParserRequest extends AbstractModel
     public function setRequestIdentifier(string $requestIdentifier): self
     {
         $this->requestIdentifier = $requestIdentifier;
+        $this->status->setRequestIdentifier($requestIdentifier);
 
-        $this->getStatus()->setRequestIdentifier($requestIdentifier);
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getApiToken(): string
+    {
+        return $this->apiToken;
+    }
+
+    /**
+     * @param string $apiToken
+     * @return $this
+     */
+    public function setApiToken(string $apiToken): self
+    {
+        $this->apiToken = $apiToken;
 
         return $this;
     }

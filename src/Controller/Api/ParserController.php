@@ -4,7 +4,6 @@ namespace App\Controller\Api;
 
 use App\Controller\Api\Base\Controller;
 use App\Converter\ModelConverter;
-use App\Enum\{NodeLevel};
 use App\Factory\ParsedNodeFactory;
 use App\Factory\ParserRequestFactory;
 use App\Manager\Object\FileManager;
@@ -54,11 +53,10 @@ class ParserController extends Controller
             $request->request->all()
         );
 
-        if ($parserRequest->getStatus()->checkIfRequestDuplicated()) {
+        if ($parserRequest->getStatus()->checkIfRequestDuplicated())
             return $this->jsonError('REQUEST_DUPLICATED');
-        } else {
+        else
             $parserRequest->getStatus()->start();
-        }
 
         $fileManager = $this->container->get(FileManager::class);
         $nodeManager = $this->container->get(NodeManager::class);

@@ -5,9 +5,9 @@ namespace App\Controller\Api;
 use App\Controller\Api\Base\Controller;
 use App\Converter\ModelConverter;
 use App\Factory\ParsedFileFactory;
+use App\Manager\DownloadManager;
 use App\Manager\Object\FileManager;
 use App\Manager\Object\NodeManager;
-use App\Model\ParsedFile;
 use App\Service\ParserService;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -19,22 +19,43 @@ class FileController extends Controller
      * Get downloading status
      *
      * @Route("/api/file/toggle_queue", name="api_file_toggle_queue", options={"expose"=true}, methods={"POST"})
+     *
+     * @param Request $request
+     * @param ParserService $parserService
+     * @param DownloadManager $downloadManager
+     * @param NodeManager $nodeManager
+     * @param FileManager $fileManager
+     * @return JsonResponse
      * @throws \Exception
+     * @throws \ReflectionException
      */
-    public function toggleFileQueue(Request $request, ParserService $parserService) : JsonResponse
+    public function toggleFileQueue(
+        Request $request,
+        ParserService $parserService,
+        NodeManager $nodeManager,
+        DownloadManager $downloadManager,
+        FileManager $fileManager
+    ) : JsonResponse
     {
         $parsedFile = (new ParsedFileFactory())->buildFromRequestData(
             $request->request->all()
         );
+        $user = $this->getUser();
 
         $parser = $parserService->loadParser(
             $parsedFile->getParser(),
-            $this->getUser()
+            $user
         );
         $parser->getFileData($parsedFile);
 
-        $parentNode = $this->get(NodeManager::class)->getOneByParsedNode($parsedFile->getParentNode());
-        $this->get(FileManager::class)->toggleFileQueue($parsedFile, $parentNode);
+        if ($queuedFile = $fileManager->getQueueFileByParsedFile($parsedFile)) { // file exists => removing...
+            $fileManager->removeParsedFileFromQueue($parsedFile, $queuedFile);
+            $downloadManager->decreaseQueueByParsedFile($user, $parsedFile);
+        } else {
+            $parentNode = $nodeManager->getOneByParsedNode($parsedFile->getParentNode()); // file not exists => adding...
+            $fileManager->addParsedFileToQueue($parsedFile, $parentNode);
+            $downloadManager->increaseQueueByParsedFile($user, $parsedFile);
+        }
 
         return $this->json(
             $this->get(ModelConverter::class)->convert($parsedFile)

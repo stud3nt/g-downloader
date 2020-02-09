@@ -4,11 +4,9 @@
 namespace App\Service;
 
 use App\Entity\Parser\File;
+use App\Entity\User;
 use App\Enum\FileType;
-use App\Enum\ParserType;
-use App\Model\Downloaded\ParsedImage;
-use App\Utils\FilesHelper;
-use Gregwar\Image\Image;
+use App\Model\Download\ParsedImage;
 
 class DownloadService
 {
@@ -24,15 +22,16 @@ class DownloadService
 
     /**
      * @param array $filesList
+     * @param User $user
      * @return array
      * @throws \Exception
      */
-    public function downloadQueuedParserFiles(array $filesList = []): array
+    public function downloadQueuedParserFiles(array $filesList = [], User $user = null): array
     {
         $downloadedFiles = [];
 
-        if ($filesList) {
-            $this->prepareParsersForFiles($filesList);
+        if ($filesList && $user) {
+            $this->prepareParsersForFiles($filesList, $user);
             $curlService = new CurlRequest();
 
             /** @var File $fileEntity */
@@ -73,13 +72,17 @@ class DownloadService
      * Prepares parsers objects defined in files list array;
      *
      * @param array $filesList
+     * @param User $user
      */
-    protected function prepareParsersForFiles(array $filesList): void
+    protected function prepareParsersForFiles(array $filesList, User $user): void
     {
         /** @var File $file */
         foreach ($filesList as $file) {
             if (!array_key_exists($file->getParser(), $this->parsers)) {
-                $this->parsers[$file->getParser()] = $this->parserService->loadParser($file->getParser());
+                $this->parsers[$file->getParser()] = $this->parserService->loadParser(
+                    $file->getParser(),
+                    $user
+                );
             }
         }
     }

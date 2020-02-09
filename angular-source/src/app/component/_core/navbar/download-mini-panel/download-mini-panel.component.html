@@ -1,33 +1,46 @@
-<li class="dropdown download-menu">
+<li class="dropdown download-menu" (click)="toggleMiniPanel()">
     <a [ngClass]="mainButtonClass" data-toggle="dropdown">
         <i class="fa fa-fw fa-cloud-download"></i>
         <span class="label label-info">
-            {{ queuedFilesCount > 999 ? '999+' : queuedFilesCount }}
+            {{ downloader.queuedFilesCount > 999 ? '999+' : downloader.queuedFilesCount }}
         </span>
     </a>
-    <ul class="dropdown-menu">
+    <ul [ngClass]="miniPanelClass" (click)="$event.stopPropagation()">
         <li class="header">
-            Files in queue: <b>{{ queuedFilesCount }} ({{ queuedFilesSize }})</b>
+            Files in queue:
+            <b>
+                {{ downloader.queuedFilesCount }}
+                <span *ngIf="downloader.queuedFilesCount > 0">({{ downloader.queuedFilesTextSize }})</span>
+            </b>
         </li>
         <li>
             <ul class="files-list">
-                <li class="file-row" *ngFor="let file of queuedFiles">
+                <li class="file-row" *ngFor="let file of dropdownFilesQueue">
                     <i class="fa fa-video-camera" *ngIf="file.type === FileType.Video"></i>
                     <i class="fa fa-image" *ngIf="file.type === FileType.Image"></i>
                     {{ file.name | truncateString: 30 }}.{{ file.extension }} ({{ file.textSize }})
+
+                    <span>
+                        <b *ngIf="file.status.progress < 100">{{ file.status.progress }}%</b>
+                        <i class="fa fa-check-circle" *ngIf="file.status.progress === 100"></i>
+                    </span>
                 </li>
-                <li class="file-row text-center" *ngIf="queuedFiles.length === 0">
+                <li class="file-row text-center" *ngIf="dropdownFilesQueue.length === 0">
                     --- NO FILES IN QUEUE ---
                 </li>
             </ul>
         </li>
         <li class="footer">
-            <button type="button" class="btn btn-default" [disabled]="(queuedFiles.length === 0)" (click)="start()" *ngIf="downloaderStatus === DownloaderStatus.Idle">
-                <i class="fa fa-play"></i> &nbsp; Start
+            <button type="button" class="btn btn-default" (click)="start()" *ngIf="!(_downloaderStatus === DownloaderStatus.Downloading || _downloaderStatus === DownloaderStatus.Breaking)">
+                <i class="fa fa-play"></i> &nbsp; <span>Start</span>
             </button>
-            <button type="button" class="btn btn-default" [disabled]="(queuedFiles.length === 0)" (click)="stop()" *ngIf="downloaderStatus === DownloaderStatus.Downloading">
-                <i class="fa fa-stop"></i> &nbsp; Stop
+            <button type="button" class="btn btn-default" (click)="stop()" *ngIf="(_downloaderStatus === DownloaderStatus.Downloading || _downloaderStatus === DownloaderStatus.Breaking)">
+                <i class="fa fa-stop"></i> &nbsp;
+                <span *ngIf="!(_downloaderStatus === DownloaderStatus.Breaking || _downloaderStatus === DownloaderStatus.Continuation)">Stop</span>
+                <span *ngIf="(_downloaderStatus === DownloaderStatus.Breaking)">Stopping...</span>
+                <span *ngIf="(_downloaderStatus === DownloaderStatus.Continuation)">Checking...</span>
             </button>
+            &nbsp;
             <a class="btn btn-default" [href]="routerService.generateUrl('app_tools', {'toolName':'downloader'})">
                 <i class="fa fa-list-ul"></i> &nbsp; Full list
             </a>

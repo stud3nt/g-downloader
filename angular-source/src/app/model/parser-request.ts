@@ -219,12 +219,15 @@ export class ParserRequest extends BaseModel {
 
 	set apiToken(apiToken: string) {
 		this._apiToken = apiToken;
-		this._requestIdentifier = this._currentNode.parser+'_'+this._currentNode.level;
 
-		if (this._currentNode.identifier)
-			this._requestIdentifier += '_'+this._currentNode.identifier;
+		if (this._currentNode) {
+			this._requestIdentifier = this._currentNode.parser+'_'+this._currentNode.level;
 
-		this._requestIdentifier += '_'+apiToken
+			if (this._currentNode.identifier)
+				this._requestIdentifier += '_'+this._currentNode.identifier;
+
+			this._requestIdentifier += '_'+apiToken
+		}
 	}
 
 	get requestIdentifier(): string {

@@ -2,7 +2,7 @@
 
 namespace App\Command;
 
-use App\Websocket\ParserWebsocket;
+use App\Websocket\StatusWebsocket;
 use Ratchet\Server\IoServer;
 use Ratchet\Http\HttpServer;
 use Ratchet\WebSocket\WsServer;
@@ -27,7 +27,7 @@ class WebsocketServerCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $parserWebsocket = (new ParserWebsocket($this->container));
+        $parserWebsocket = (new StatusWebsocket($this->container));
 
         $server = IoServer::factory(
             new HttpServer(

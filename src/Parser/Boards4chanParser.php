@@ -5,6 +5,7 @@ namespace App\Parser;
 use App\Entity\Parser\File;
 use App\Enum\NodeLevel;
 use App\Enum\ParserType;
+use App\Factory\RedisFactory;
 use App\Model\ParsedFile;
 use App\Model\ParsedNode;
 use App\Model\ParserRequest;
@@ -89,6 +90,10 @@ class Boards4chanParser extends AbstractParser implements ParserInterface
             }
 
             $this->setParserCache($parserRequest, 0);
+        } else {
+            $parserRequest->getStatus()
+                ->updateProgress(50, "READING FROM CACHE...")
+                ->send();
         }
 
         return $parserRequest;
@@ -176,6 +181,10 @@ class Boards4chanParser extends AbstractParser implements ParserInterface
             }
 
             $this->setParserCache($parserRequest, 180);
+        } else {
+            $parserRequest->getStatus()
+                ->updateProgress(50, "READING FROM CACHE...")
+                ->send();
         }
 
         return $parserRequest;
@@ -271,6 +280,10 @@ class Boards4chanParser extends AbstractParser implements ParserInterface
             }
 
             $this->setParserCache($parserRequest, 300);
+        } else {
+            $parserRequest->getStatus()
+                ->updateProgress(50, "READING FROM CACHE...")
+                ->send();
         }
 
         return $parserRequest;
@@ -294,7 +307,13 @@ class Boards4chanParser extends AbstractParser implements ParserInterface
         $previewWebPath = $this->previewTempFolder.$parsedFile->getFullFilename();
 
         if (!file_exists($previewFilePath)) {
-            $this->downloadFile($parsedFile->getUrl(), $previewFilePath);
+            $this->downloadFile($parsedFile->getUrl(), $previewFilePath, function($resource, $downloadSize, $downloaded, $uploadSize, $uploaded) use ($parsedFile) {
+                if ($downloadSize > 0) {
+                    $redis = (new RedisFactory())->initializeConnection();
+                    $redis->set($parsedFile->getRedisPreviewKey(), round(($downloaded / $downloadSize) * 100));
+                    $redis->expire($parsedFile->getRedisPreviewKey(), 10);
+                }
+            });
         }
 
         $parsedFile->setLocalUrl($previewWebPath);

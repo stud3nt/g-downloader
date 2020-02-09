@@ -84,17 +84,19 @@ class Status extends AbstractModel
 
     /**
      * @param string|null $description
+     * @param bool $send
      * @return ParserRequest
      * @throws \Exception
      * @throws \ReflectionException
      */
-    public function end(string $description = null): self
+    public function end(string $description = null, bool $send = true): self
     {
         $this->setCode(StatusCode::OperationEnded);
         $this->setProgress(100);
         $this->setDescription($description);
 
-        $this->send(2);
+        if ($send)
+            $this->send(2);
 
         return $this;
     }
@@ -166,10 +168,9 @@ class Status extends AbstractModel
      */
     public function checkIfRequestDuplicated()
     {
-        if ($data = $this->read()) {
+        if ($data = $this->read())
             if ($data['code'] !== StatusCode::OperationEnded)
                 return true;
-        }
 
         return false;
     }
@@ -203,11 +204,16 @@ class Status extends AbstractModel
 
     /**
      * @param int $progress
+     * @param bool $send
      * @return $this;
+     * @throws \ReflectionException
      */
-    public function setProgress(int $progress): self
+    public function setProgress(int $progress, bool $send = false): self
     {
         $this->progress = $progress;
+
+        if ($send)
+            $this->send();
 
         return $this;
     }
@@ -232,9 +238,9 @@ class Status extends AbstractModel
     }
 
     /**
-     * @return string
+     * @return string|null
      */
-    public function getRequestIdentifier(): string
+    public function getRequestIdentifier(): ?string
     {
         return $this->requestIdentifier;
     }

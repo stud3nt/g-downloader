@@ -7,6 +7,7 @@ use App\Entity\User;
 use App\Enum\FileType;
 use App\Enum\NodeLevel;
 use App\Enum\ParserType;
+use App\Factory\RedisFactory;
 use App\Model\ParsedFile;
 use App\Model\ParsedNode;
 use App\Model\ParserRequest;
@@ -65,6 +66,10 @@ class RedditParser extends AbstractParser implements ParserInterface
             $after = null;
             $nextPage = true;
 
+            $parserRequest->getStatus()
+                ->updateProgress(20)
+                ->send();
+
             $parserRequest->parsedNodes = [];
             $parserRequest->currentNode->url = $this->mainBoardUrl;
             $parserRequest->pagination->disable();
@@ -84,8 +89,6 @@ class RedditParser extends AbstractParser implements ParserInterface
                     }
                 }
 
-                $this->makeBlindStep(20, 90);
-
                 if (!$subreddits->data->after) {
                     $nextPage = false;
                 }
@@ -93,8 +96,11 @@ class RedditParser extends AbstractParser implements ParserInterface
                 $after = $subreddits->data->after;
             }
 
+            $parserRequest->getStatus()
+                ->updateProgress(90)
+                ->send();
+
             $this->setParserCache($parserRequest, 0);
-            $this->setPageLoaderProgress(90);
         }
 
         return $parserRequest;
@@ -112,12 +118,19 @@ class RedditParser extends AbstractParser implements ParserInterface
         $parserRequest->clearParsedData()
             ->pagination->loadMorePagination();
 
+        $parserRequest->getStatus()
+            ->updateProgress(5)
+            ->send();
+
         $subreddit = $this->redditApi->getSubreddit($parserRequest);
 
-        $this->setPageLoaderProgress(20);
+        $parserRequest->getStatus()
+            ->updateProgress(20)
+            ->send();
 
         if ($subreddit) {
-            $this->startProgress('get_board_data', 100, 20, 90);
+            $parserRequest->getStatus()
+                ->startSteppedProgress('get_board_data', 100, 20, 90);
 
             foreach ($subreddit->data->children as $childIndex => $child) {
                 if (property_exists($child->data, 'crosspost_parent_list')) { // this is not post, but crosspost :/
@@ -144,11 +157,11 @@ class RedditParser extends AbstractParser implements ParserInterface
                     }
                 }
 
-                $this->progressStep('get_board_data');
+                $parserRequest->getStatus()->executeSteppedProgressStep('get_board_data');
             }
 
-            $this->endProgress('get_board_data');
-            $this->setPageLoaderProgress(95);
+            $parserRequest->getStatus()
+                ->endSteppedProgress('get_board_data');
 
             $this->cache->set('listing.'.$this->getSubredditName($parserRequest), [
                 'before' => $subreddit->data->before,
@@ -265,7 +278,13 @@ class RedditParser extends AbstractParser implements ParserInterface
 
         $parsedFile->setLocalUrl($previewWebPath);
 
-        $this->downloadFile($parsedFile->getFileUrl() ?? $parsedFile->getUrl(), $previewFilePath);
+        $this->downloadFile($parsedFile->getFileUrl() ?? $parsedFile->getUrl(), $previewFilePath, function($resource, $downloadSize, $downloaded, $uploadSize, $uploaded) use ($parsedFile) {
+            if ($downloadSize > 0) {
+                $redis = (new RedisFactory())->initializeConnection();
+                $redis->set($parsedFile->getRedisPreviewKey(), round(($downloaded / $downloadSize) * 100));
+                $redis->expire($parsedFile->getRedisPreviewKey(), 10);
+            }
+        });
 
         return $parsedFile;
     }

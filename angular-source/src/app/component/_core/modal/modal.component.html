@@ -14,7 +14,7 @@
                 <div class="modal-loader-wrapper">
                     <i class="fa fa-3x fa-spinner fa-spin"></i>
                     <br/><br/>
-                    <p>LOADING...</p>
+                    <p [innerHTML]="modalLoaderText"></p>
                 </div>
             </div>
             <div [ngClass]="modalBodyClass" *ngIf="!loaderVisible" [innerHTML]="modalBody" (click)="toggleEnlargement()"></div>

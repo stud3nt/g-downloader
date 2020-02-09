@@ -2,6 +2,7 @@
 
 namespace App\Service;
 
+use App\Factory\RedisFactory;
 use App\Utils\AppHelper;
 use Symfony\Component\Filesystem\Filesystem;
 
@@ -122,7 +123,7 @@ class CurlRequest
         return false;
     }
 
-    public function prepareCurlRequest(string $url, string $targetUrl = null)
+    public function prepareCurlRequest(string $url, string $targetUrl = null, $returnFunction = null)
     {
         $ch = curl_init();
 
@@ -138,9 +139,13 @@ class CurlRequest
         curl_setopt($ch, CURLOPT_MAXFILESIZE, (512 * 1000 * 1024)); // 512MB
         curl_setopt($ch, CURLOPT_TIMEOUT, 60);
 
-        if ($targetUrl) {
-            curl_setopt($ch, CURLOPT_FILE, $targetUrl);
+        if ($returnFunction) {
+            curl_setopt($ch, CURLOPT_NOPROGRESS, false);
+            curl_setOpt($ch, CURLOPT_PROGRESSFUNCTION, $returnFunction);
         }
+
+        if ($targetUrl)
+            curl_setopt($ch, CURLOPT_FILE, $targetUrl);
 
         return $ch;
     }

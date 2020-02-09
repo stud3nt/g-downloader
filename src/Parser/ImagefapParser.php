@@ -6,6 +6,7 @@ use App\Enum\FileType;
 use App\Enum\NodeLevel;
 use App\Enum\PaginationMode;
 use App\Enum\ParserType;
+use App\Factory\RedisFactory;
 use App\Model\ParsedFile;
 use App\Model\ParsedNode;
 use App\Model\ParserRequest;
@@ -51,7 +52,9 @@ class ImagefapParser extends AbstractParser implements ParserInterface
                 $parserRequest->currentNode->getUrl())
             ;
 
-            $this->setPageLoaderProgress(20);
+            $parserRequest->getStatus()
+                ->updateProgress(20)
+                ->send();
 
             if ($dom) {
                 /** @var HtmlNode $avatar */
@@ -64,7 +67,8 @@ class ImagefapParser extends AbstractParser implements ParserInterface
                 $avatars = $dom->getElementsByClass('avatar');
                 $paginationTag = $dom->getElementsByTag('font')[0];
 
-                $this->startProgress('load_owners_list', count($avatars), 20, 90);
+                $parserRequest->getStatus()
+                    ->startSteppedProgress('load_owners_list', count($avatars), 20, 90);
 
                 // extract gallery data;
                 foreach ($avatars as $avatar) {
@@ -91,7 +95,7 @@ class ImagefapParser extends AbstractParser implements ParserInterface
                         ->addThumbnail($image->getAttribute('src'))
                     ;
 
-                    $this->progressStep('load_owners_list');
+                    $parserRequest->getStatus()->executeSteppedProgressStep('load_owners_list');
                 }
 
                 // extract pagination data
@@ -100,8 +104,8 @@ class ImagefapParser extends AbstractParser implements ParserInterface
                     $parserRequest->pagination->numericPagination($currentPage, 10, -1);
                 }
 
+                $parserRequest->getStatus()->endSteppedProgress('load_owners_list');
                 $this->setParserCache($parserRequest, 60);
-                $this->endProgress('load_owners_list');
             }
         }
 
@@ -141,7 +145,9 @@ class ImagefapParser extends AbstractParser implements ParserInterface
                 'FAVORITES' => $this->loadHtmlFromUrl($favoritesUrl)
             ];
 
-            $this->setPageLoaderProgress(50);
+            $parserRequest->getStatus()
+                ->updateProgress(50)
+                ->send();
 
             foreach ($htmlArray as $section => $html) {
                 $dom = new \DOMDocument('1.0', 'UTF-8');
@@ -180,8 +186,11 @@ class ImagefapParser extends AbstractParser implements ParserInterface
                 }
             }
 
+            $parserRequest->getStatus()
+                ->updateProgress(90)
+                ->send();
+
             $this->setParserCache($parserRequest, 72000);
-            $this->setPageLoaderProgress(90);
         }
 
         return $parserRequest;
@@ -209,7 +218,9 @@ class ImagefapParser extends AbstractParser implements ParserInterface
             $dom = new \DOMDocument('1.0', 'UTF-8');
             @$dom->loadHTML($html);
 
-            $this->setPageLoaderProgress(50);
+            $parserRequest->getStatus()
+                ->updateProgress(50)
+                ->send();
 
             $parserRequest->parsedNodes = [];
             $parserRequest->files = [];
@@ -331,8 +342,11 @@ class ImagefapParser extends AbstractParser implements ParserInterface
                 }
             }
 
+            $parserRequest->getStatus()
+                ->updateProgress(90)
+                ->send();
+
             $this->setParserCache($parserRequest, 3600);
-            $this->setPageLoaderProgress(90);
         }
 
         return $parserRequest;
@@ -354,12 +368,16 @@ class ImagefapParser extends AbstractParser implements ParserInterface
             $imagesNo = $parserRequest->currentNode->imagesNo;
             $pagesNo = ceil($imagesNo / 24);
 
+            $parserRequest->getStatus()
+                ->updateProgress(20)
+                ->send();
+
             $html = $this->loadHtmlFromUrl($galleryUrl.'?view=0');
             $dom = new \DOMDocument('1.0', 'UTF-8');
             @$dom->loadHTML($html);
 
-            $this->setPageLoaderProgress(20);
-            $this->startProgress('get_gallery_data', $pagesNo, 20, 90);
+            $parserRequest->getStatus()
+                ->startSteppedProgress('get_gallery_data', $pagesNo, 20, 90);
 
             foreach ($dom->getElementsByTagName('a') as $anchor) {
                 $anchorHref = $anchor->getAttribute('href');
@@ -426,11 +444,13 @@ class ImagefapParser extends AbstractParser implements ParserInterface
                     }
                 }
 
-                $this->progressStep('get_gallery_data');
+
+                $parserRequest->getStatus()->executeSteppedProgressStep('get_gallery_data');
             }
 
+            $parserRequest->getStatus()->endSteppedProgress('get_gallery_data');
+
             $this->setParserCache($parserRequest, 0);
-            $this->endProgress('get_gallery_data');
         }
 
         return $parserRequest;
@@ -484,7 +504,13 @@ class ImagefapParser extends AbstractParser implements ParserInterface
         $previewFilePath = $this->previewTempDir.$parsedFile->getFullFilename();
         $previewWebPath = $this->previewTempFolder.$parsedFile->getFullFilename();
 
-        $this->downloadFile($parsedFile->getFileUrl(), $previewFilePath);
+        $this->downloadFile($parsedFile->getFileUrl(), $previewFilePath, function($resource, $downloadSize, $downloaded, $uploadSize, $uploaded) use ($parsedFile) {
+            if ($downloadSize > 0) {
+                $redis = (new RedisFactory())->initializeConnection();
+                $redis->set($parsedFile->getRedisPreviewKey(), round(($downloaded / $downloadSize) * 100));
+                $redis->expire($parsedFile->getRedisPreviewKey(), 10);
+            }
+        });
 
         $parsedFile->setLocalUrl($previewWebPath);
 

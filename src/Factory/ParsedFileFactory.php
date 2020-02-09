@@ -9,16 +9,16 @@ use App\Model\ParsedFile;
 class ParsedFileFactory implements RequestFactoryInterface
 {
     /**
-     * @param array $requestData
+     * @param $requestData
      * @return ParsedFile
      * @throws \ReflectionException
      */
-    public function buildFromRequestData(array $requestData = []): ParsedFile
+    public function buildFromRequestData($requestData = []): ParsedFile
     {
         $parserFile = new ParsedFile();
 
         $modelConverter = new ModelConverter();
-        $modelConverter->setData($requestData, $parserFile);
+        $modelConverter->setData($requestData, $parserFile, true);
 
         return $parserFile;
     }

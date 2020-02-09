@@ -9,16 +9,19 @@ use App\Model\ParserRequest;
 class ParserRequestFactory implements RequestFactoryInterface
 {
     /**
-     * @param array $requestData
+     * @param $requestData
      * @return ParserRequest
      * @throws \ReflectionException
      */
-    public function buildFromRequestData(array $requestData = []): ParserRequest
+    public function buildFromRequestData($requestData = []): ParserRequest
     {
         $parserRequest = new ParserRequest();
 
+        if (!is_array($requestData))
+            $requestData = json_decode(json_encode($requestData), true);
+
         $modelConverter = new ModelConverter();
-        $modelConverter->setData($requestData, $parserRequest);
+        $modelConverter->setData($requestData, $parserRequest, true);
 
         return $parserRequest;
     }

@@ -6,6 +6,7 @@ use App\Converter\ModelConverter;
 use App\Entity\Parser\File;
 use App\Entity\User;
 use App\Enum\PaginationMode;
+use App\Factory\RedisFactory;
 use App\Model\ParserRequest;
 use App\Model\SettingsModel;
 use App\Service\{FileCache, CurlRequest};
@@ -139,7 +140,14 @@ class AbstractParser
         $file->setTempFilePath($this->previewTempDir.$file->getName().'.'.$file->getExtension());
         $file->setCurlRequest(
             $curlService->prepareCurlRequest(
-                $file->getFileUrl() ?? $file->getUrl()
+                $file->getFileUrl() ?? $file->getUrl(),
+                null,
+                function($resource, $downloadSize, $downloaded, $uploadSize, $uploaded) use ($file) {
+                    if ($downloadSize > 0) {
+                        $redis = (new RedisFactory())->initializeConnection();
+                        $redis->set($file->getRedisDownloadKey(), round(($downloaded / $downloadSize) * 100));
+                    }
+                }
             )
         );
 
@@ -184,7 +192,7 @@ class AbstractParser
         return $this->curlRequest->executeSingleRequest($url);
     }
 
-    protected function downloadFile(string $sourceUrl, string $targetUrl)
+    protected function downloadFile(string $sourceUrl, string $targetUrl, $returnFunction = null)
     {
         $ch = curl_init();
 
@@ -193,6 +201,11 @@ class AbstractParser
         curl_setopt($ch, CURLOPT_FILE, $targetFile);
         curl_setopt($ch, CURLOPT_TIMEOUT, 30);
         curl_setopt($ch, CURLOPT_URL, $sourceUrl);
+
+        if ($returnFunction) {
+            curl_setopt($ch, CURLOPT_NOPROGRESS, false);
+            curl_setOpt($ch, CURLOPT_PROGRESSFUNCTION, $returnFunction);
+        }
 
         curl_exec($ch);
         fclose($targetFile);

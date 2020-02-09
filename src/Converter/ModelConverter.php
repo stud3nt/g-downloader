@@ -63,9 +63,11 @@ class ModelConverter
         if ($data) {
             $this->model = $model;
 
-            if ($data instanceof \stdClass || $data instanceof AbstractEntity) {
+            if ($data instanceof AbstractEntity) {
                 $entityConverter = new EntityConverter();
                 $modelData = $entityConverter->convert($data);
+            } elseif ($data instanceof \stdClass) {
+                $modelData = json_decode(json_encode($data), true);
             } elseif (StringHelper::isJson($data)) {
                 $modelData = json_decode($data, true);
             } else {
@@ -201,6 +203,8 @@ class ModelConverter
             );
         }
 
+        $setter = 'set'.ucfirst($variableName);
+
         if ($variableConfig->converter) { // convert data to model (if variable is a model);
             $variableConverterClass = 'App\\Converter\\'.$variableConfig->converter.'Converter';
             $variableConverter = new $variableConverterClass($variableConfig->converterOptions);
@@ -259,6 +263,9 @@ class ModelConverter
             }
         }
 
-        $this->model->$variableName = $value;
+        if (method_exists($this->model, $setter))
+            $this->model->$setter($value);
+        else
+            $this->model->$variableName = $value;
     }
 }
