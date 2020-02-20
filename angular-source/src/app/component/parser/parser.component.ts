@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import {Component, HostListener, OnInit} from '@angular/core';
 import { ActivatedRoute, NavigationEnd, Router } from "@angular/router";
 import { ContentHeaderDataService } from "../../service/data/content-header-data.service";
 import { ParserService } from "../../service/parser.service";
@@ -30,6 +30,20 @@ import { Subscription } from "rxjs";
 })
 
 export class ParserComponent implements OnInit {
+
+	@HostListener('document:keydown', ['$event']) onKeydownHandler(event: KeyboardEvent) {
+		let scrollValue = (document.getElementsByClassName('tile').item(0).clientHeight);
+		scrollValue += scrollValue;
+		scrollValue += 9;
+
+		if (event.code === 'ArrowUp') { // UP
+			event.preventDefault();
+			window.scrollTo(0, ((this.scrollY > scrollValue) ? this.scrollY - scrollValue : 0));
+		} else if (event.code === 'ArrowDown') { // DOWN
+			event.preventDefault();
+			window.scrollTo(0, (this.scrollY + scrollValue));
+		}
+	}
 
 	// current parser name
 	protected parserName: string = '';
@@ -184,13 +198,14 @@ export class ParserComponent implements OnInit {
 			? this.parserRequest.files
 			: null;
 
+		this.parserRequestAction = false;
 		this.parserRequest.pagination = pagination;
 	 	this.parserRequest.clearParsedData();
 		this.sendParserRequest();
 
 		setTimeout(() => {
 			this.sendWebsocketRequest();
-		}, 100);
+		}, 500);
 	};
 
 	/**
@@ -228,28 +243,31 @@ export class ParserComponent implements OnInit {
 	 * Sends data to parser API
 	 */
 	private sendParserRequest(successFunction: () => any = null, errorFunction: () => any = null, completeFunction: () => any = null): void {
-		if (this.parserRequestAction === true) { // only one action at same time
+		if (this.parserRequestAction === true) // only one action at same time
 			return;
-		} else {
+		else
 			this.parserRequestAction = true;
-		}
 
 		let parserRequestCopy = this.parserRequest;
 		parserRequestCopy.clearParsedData();
 
-		this.parserRequest.files = this._filesTemp;
+		setTimeout(() => {
+			this.parserRequest.files = this._filesTemp;
+		}, 20);
 
 		this.parserService.sendParserActionRequest(parserRequestCopy).subscribe((response : ParserRequest) => {
-			this.parserRequest = response;
-			this.previousNodeUrl = (response.previousNode) ? this.routerService.generateNodeUrl(response.previousNode) : null;
-			this.nextNodeUrl = (response.nextNode) ? this.routerService.generateNodeUrl(response.nextNode) : null;
-			this.parserRequestAction = false;
+			if (typeof response.currentNode !== 'undefined') {
+				this.parserRequest = response;
+				this.previousNodeUrl = (response.previousNode) ? this.routerService.generateNodeUrl(response.previousNode) : null;
+				this.nextNodeUrl = (response.nextNode) ? this.routerService.generateNodeUrl(response.nextNode) : null;
+				this.parserRequestAction = false;
 
-			if (this._filesTemp) // adding new files at end of list;
-				this.parserRequest.files = [...this._filesTemp, ...this.parserRequest.files];
+				if (this._filesTemp) // adding new files at end of list;
+					this.parserRequest.files = [...this._filesTemp, ...this.parserRequest.files];
 
-			if (successFunction)
-				successFunction();
+				if (successFunction)
+					successFunction();
+			}
 		}, (error) => {
 			this.pageLoaderDataService.hide();
 			this.parserRequestAction = false;
@@ -267,52 +285,54 @@ export class ParserComponent implements OnInit {
 		setTimeout(() => {
 			this.webSocketService.disconnect(this._websocketName);
 
-			this.webSocketService.createListener(
-				this._websocketName,(response) => {
+			setTimeout(() => {
+				this.webSocketService.createListener(
+					this._websocketName,(response) => {
+						let recursive = true;
 
-					let recursive = true;
+						if (typeof response === 'object') {
+							let jsonResponse = new JsonResponse(response);
 
-					if (typeof response === 'object') {
-						let jsonResponse = new JsonResponse(response);
+							if (jsonResponse.success()) {
+								let status = new Status(jsonResponse.data);
 
-						if (jsonResponse.success()) {
-							let status = new Status(jsonResponse.data);
+								switch (status.code) {
+									case StatusCode.NoEffect:
+									case StatusCode.OperationStarted:
+										this.pageLoaderDataService.show().setProgress(status.progress);
+										this.parserRequestAction = true;
+										break;
 
-							switch (status.code) {
-								case StatusCode.NoEffect:
-								case StatusCode.OperationStarted:
-									this.pageLoaderDataService.show().setProgress(status.progress);
-									break;
+									case StatusCode.OperationInProgress:
+										this.pageLoaderDataService.show().setProgress(status.progress);
+										break;
 
-								case StatusCode.OperationInProgress:
-									this.pageLoaderDataService.show().setProgress(status.progress);
-									break;
+									case StatusCode.OperationEnded:
+										this.pageLoaderDataService.hide(800);
+										this.parserRequestAction = false;
+										recursive = false;
+										break;
 
-								case StatusCode.OperationEnded:
-									this.pageLoaderDataService.hide(800);
-									this.parserRequestAction = false;
-									recursive = false;
-									break;
-
-								default:
-									recursive = false;
+									default:
+										recursive = false;
+								}
 							}
+						} else {
+							this.pageLoaderDataService.hide();
 						}
-					} else {
-						this.pageLoaderDataService.hide();
-					}
 
-					if (recursive && this.parserRequestAction)
-						setTimeout(() => this.sendWebsocketRequest(), 400);
-				},
-				(error) => {
-					this.toastrService.addError('PARSER ERROR', error.message);
-					console.log(error);
-				},
-				() => {
-					this.parserRequestAction = false;
-				}
-			);
+						if (recursive && this.parserRequestAction)
+							setTimeout(() => this.sendWebsocketRequest(), 400);
+					},
+					(error) => {
+						this.toastrService.addError('PARSER ERROR', error.message);
+						console.log(error);
+					},
+					() => {
+						this.parserRequestAction = false;
+					}
+				);
+			});
 		}, 50);
 	}
 

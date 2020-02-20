@@ -71,14 +71,14 @@ class RedditApi
             'app' => 'web2x-client-production',
             'allow_over18' => 1,
             'include' => 'identity',
-            'sort' => 'new',
+            'sort' => 'hot',
             'geo_filter' => 'PL',
             'layout' => 'card',
             'thumbnail_height' => 200,
             'thumbnail_width' => 200
         );
 
-        return $this->apiCall('/'.$parserRequest->currentNode->url."/new", "GET", $callOptions);
+        return $this->apiCall('/'.$parserRequest->currentNode->url."/hot", "GET", $callOptions);
     }
 
     /**

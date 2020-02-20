@@ -10,7 +10,7 @@ use App\Utils\StringHelper;
 use Gregwar\Image\Image;
 use Symfony\Component\Filesystem\Filesystem;
 
-class ParsedImage extends AbstractModel
+class DownloadedFile extends AbstractModel
 {
     /**
      * @ModelVariable()
@@ -41,11 +41,12 @@ class ParsedImage extends AbstractModel
 
     public function __destruct()
     {
-        unlink($this->tempFilePath);
+        if (file_exists($this->tempFilePath))
+            unlink($this->tempFilePath);
     }
 
     /**
-     * @return ParsedImage
+     * @return DownloadedFile
      * @throws \Exception
      */
     public function prepareTempFiles(): self
@@ -75,7 +76,7 @@ class ParsedImage extends AbstractModel
     }
 
     /**
-     * @return ParsedImage
+     * @return DownloadedFile
      * @throws \Exception
      */
     public function optimize(): self
@@ -208,7 +209,7 @@ class ParsedImage extends AbstractModel
     }
 
     /**
-     * @return ParsedImage
+     * @return DownloadedFile
      * @throws \Exception
      */
     public function saveTargetFile(): bool

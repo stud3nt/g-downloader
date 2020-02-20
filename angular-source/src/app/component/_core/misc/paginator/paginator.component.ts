@@ -10,9 +10,12 @@ export class PaginatorComponent implements OnInit, OnChanges {
 
 	@Input() pagination: Pagination;
 
+	@Input() size: string = 'default';
+
 	@Output() onPaginate = new EventEmitter<Pagination>();
 
 	public pages = [];
+	public packages = [];
 
 	public currentPage;
 	public firstPage;
@@ -20,6 +23,8 @@ export class PaginatorComponent implements OnInit, OnChanges {
 
 	public previousPage;
 	public nextPage;
+
+	public buttonClass: string = 'btn btn-default';
 
 	public loadMore = false;
 
@@ -29,6 +34,7 @@ export class PaginatorComponent implements OnInit, OnChanges {
 
 	ngOnInit() {
 		this.createPaginationData();
+		this.buttonClasses();
 	}
 
 	/**
@@ -62,13 +68,15 @@ export class PaginatorComponent implements OnInit, OnChanges {
 		this.createPaginationData();
 	}
 
-	public toggleLoadMore() {
+	public toggleLoadMore(currentPackage: number = 1) {
 		this.pagination.mode = PaginationMode.LoadMore;
+		this.pagination.currentPackage = currentPackage;
 		this.onPaginate.next(this.pagination);
 	}
 
 	protected resetPagination() {
 		this.pages = [];
+		this.packages = [];
 
 		this.currentPage = null;
 		this.firstPage = null;
@@ -80,8 +88,32 @@ export class PaginatorComponent implements OnInit, OnChanges {
 		this.loadMore = false;
 	}
 
+	protected buttonClasses(): void {
+		switch (this.size) {
+			case 'small':
+				this.buttonClass = 'btn btn-sm';
+				break;
+
+			case 'large':
+				this.buttonClass = 'btn btn-lg';
+				break;
+
+			default:
+				this.buttonClass = 'btn btn-default';
+		}
+	}
+
 	protected createPaginationData() : void {
 		this.resetPagination();
+
+		if (this.pagination.packageSize > 0) {
+			for (let packageId = this.pagination.minPackage; packageId <= this.pagination.maxPackage; packageId++) {
+				this.packages.push({
+					packageId: packageId,
+					packageSize: (packageId * this.pagination.packageSize) + ' results'
+				});
+			}
+		}
 
 		switch (this.pagination.mode) {
 			case PaginationMode.Letters:

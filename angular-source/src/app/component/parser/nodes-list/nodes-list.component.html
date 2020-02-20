@@ -30,6 +30,13 @@
             <div class="tile-data-empty">
                 <table class="table table-hover">
                     <tbody>
+                        <tr>
+                            <th>Last viewed at</th>
+                            <th>
+                                {{ (node.lastViewedAt !== null) ? (node.lastViewedAt + ' ago') : '---' }}
+                            </th>
+                        </tr>
+
                         <tr *ngIf="node.imagesNo && node.imagesNo > 0">
                             <th>Images</th>
                             <td>

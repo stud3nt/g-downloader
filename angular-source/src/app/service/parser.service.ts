@@ -25,6 +25,8 @@ export class ParserService {
 	 * @param parserRequest
 	 */
 	public sendParserActionRequest(parserRequest: ParserRequest) {
+		parserRequest.clearParsedData();
+
 		let formData = HttpHelper.convert(parserRequest);
 
 		return this.http.post(this.router.generateUrl('api_parsers_action'), formData).pipe(

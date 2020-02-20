@@ -105,8 +105,11 @@ class NodeManager extends EntityManager
         $parentNodeEntity = $this->repository->findOneByParsedNode($parentNode);
 
         // complete statuses for parent node;
-        if ($parentNodeEntity)
+        if ($parentNodeEntity) {
+            $parentNodeEntity->refreshLastViewedAt();
+            $this->save($parentNodeEntity);
             $this->updateNodeStatuses($parentNode, $parentNodeEntity);
+        }
 
         $parserRequest->setCurrentNode($parentNode);
 
@@ -162,8 +165,6 @@ class NodeManager extends EntityManager
 
     public function updateNodeStatuses(ParsedNode &$parsedNode, Node &$savedNode): void
     {
-        $savedNode->refreshLastViewedAt();
-
         if ($savedNode->getImagesNo() !== $parsedNode->getImagesNo()) {
             $savedNode->setImagesNo($parsedNode->getImagesNo());
             $savedNode->setRatio($parsedNode->getRatio());
@@ -172,6 +173,10 @@ class NodeManager extends EntityManager
             // more images? Adding 'new content' info;
             $parsedNode->addStatus(NodeStatus::NewContent);
         }
+
+        $parsedNode->setLastViewedAt(
+            $savedNode->getLastViewedAt()
+        );
 
         foreach (NodeStatus::getData() as $status) {
             $statusGetter = 'get'.ucfirst(StringHelper::underscoreToCamelCase($status));

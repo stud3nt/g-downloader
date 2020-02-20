@@ -110,10 +110,10 @@ class Boards4chanParser extends AbstractParser implements ParserInterface
         $parserRequest->clearParsedData();
         $parserRequest->getPagination()->disable();
 
-        $this->updateUrlsFromBoardUrls($parserRequest->currentNode->getUrl());
+        $this->updateUrlsFromBoardUrls($parserRequest->getCurrentNode()->getUrl());
 
         if (!$this->getParserCache($parserRequest)) {
-            $html = $this->loadHtmlFromUrl($parserRequest->currentNode->getUrl());
+            $html = $this->loadHtmlFromUrl($parserRequest->getCurrentNode()->getUrl());
 
             $parserRequest->getStatus()
                 ->updateProgress(20)

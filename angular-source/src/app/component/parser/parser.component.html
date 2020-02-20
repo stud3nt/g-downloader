@@ -1,56 +1,67 @@
 <div [ngClass]="actionBeltMaskClass"></div>
 
 <div [ngClass]="actionBeltClass">
-    <div class="actionbelt_container__breadcrumb">
-        <ol class="breadcrumb">
-            <li *ngFor="let breadcrumbNode of parserRequest.breadcrumbNodes">
-                <a *ngIf="breadcrumbNode" [routerLink]="routerService.generateNodeUrl(breadcrumbNode)">
-                    {{ NodeLevel.getLevelLabel(breadcrumbNode.level).toUpperCase() }} <span [innerHTML]="breadcrumbNode.label"></span>
-                </a>
-            </li>
-        </ol>
-    </div>
+    <div class="actionbelt_container__title" [innerHTML]="parserRequest.currentNode.name"></div>
 
     <div class="actionbelt_container__navigation">
-        <div class="input-group">
-            <div class="input-group-btn">
-                <a *ngIf="parserRequest.previousNode" [href]="routerService.generateNodeUrl(parserRequest.previousNode)" type="button" class="btn btn-default">
-                    <i class="fa fa-arrow-left"></i>
-                </a>
+        <div class="input-group input-group-sm">
+            <span class="input-group-btn">
                 <button type="button" class="btn btn-default" (click)="reopenCurrentNode(true)">
                     <i class="fa fa-refresh"></i>
                 </button>
-                <app-saved-nodes class="btn component-btn-group-button"></app-saved-nodes>
-                <button type="button" class="btn btn-default" (click)="toggleSettingsModal()">
+                <app-saved-nodes class="btn component-btn-group-button" [parserRequest]="parserRequest"></app-saved-nodes>
+                <button type="button" class="btn btn-default" (click)="toggleSettingsModal()" title="SETTINGS">
                     <i class="fa fa-cogs"></i>
                 </button>
-            </div>
 
-            <input [value]="parserRequest.currentNode ? parserRequest.currentNode.url : ''" type="text" class="form-control">
-
-            <div class="input-group-btn">
+                <button type="button" class="btn btn-default">
+                    <i class="fa fa-building-o"></i>
+                </button>
                 <button type="button" [disabled]="parserRequest.currentNode.identifier === null" (click)="markCurrentNode(NodeStatus.Queued)" [ngClass]="getCurrentNodeButtonClass(NodeStatus.Queued)">
-                    <i class="fa fa-remove" *ngIf="parserRequest.currentNode.hasStatus(NodeStatus.Queued)"></i>
-                    <i class="fa fa-save" *ngIf="!parserRequest.currentNode.hasStatus(NodeStatus.Queued)"></i>
+                    <span *ngIf="parserRequest.currentNode.hasStatus(NodeStatus.Queued)">
+                        <i class="fa fa-remove" ></i>
+                    </span>
+                    <span *ngIf="!parserRequest.currentNode.hasStatus(NodeStatus.Queued)">
+                        <i class="fa fa-save"></i>
+                    </span>
                 </button>
                 <button type="button" [disabled]="parserRequest.currentNode.identifier === null" (click)="markCurrentNode(NodeStatus.Favorited)" [ngClass]="getCurrentNodeButtonClass(NodeStatus.Favorited)">
-                    <i class="fa fa-star-o" *ngIf="parserRequest.currentNode.hasStatus(NodeStatus.Favorited)"></i>
-                    <i class="fa fa-star" *ngIf="!parserRequest.currentNode.hasStatus(NodeStatus.Favorited)"></i>
+                    <span *ngIf="parserRequest.currentNode.hasStatus(NodeStatus.Favorited)">
+                        <i class="fa fa-star-o" ></i>
+                    </span>
+                    <span *ngIf="!parserRequest.currentNode.hasStatus(NodeStatus.Favorited)">
+                        <i class="fa fa-star" ></i>
+                    </span>
                 </button>
                 <button type="button" [disabled]="parserRequest.currentNode.identifier === null" (click)="markCurrentNode(NodeStatus.Blocked)" [ngClass]="getCurrentNodeButtonClass(NodeStatus.Blocked)">
-                    <i class="fa fa-unlock" *ngIf="parserRequest.currentNode.hasStatus(NodeStatus.Blocked)"></i>
-                    <i class="fa fa-lock" *ngIf="!parserRequest.currentNode.hasStatus(NodeStatus.Blocked)"></i>
+                    <span *ngIf="parserRequest.currentNode.hasStatus(NodeStatus.Blocked)">
+                        <i class="fa fa-unlock" ></i>
+                    </span>
+                    <span *ngIf="!parserRequest.currentNode.hasStatus(NodeStatus.Blocked)">
+                        <i class="fa fa-lock" ></i>
+                    </span>
                 </button>
                 <button type="button" [disabled]="parserRequest.currentNode.identifier === null" (click)="markCurrentNode(NodeStatus.Finished)" [ngClass]="getCurrentNodeButtonClass(NodeStatus.Finished)">
-                    <i class="fa fa-check-circle" *ngIf="parserRequest.currentNode.hasStatus(NodeStatus.Finished)"></i>
-                    <i class="fa fa-check-circle-o" *ngIf="!parserRequest.currentNode.hasStatus(NodeStatus.Finished)"></i>
+                    <span *ngIf="parserRequest.currentNode.hasStatus(NodeStatus.Finished)">
+                        <i class="fa fa-check-circle" ></i>
+                    </span>
+                    <span *ngIf="!parserRequest.currentNode.hasStatus(NodeStatus.Finished)">
+                        <i class="fa fa-check-circle-o" ></i>
+                    </span>
                 </button>
                 <a type="button" *ngIf="previousNodeUrl" class="btn btn-default" [href]="previousNodeUrl">
-                    <i class="fa fa-long-arrow-left"></i> &nbsp; JUMP PREV
+                    <i class="fa fa-long-arrow-left"></i>
                 </a>
                 <a type="button" *ngIf="nextNodeUrl" class="btn btn-default" [href]="nextNodeUrl">
-                    JUMP NEXT &nbsp; <i class="fa fa-long-arrow-right"></i>
+                    <i class="fa fa-long-arrow-right"></i>
                 </a>
+            </span>
+            <input [value]="parserRequest.currentNode ? parserRequest.currentNode.url : ''" type="text" class="form-control">
+        </div>
+
+        <div class="input-group input-group-sm" *ngIf="parserRequest.pagination.active">
+            <div class="input-group-btn">
+                <app-paginator class="pull-right" (onPaginate)="changeNodePage($event)" [size]="'small'" [pagination]="parserRequest.pagination"></app-paginator>
             </div>
         </div>
     </div>
@@ -59,13 +70,7 @@
 <div class="row">
     <div class="col-md-12">
         <div class="box no-border">
-            <div class="box-header with-border">
-                <h3 class="box-title" [innerHTML]="parserRequest.currentNode.name"></h3>
-                <div class="box-tools" *ngIf="parserRequest.pagination.active">
-                    <app-paginator (onPaginate)="changeNodePage($event)" [pagination]="parserRequest.pagination"></app-paginator>
-                </div>
-            </div>
-            <div class="box-body">
+            <div class="box-body" style="min-height: 400px">
                 <app-nodes-list [parserRequest]="parserRequest"></app-nodes-list>
                 <app-files-list [parserRequest]="parserRequest"></app-files-list>
             </div>

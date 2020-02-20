@@ -31,33 +31,33 @@ class DownloadController extends Controller
      */
     public function downloadProcess(DownloadService $downloadService, FileManager $fileManager, DownloadManager $downloadManager): JsonResponse
     {
-            $filesForDownload = $fileManager->getQueuedFiles(6);
+        $filesForDownload = $fileManager->getQueuedFiles(6);
 
-            if ($filesForDownload) {
-                $downloadManager->createStatusData(
-                    $this->getUser(), DownloaderStatus::Downloading, $filesForDownload
-                );
-                $downloadedFiles = $downloadService->downloadQueuedParserFiles(
-                    $filesForDownload, $this->getUser()
-                );
+        if ($filesForDownload) {
+            $downloadManager->createStatusData(
+                $this->getUser(), DownloaderStatus::Downloading, $filesForDownload
+            );
+            $downloadedFiles = $downloadService->downloadQueuedParserFiles(
+                $filesForDownload, $this->getUser()
+            );
 
-                if ($downloadedFiles) {
-                    $fileManager->updateDownloadedFiles($downloadedFiles);
-                    $downloadManager->createStatusData(
-                        $this->getUser(), DownloaderStatus::Idle, []
-                    );
-
-                    return $this->jsonSuccess([
-                        'filesCount' => count($downloadedFiles)
-                    ]);
-                }
-            } else {
+            if ($downloadedFiles) {
+                $fileManager->updateDownloadedFiles($downloadedFiles);
                 $downloadManager->createStatusData(
                     $this->getUser(), DownloaderStatus::Idle, []
                 );
-            }
 
-            return $this->jsonError();
+                return $this->jsonSuccess([
+                    'filesCount' => count($downloadedFiles)
+                ]);
+            }
+        } else {
+            $downloadManager->createStatusData(
+                $this->getUser(), DownloaderStatus::Idle, []
+            );
+        }
+
+        return $this->jsonError();
     }
 
     /**

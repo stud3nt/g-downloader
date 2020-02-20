@@ -46,6 +46,8 @@ export class ParserNode extends BaseModel {
 
 	private _settings: object = {};
 
+	private _lastViewedAt: string = '---';
+
 	// statuses
 	private _queued: boolean = false;
 	private _favorited: boolean = false;
@@ -226,6 +228,14 @@ export class ParserNode extends BaseModel {
 
 	set blocked(value: boolean) {
 		this._blocked = value;
+	}
+
+	get lastViewedAt(): string {
+		return this._lastViewedAt;
+	}
+
+	set lastViewedAt(value: string) {
+		this._lastViewedAt = value;
 	}
 
 	/**

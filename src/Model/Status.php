@@ -264,6 +264,9 @@ class Status extends AbstractModel
      */
     public function send(int $expire = 0)
     {
+        if ($this->redis->exists($this->requestIdentifier))
+            $this->redis->del($this->requestIdentifier);
+
         $this->redis->set(
             $this->requestIdentifier,
             json_encode(

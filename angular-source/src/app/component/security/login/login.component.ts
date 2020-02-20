@@ -2,7 +2,8 @@ import { Component, EventEmitter, OnInit, Output } from '@angular/core';
 import { AuthService } from "../../../service/auth.service";
 import { LoginForm } from "../../../model/form/login-form";
 import { JsonResponse } from "../../../model/json-response";
-import {ToastrDataService} from "../../../service/data/toastr-data.service";
+import { ToastrDataService } from "../../../service/data/toastr-data.service";
+import { WebSocketService } from "../../../service/web-socket.service";
 
 @Component({
   selector: 'app-login',
@@ -15,7 +16,8 @@ export class LoginComponent implements OnInit {
 
 	constructor(
 		protected authService: AuthService,
-		protected toastrDataService: ToastrDataService
+		protected toastrDataService: ToastrDataService,
+		protected websocketService: WebSocketService
 	) { }
 
 	public loginForm = new LoginForm();
@@ -28,6 +30,7 @@ export class LoginComponent implements OnInit {
 
 			if (response.success()) {
 				this.onLogin.emit(true);
+				this.websocketService.openWebsocketConsole();
 			} else {
 				this.toastrDataService.addError('Login error', response.data);
 			}

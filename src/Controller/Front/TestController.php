@@ -8,6 +8,7 @@ use App\Enum\ParserType;
 use App\Factory\RedisFactory;
 use App\Manager\Object\FileManager;
 use App\Model\ParsedFile;
+use App\Model\ParsedNode;
 use App\Model\ParserRequest;
 use App\Parser\Boards4chanParser;
 use App\Converter\EntityConverter;
@@ -16,6 +17,7 @@ use App\Parser\ImagefapParser;
 use App\Parser\RedditParser;
 use App\Service\DownloadService;
 use App\Service\FileCache;
+use App\Service\ParserService;
 use App\Utils\StringHelper;
 use Doctrine\Common\Util\Debug;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
@@ -32,29 +34,30 @@ class TestController extends \App\Controller\Api\Base\Controller
      * @throws \ReflectionException
      * @throws \Psr\Cache\InvalidArgumentException
      */
-    public function parserTest(Request $request)
+    public function parserTest(Request $request, ParserService $parserService)
     {
         $test = $request->get('test');
-        $parser = $request->get('parser');
+        $parserName = $request->get('parser');
         $stopwatch = new Stopwatch();
         $stopwatch->start($test);
 
         $parserRequest = new ParserRequest();
-        $parserRequest->currentNode = new \stdClass();
+        $parserRequest->setCurrentNode(
+            (new ParsedNode())
+        );
 
         $parsedFile = new ParsedFile();
+        $parser = $parserService->loadParser($parserName, $this->getUser());
 
-        switch ($parser) {
+        switch ($parserName) {
             case ParserType::Boards4chan:
-                $parser = $this->get(Boards4chanParser::class);
-
                 switch ($test) {
                     case 'load_boards_list':
                         $parser->getBoardsListData($parserRequest);
                         break;
 
                     case 'load_galleries':
-                        $parserRequest->currentNode->url = 'https://boards.4chan.org/s/catalog';
+                        $parserRequest->getCurrentNode()->setUrl('https://boards.4chan.org/hc/catalog');
                         $parser->getBoardData($parserRequest);
                         break;
 
@@ -68,8 +71,6 @@ class TestController extends \App\Controller\Api\Base\Controller
                 break;
 
             case ParserType::Reddit:
-                $parser = $this->get(RedditParser::class);
-
                 switch ($test) {
                     case 'load_subreddits':
                         $parser->getBoardsListData($parserRequest);
@@ -93,8 +94,6 @@ class TestController extends \App\Controller\Api\Base\Controller
                 break;
 
             case ParserType::Imagefap:
-                $parser = $this->get(ImagefapParser::class);
-
                 switch ($test) {
                     case 'load_users': // load users
                         $parserRequest->sorting = ['page' => 0];
@@ -120,15 +119,12 @@ class TestController extends \App\Controller\Api\Base\Controller
 
                     case 'load_file_data':
                         $parserRequest->currentNode->url = 'https://www.imagefap.com/photo/2045072831/?pgid=&gid=3121356&page=0&idx=27';
-                        $parser->getFileData($parserRequest);
+                        $parser->getFileData($parsedFile);
                         break;
                 }
                 break;
 
             case ParserType::HentaiFoundry:
-                /** @var HentaiFoundryParser $parser */
-                $parser = $this->get(HentaiFoundryParser::class);
-
                 switch($test) {
                     case 'load_board_data':
                         $parser->getBoardData($parserRequest);
@@ -141,7 +137,7 @@ class TestController extends \App\Controller\Api\Base\Controller
 
                     case 'load_file_data':
                         $parserRequest->currentNode->url = 'pictures/user/sabudenego/733826/Zelda-Zelda-BotW';
-                        $parser->getFileData($parserRequest);
+                        $parser->getFileData($parsedFile);
                         break;
                 }
                 break;

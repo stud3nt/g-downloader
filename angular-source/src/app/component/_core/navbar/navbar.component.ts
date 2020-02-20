@@ -2,6 +2,7 @@ import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
 import { AuthService } from "../../../service/auth.service";
 import { User } from "../../../model/user";
 import { CookieService } from "ngx-cookie-service";
+import {WebSocketService} from "../../../service/web-socket.service";
 
 @Component({
   selector: 'app-navbar',
@@ -15,7 +16,8 @@ export class NavbarComponent implements OnInit {
 
 	constructor(
 		public auth: AuthService,
-		protected cookie: CookieService
+		protected cookie: CookieService,
+		protected websocketService: WebSocketService
 	) { }
 
 	ngOnInit(): void {}
@@ -26,6 +28,10 @@ export class NavbarComponent implements OnInit {
 		}, (error) => {
 
 		})
+	}
+
+	public openWebsocketConsole(): void {
+		this.websocketService.openWebsocketConsole();
 	}
 
 	toggleNavbar() {

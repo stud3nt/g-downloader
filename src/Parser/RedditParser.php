@@ -8,6 +8,7 @@ use App\Enum\FileType;
 use App\Enum\NodeLevel;
 use App\Enum\ParserType;
 use App\Factory\RedisFactory;
+use App\Model\Pagination;
 use App\Model\ParsedFile;
 use App\Model\ParsedNode;
 use App\Model\ParserRequest;
@@ -80,8 +81,8 @@ class RedditParser extends AbstractParser implements ParserInterface
                 if ($subreddits && $subreddits->data && count($subreddits->data->children) > 0) {
                     foreach ($subreddits->data->children as $subreddit) {
                         $parserRequest->addParsedNode((new ParsedNode(ParserType::Reddit, NodeLevel::Board))
-                            ->setName($subreddit->data->title)
-                            ->setDescription(trim($subreddit->data->public_description))
+                            ->setName($subreddit->data->display_name_prefixed)
+                            ->setDescription(trim($subreddit->data->title))
                             ->setUrl($subreddit->data->display_name_prefixed)
                             ->setIdentifier($subreddit->data->display_name_prefixed)
                             ->setNoImage(true)
@@ -116,27 +117,36 @@ class RedditParser extends AbstractParser implements ParserInterface
     public function getBoardData(ParserRequest &$parserRequest) : ParserRequest
     {
         $parserRequest->clearParsedData()
-            ->pagination->loadMorePagination();
+            ->getPagination()
+            ->loadMorePagination();
+
+        $this->preparePaginationSelectors($parserRequest);
+
+        $pagination = $parserRequest->getPagination();
 
         $parserRequest->getStatus()
-            ->updateProgress(5)
-            ->send();
+            ->startSteppedProgress('reddit_parser', $pagination->getCurrentPackage(), 20, 90);
 
-        $subreddit = $this->redditApi->getSubreddit($parserRequest);
+        for ($package = $pagination->getMinPackage(); $package <= $pagination->getCurrentPackage(); $package++) {
+            $subreddit = $this->redditApi->getSubreddit($parserRequest);
 
-        $parserRequest->getStatus()
-            ->updateProgress(20)
-            ->send();
+            if ($subreddit) {
+                foreach ($subreddit->data->children as $childIndex => $child) {
+                    if (property_exists($child->data, 'crosspost_parent_list')) { // this is not post, but crosspost :/
+                        foreach ($child->data->crosspost_parent_list as $parentChild) {
+                            if (property_exists($parentChild, 'preview')) {
+                                $childData = $this->processBoardChildData($parentChild);
 
-        if ($subreddit) {
-            $parserRequest->getStatus()
-                ->startSteppedProgress('get_board_data', 100, 20, 90);
-
-            foreach ($subreddit->data->children as $childIndex => $child) {
-                if (property_exists($child->data, 'crosspost_parent_list')) { // this is not post, but crosspost :/
-                    foreach ($child->data->crosspost_parent_list as $parentChild) {
-                        if (property_exists($parentChild, 'preview')) {
-                            $childData = $this->processBoardChildData($parentChild);
+                                if ($childData) {
+                                    foreach ($childData as $file) {
+                                        $parserRequest->addFile($file);
+                                    }
+                                }
+                            }
+                        }
+                    } else {
+                        if (property_exists($child->data, 'preview')) {
+                            $childData = $this->processBoardChildData($child->data);
 
                             if ($childData) {
                                 foreach ($childData as $file) {
@@ -145,32 +155,21 @@ class RedditParser extends AbstractParser implements ParserInterface
                             }
                         }
                     }
-                } else {
-                    if (property_exists($child->data, 'preview')) {
-                        $childData = $this->processBoardChildData($child->data);
-
-                        if ($childData) {
-                            foreach ($childData as $file) {
-                                $parserRequest->addFile($file);
-                            }
-                        }
-                    }
                 }
 
-                $parserRequest->getStatus()->executeSteppedProgressStep('get_board_data');
+                $parserRequest->tokens->after = $subreddit->data->after;
+                $parserRequest->tokens->before = $subreddit->data->before;
+
+                $this->cache->set('listing.'.$this->getSubredditName($parserRequest), [
+                    'before' => $subreddit->data->before,
+                    'after' => $subreddit->data->after
+                ]);
             }
 
-            $parserRequest->getStatus()
-                ->endSteppedProgress('get_board_data');
-
-            $this->cache->set('listing.'.$this->getSubredditName($parserRequest), [
-                'before' => $subreddit->data->before,
-                'after' => $subreddit->data->after
-            ]);
-
-            $parserRequest->tokens->after = $subreddit->data->after;
-            $parserRequest->tokens->before = $subreddit->data->before;
+            $parserRequest->getStatus()->executeSteppedProgressStep('reddit_parser');
         }
+
+        $parserRequest->getStatus()->endSteppedProgress('reddit_parser');
 
         return $parserRequest;
     }
@@ -186,14 +185,13 @@ class RedditParser extends AbstractParser implements ParserInterface
 
         foreach ($child->preview->images as $image) {
             $clearFileUrl = strtok($image->source->url, '?');
-            $fileHeader = $this->getFileHeadersData($image->source->url);
 
             if ($child->domain === 'gfycat.com') {
                 $fileType = FileType::Video;
                 $mimeType = 'video/mp4';
             } else {
                 $fileType = FileType::Image;
-                $mimeType = $fileHeader['mimeType'];
+                $mimeType = FilesHelper::getFileMimeType($clearFileUrl, true);
             }
 
             $parsedFile = (new ParsedFile(ParserType::Reddit, $fileType))
@@ -204,7 +202,7 @@ class RedditParser extends AbstractParser implements ParserInterface
                 ->setWidth($image->source->width)
                 ->setHeight($image->source->height)
                 ->setMimeType($mimeType)
-                ->setSize($fileHeader['size'])
+                ->setSize(0)
             ;
 
             if ($child->domain === 'gfycat.com') {
@@ -234,6 +232,13 @@ class RedditParser extends AbstractParser implements ParserInterface
 
     public function getFileData(ParsedFile &$parsedFile) : ParsedFile
     {
+        $fileHeader = $this->getFileHeadersData(
+            $parsedFile->getUrl()
+        );
+
+        $parsedFile->setSize($fileHeader['size']);
+        $parsedFile->setMimeType($fileHeader['mimeType']);
+
         return $parsedFile;
     }
 
@@ -310,10 +315,46 @@ class RedditParser extends AbstractParser implements ParserInterface
 
         if ($parentNode = $file->getParentNode()) {
             if ($parentNode->getLevel() === NodeLevel::Board) {
-                $subfolder = DIRECTORY_SEPARATOR.FilesHelper::createFolderNameFromString($parentNode->getName());
+                $subfolder = DIRECTORY_SEPARATOR.FilesHelper::createFolderNameFromString(
+                    str_replace('r_', '', $parentNode->getIdentifier())
+                );
             }
         }
 
         return $subfolder;
     }
+
+    private function preparePaginationSelectors(ParserRequest &$pagination)
+    {
+        $selectors = [
+            'hot' => [
+                'label' => 'Hot',
+                'childrens' => null
+            ],
+            'new' => [
+                'label' => 'New',
+                'childrens' => null
+            ],
+            'random' => [
+                'label' => 'Random',
+                'childrens' => null
+            ],
+            'rising' => [
+                'label' => 'Rising',
+                'childrens' => null
+            ],
+            'top' => [
+                'label' => 'Top',
+                'childrens' => [
+                    'hour' => 'Last hour',
+                    'day' => 'Today',
+                    'week' => 'This week',
+                    'month' => 'This month',
+                    'year' => 'This year',
+                    'all' => 'All Time'
+                ]
+            ]
+        ];
+    }
 }
+

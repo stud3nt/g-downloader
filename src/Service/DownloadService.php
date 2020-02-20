@@ -6,7 +6,7 @@ namespace App\Service;
 use App\Entity\Parser\File;
 use App\Entity\User;
 use App\Enum\FileType;
-use App\Model\Download\ParsedImage;
+use App\Model\Download\DownloadedFile;
 
 class DownloadService
 {
@@ -43,21 +43,18 @@ class DownloadService
             $response = $curlService->executeRequests(); // executing download curls;
 
             foreach ($response as $fileKey => $fileResource) {
-                switch ($filesList[$fileKey]->getType()) {
-                    case FileType::Image:
-                        $result = (new ParsedImage())
-                            ->setResource($fileResource)
-                            ->setFileEntity($filesList[$fileKey])
-                            ->prepareTempFiles()
-                            ->optimize()
-                            ->saveTargetFile()
-                        ;
-                        break;
+                $fileEntity = $filesList[$fileKey];
 
-                    case FileType::Video:
-                        
-                        break;
+                $result = (new DownloadedFile())
+                    ->setResource($fileResource)
+                    ->setFileEntity($fileEntity)
+                    ->prepareTempFiles();
+
+                if ($fileEntity->getType() === FileType::Image) {
+                    $result->optimize();
                 }
+
+                $result->saveTargetFile();
 
                 if ($result) {
                     $downloadedFiles[] = $filesList[$fileKey];

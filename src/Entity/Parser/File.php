@@ -32,6 +32,12 @@ class File extends AbstractEntity
     protected $fileUrl = null;
 
     /**
+     * @ORM\Column(name="description", type="string", length=4096, nullable=true)
+     * @EntityVariable(convertable=true, writable=true, readable=true)
+     */
+    protected $description;
+
+    /**
      * @ORM\Column(name="extension", type="string", length=8, nullable=false)
      * @EntityVariable(convertable=true, writable=true, readable=true)
      */
@@ -428,6 +434,18 @@ class File extends AbstractEntity
     public function setParentNode(?Node $parentNode): self
     {
         $this->parentNode = $parentNode;
+
+        return $this;
+    }
+
+    public function getDescription(): ?string
+    {
+        return $this->description;
+    }
+
+    public function setDescription(?string $description): self
+    {
+        $this->description = $description;
 
         return $this;
     }

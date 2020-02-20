@@ -9,7 +9,10 @@ import * as angularConfig from '../../assets/json/angular-config.json';
 export class ConfigService {
 
 	// base site URL
-	public baseUrl = 'http://test.g-downloader.com';
+	public baseUrl: string = 'http://test.g-downloader.com';
+
+	// websocket URL
+	public websocketUrl: string = 'http://api.g-downloader.com';
 
 	public urls = {
 		base: '',

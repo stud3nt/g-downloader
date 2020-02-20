@@ -1,9 +1,9 @@
 <div class="btn-group" *ngIf="loadMore === false">
-    <button type="button" class="btn btn-default" (click)="selectPage(previousPage)">
+    <button type="button" [className]="buttonClass" (click)="selectPage(previousPage)">
         « PREVIOUS ({{ previousPage }})
     </button>
     <div class="btn-group">
-        <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+        <button type="button" [className]="buttonClass + ' dropdown-toggle'" data-toggle="dropdown" aria-expanded="false">
             {{ currentPage}} <span class="caret"></span>
         </button>
         <ul class="dropdown-menu">
@@ -14,11 +14,25 @@
             </li>
         </ul>
     </div>
-    <button type="button" class="btn btn-default" (click)="selectPage(nextPage)">
+    <button type="button" [className]="buttonClass" (click)="selectPage(nextPage)">
         NEXT ({{ nextPage }}) »
     </button>
 </div>
 
-<button class="btn btn-default" type="button" *ngIf="loadMore === true" (click)="toggleLoadMore()">
-    <i class="fa fa-cloud-download"></i> &nbsp; LOAD MORE
-</button>
+<div class="btn-group" *ngIf="loadMore === true">
+    <button [className]="buttonClass" type="button" (click)="toggleLoadMore(1)">
+        <i class="fa fa-cloud-download"></i> &nbsp; LOAD MORE
+    </button>
+    <div class="btn-group" *ngIf="pagination">
+        <button type="button" [className]="buttonClass + ' dropdown-toggle'" data-toggle="dropdown" aria-expanded="false">
+            LOAD MORE RESULTS <span class="caret"></span>
+        </button>
+        <ul class="dropdown-menu">
+            <li *ngFor="let pck of packages">
+                <a style="cursor:pointer;" (click)="toggleLoadMore(pck.packageId)">
+                    {{ pck.packageSize }} results
+                </a>
+            </li>
+        </ul>
+    </div>
+</div>

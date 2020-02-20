@@ -7,21 +7,35 @@ export class Pagination {
 	}
 
 	// is pagination active
-	active: boolean = false;
+	public active: boolean = false;
 
 	// pagination: current page
-	currentPage: number = 1;
+	public currentPage: number = 1;
 
 	// pagination: current letter
-	currentLetter: string = 'A';
+	public currentLetter: string = 'A';
 
 	// pagination mode (letters, numbers, load_more etc)
-	mode:  string = PaginationMode.Numbers;
+	public mode: string = PaginationMode.Numbers;
+
+	public paginationSelectors: object = {};
 
 	// total pages/max page number
-	totalPages: number = 1;
+	public totalPages: number = 1;
 
 	// page number shifter (if necessary)
-	pageShift: number = 0;
+	public pageShift: number = 0;
+
+	// min package value
+	public minPackage: number = 1;
+
+	// max package value
+	public maxPackage: number = 10;
+
+	// current selected package
+	public currentPackage: number = 1;
+
+	// number of post/images in one package
+	public packageSize: number = 100;
 
 }

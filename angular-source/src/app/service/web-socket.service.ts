@@ -1,6 +1,9 @@
 import { Injectable } from '@angular/core';
 import { webSocket } from "rxjs/webSocket";
 import { HttpHelper } from "../helper/http-helper";
+import { ConfigService } from "./config.service";
+import { RouterService } from "./router.service";
+import { CookieService } from "ngx-cookie-service";
 
 @Injectable({
 	providedIn: 'root'
@@ -8,10 +11,20 @@ import { HttpHelper } from "../helper/http-helper";
 
 export class WebSocketService {
 
+	constructor(
+		private configService: ConfigService,
+		private routerService: RouterService,
+		private cookie: CookieService
+	) {}
+
 	private _websockets = {};
 
 	public connect(connectionName: string = ''): void {
-		this._websockets[connectionName] = webSocket('ws://127.0.0.1:2002');
+		try {
+			this._websockets[connectionName] = webSocket('ws://127.0.0.1:2002');
+		} catch(error) {
+			console.log(error);
+		}
 	}
 
 	public createListener(connectionName: string = '', successFunction: (response) => any, errorFunction: (error) => any, completeFunction: () => any) {
@@ -28,7 +41,11 @@ export class WebSocketService {
 	};
 
 	public isConnected(connectionName: string = ''): boolean {
-		return (typeof this._websockets[connectionName] !== 'undefined');
+		return (
+			typeof this._websockets[connectionName] !== 'undefined'
+				&&
+			!this._websockets[connectionName].closed
+		);
 	}
 
 	public disconnect(connectionName: string = ''): void {
@@ -47,6 +64,18 @@ export class WebSocketService {
 			_token: token,
 			_data: (data ? (HttpHelper.convert(data, HttpHelper.Object)) : null)
 		});
+	}
+
+	/**
+	 * Opens websocket console window;
+	 */
+	public openWebsocketConsole(): void {
+		let console = window.open(
+			this.routerService.generateUrl('app_websocket_server', null, this.configService.websocketUrl),
+			'Websocket status console',
+			'width=300px,height=800px,resizable=yes,toolbar=no,top=30,left=100'
+		);
+		console.blur();
 	}
 
 }

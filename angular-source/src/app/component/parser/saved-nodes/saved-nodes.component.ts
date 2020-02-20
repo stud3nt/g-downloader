@@ -1,4 +1,5 @@
-import { Component, OnInit } from '@angular/core';
+import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
+import {ParserRequest} from "../../../model/parser-request";
 
 @Component({
   selector: 'app-saved-nodes',
@@ -7,15 +8,18 @@ import { Component, OnInit } from '@angular/core';
 })
 export class SavedNodesComponent implements OnInit {
 
+	@Input() parserRequest: ParserRequest = null;
+
+	@Output() onNodeSelect = new EventEmitter<ParserRequest>();
+
 	constructor() { }
 
-	ngOnInit() {
-	}
+	ngOnInit() {}
 
 	/**
 	 * Show/hide modal with saved objects
 	 */
-	public toggleSavedObjectsModal() {
+	public toggleSavedObjectsModal(): void {
 
 	};
 

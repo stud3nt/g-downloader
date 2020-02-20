@@ -80,7 +80,7 @@ class ParserService
         }
     }
 
-    protected function parserFactory(string $parserName, User $user): ?ParserInterface
+    public function parserFactory(string $parserName, User $user): ?ParserInterface
     {
         $parserClass = 'App\\Parser\\'.ucfirst(StringHelper::underscoreToCamelCase($parserName)).'Parser';
         $parserSettings = $this->settingsManager->getParserSettings($parserName);

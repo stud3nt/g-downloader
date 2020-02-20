@@ -32,7 +32,7 @@ class WebsocketServerCommand extends Command
         $server = IoServer::factory(
             new HttpServer(
                 (new WsServer($parserWebsocket))
-            ), 2002, '127.0.0.1'
+            ), 2002
         );
 
         $server->run();

@@ -22,7 +22,8 @@ class RequestListener
         'api_parsers_action',
         'api_parsers_mark_node',
         'api_downloader_process',
-        'api_user_operation_progress'
+        'api_user_operation_progress',
+        'app_websocket_server'
     ];
 
     /**

@@ -113,7 +113,7 @@ class AbstractParser
         $fs = new Filesystem();
 
         $targetDirectory = $this->settings->getCommonSetting('downloadDirectory');
-        $targetDirectory .= $ds.$this->parserName;
+        $targetDirectory .= $ds.preg_replace('/[^a-zA-Z0-9\-\_]/', '_', $this->parserName);
 
         if ($parserDownloadFolder = $this->settings->getParserSetting($this->parserName, 'downloadFolder')) {
             preg_match_all('/\%[a-zA-Z0-9]{1,}\%/', $parserDownloadFolder, $variables);
@@ -145,6 +145,10 @@ class AbstractParser
                 function($resource, $downloadSize, $downloaded, $uploadSize, $uploaded) use ($file) {
                     if ($downloadSize > 0) {
                         $redis = (new RedisFactory())->initializeConnection();
+
+                        if ($redis->exists($file->getRedisDownloadKey()))
+                            $redis->del($file->getRedisDownloadKey());
+
                         $redis->set($file->getRedisDownloadKey(), round(($downloaded / $downloadSize) * 100));
                     }
                 }

@@ -43,7 +43,7 @@ export class DownloadMiniPanelComponent implements OnInit {
 
 	ngOnInit() {
 		this.websocketService.createListener(
-			this._websocketName, ( response: JsonResponse) => {
+			this._websocketName, (response: JsonResponse) => {
 				if (typeof response.data === 'object') {
 					this.downloader = new DownloadStatus(response.data);
 
@@ -95,8 +95,7 @@ export class DownloadMiniPanelComponent implements OnInit {
 		}
 
 		this.downloaderService.startDownloadProcess().subscribe((response: JsonResponse) => {
-
-			if (this._downloaderStatus === DownloaderStatus.Downloading && response.data.filesCount > 0) {
+			if (this._downloaderStatus === DownloaderStatus.Downloading && typeof response.data !== 'undefined' && response.data.filesCount > 0) {
 				this._downloaderStatus = DownloaderStatus.Continuation;
 				this.start();
 			} else {

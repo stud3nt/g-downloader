@@ -114,12 +114,17 @@ class ParsedNode extends AbstractModel
      * @ModelVariable(type="boolean")
      */
     public $finished = false;
-    
+
     /**
      * @var integer
      * @ModelVariable(type="integer")
      */
     public $expirationTime = 0;
+
+    /**
+     * @ModelVariable()
+     */
+    public $lastViewedAt = '';
 
     private $statusesNames = [
         NodeStatus::Queued,
@@ -604,6 +609,41 @@ class ParsedNode extends AbstractModel
     public function setFinished($finished): self
     {
         $this->finished = $finished;
+
+        return $this;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getLastViewedAt()
+    {
+        return $this->lastViewedAt;
+    }
+
+    /**
+     * @param mixed $lastViewedAt
+     * @return $this;
+     * @throws \Exception
+     */
+    public function setLastViewedAt($lastViewedAt): self
+    {
+        if ($lastViewedAt instanceof \DateTime) {
+            $now = new \DateTime('now');
+            $difference = $now->diff($lastViewedAt);
+
+            if ($difference->d < 1) {
+                if ($difference->h < 1) {
+                    $this->lastViewedAt = $difference->i.' minute'.(($difference->i > 1) ? 's' : '');
+                } else {
+                    $this->lastViewedAt = $difference->h.' hour'.(($difference->h > 1) ? 's' : '');
+                }
+            } else {
+                $this->lastViewedAt = $difference->d.' day'.(($difference->d > 1) ? 's' : '');
+            }
+        } else {
+            $this->lastViewedAt = $lastViewedAt;
+        }
 
         return $this;
     }
