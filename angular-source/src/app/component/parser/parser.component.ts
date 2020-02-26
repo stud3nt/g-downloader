@@ -34,7 +34,7 @@ export class ParserComponent implements OnInit {
 	@HostListener('document:keydown', ['$event']) onKeydownHandler(event: KeyboardEvent) {
 		let scrollValue = (document.getElementsByClassName('tile').item(0).clientHeight);
 		scrollValue += scrollValue;
-		scrollValue += 9;
+		scrollValue += 24;
 
 		if (event.code === 'ArrowUp') { // UP
 			event.preventDefault();

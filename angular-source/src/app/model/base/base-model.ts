@@ -23,17 +23,25 @@ export class BaseModel {
 			if (typeof parameterValue === 'object') {
 				if (parameterValue !== null && parameterValue instanceof Array) {
 					properParameterValue = [];
+					let toArrayExists = false;
 
 					for (let paramKey in parameterValue) {
 						let tmpParam = parameterValue[paramKey];
 
-						if (typeof parameterValue[paramKey]['toArray'] === 'function')
+						if (typeof parameterValue[paramKey]['toArray'] === 'function') {
 							properParameterValue[paramKey] = tmpParam.toArray();
-						else
-							properParameterValue[paramKey] = '['+JSON.stringify(tmpParam)+']';
+							toArrayExists = true;
+						} else {
+							properParameterValue[paramKey] = JSON.stringify(tmpParam);
+						}
 					}
+
+					if (toArrayExists === false) // this IS NOT array of objects - just simple array;
+						properParameterValue = JSON.stringify(parameterValue);
 				} else if (parameterValue !== null && typeof parameterValue['toArray'] === 'function') {
-					properParameterValue = JSON.stringify(parameterValue.toArray());
+					properParameterValue = JSON.stringify(
+						parameterValue.toArray()
+					);
 				} else {
 					properParameterValue = JSON.stringify(parameterValue);
 				}
