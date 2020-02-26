@@ -88,7 +88,7 @@ export class FilesListComponent implements OnInit {
 
 		this.modal.open(ModalType.Preview, modalTitle)
 			.showLoader()
-			.setLoaderText('Loading...')
+			.setLoaderText('Loading...');
 
 		this.nodeFileService.toggleFilePreview(file).subscribe((result: ParsedFile) => {
 			if (result.width < 600)

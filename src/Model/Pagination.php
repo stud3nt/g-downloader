@@ -74,10 +74,10 @@ class Pagination extends AbstractModel
     public $packageSize = 100;
 
     /**
-     * @var \stdClass
-     * @ModelVariable(type="stdClass")
+     * @var PaginationSelector[]
+     * @ModelVariable(converter="Model", converterOptions={"class":"App\Model\PaginationSelector"}, type="array")
      */
-    public $additionalSelectors;
+    public $selectors;
 
     public function reset() : Pagination
     {
@@ -136,6 +136,21 @@ class Pagination extends AbstractModel
         $this->mode = PaginationMode::LoadMore;
 
         return $this;
+    }
+
+    public function getActiveSelector(): ?PaginationSelector
+    {
+        if ($this->selectors) {
+            foreach ($this->selectors as $selector) {
+                if ($selector->isActive()) {
+                    return $selector;
+                }
+            }
+
+            return $this->selectors[0];
+        }
+
+        return null;
     }
 
     /**
@@ -348,20 +363,25 @@ class Pagination extends AbstractModel
     }
 
     /**
-     * @return \stdClass
+     * @return PaginationSelector[]
      */
-    public function getAdditionalSelectors(): \stdClass
+    public function getSelectors(): ?array
     {
-        return $this->additionalSelectors;
+        return $this->selectors;
+    }
+
+    public function getSelectorsCount(): int
+    {
+        return count($this->selectors);
     }
 
     /**
-     * @param \stdClass $additionalSelectors
-     * @return $this;
+     * @param PaginationSelector[] $selectors
+     * @return $this
      */
-    public function setAdditionalSelectors(\stdClass $additionalSelectors): self
+    public function setSelectors(array $selectors): self
     {
-        $this->additionalSelectors = $additionalSelectors;
+        $this->selectors = $selectors;
 
         return $this;
     }

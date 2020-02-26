@@ -1,6 +1,7 @@
 import {Component, EventEmitter, Input, Output, OnInit, OnChanges, SimpleChanges} from '@angular/core';
 import { PaginationMode } from "../../../../enum/pagination-mode";
 import { Pagination } from "../../../../model/pagination";
+import {PaginationSelector} from "../../../../model/pagination-selector";
 
 @Component({
 	selector: 'app-paginator',
@@ -24,17 +25,27 @@ export class PaginatorComponent implements OnInit, OnChanges {
 	public previousPage;
 	public nextPage;
 
+	public disabledButtons: any = {};
+
+	public selectors: PaginationSelector[] = [];
+	public selectorChildrens: PaginationSelector[] = [];
+
+	public currentSelector: PaginationSelector = null;
+
 	public buttonClass: string = 'btn btn-default';
 
 	public loadMore = false;
 
 	public alphabet = Array.from(Array(26), (e, i) => String.fromCharCode(i + 97));
 
+	private selectorTimeout = null;
+
 	constructor() { }
 
 	ngOnInit() {
 		this.createPaginationData();
 		this.buttonClasses();
+		this.initializeSelector();
 	}
 
 	/**
@@ -45,7 +56,13 @@ export class PaginatorComponent implements OnInit, OnChanges {
 	ngOnChanges(changes: SimpleChanges): void {
 		if (typeof changes.pagination !== undefined && changes.pagination.previousValue !== changes.pagination.currentValue) {
 			this.createPaginationData();
+			this.initializeSelector();
 		}
+	}
+
+	public initializeSelector(): void {
+		this.currentSelector = (this.pagination.getActiveSelector());
+		this.selectorChildrens = this.currentSelector.childrens;
 	}
 
 	/**
@@ -68,15 +85,62 @@ export class PaginatorComponent implements OnInit, OnChanges {
 		this.createPaginationData();
 	}
 
-	public toggleLoadMore(currentPackage: number = 1) {
+	/**
+	 * @param selector
+	 * @param children
+	 */
+	public setPaginationSelector(selector: PaginationSelector, children: PaginationSelector = null): void {
+		clearTimeout(this.selectorTimeout);
+
+		this.selectorChildrens = [];
+		this.currentSelector = selector;
+		this.disabledButtons.loadMore = true;
+
+		for (let selectorKey in this.pagination.selectors) {
+			let checkedSelector = this.pagination.selectors[selectorKey];
+
+			if (checkedSelector === selector) {
+				this.pagination.selectors[selectorKey].isActive = true;
+
+				if (checkedSelector.childrens) {
+					this.selectorChildrens = checkedSelector.childrens;
+
+					for (let childKey in selector.childrens) {
+						let checkedChildren = selector.childrens[childKey];
+
+						this.pagination.selectors[selectorKey].childrens[childKey].isActive = ( // selected children (or first in row);
+							(children && children === checkedChildren) || (!children && parseInt(childKey) === 0)
+						);
+					}
+				}
+			} else {
+				this.pagination.selectors[selectorKey].isActive = false;
+				this.pagination.selectors[selectorKey].deactivateChildrens();
+			}
+		}
+
+		this.pagination.reset = true;
+
+		this.selectorTimeout = setTimeout(() => {
+			this.onPaginate.next(this.pagination);
+			this.disabledButtons.loadMore = false;
+		}, (children !== null) ? 100 : 5000);
+	};
+
+	public toggleLoadMore(currentPackage: number = 1): void {
 		this.pagination.mode = PaginationMode.LoadMore;
 		this.pagination.currentPackage = currentPackage;
 		this.onPaginate.next(this.pagination);
 	}
 
-	protected resetPagination() {
+	protected resetPagination(): void {
 		this.pages = [];
 		this.packages = [];
+
+		this.currentSelector = null;
+
+		this.selectors = [];
+		this.selectorChildrens = [];
 
 		this.currentPage = null;
 		this.firstPage = null;
@@ -86,6 +150,11 @@ export class PaginatorComponent implements OnInit, OnChanges {
 		this.nextPage = null;
 
 		this.loadMore = false;
+
+		this.disabledButtons.loadMore = false;
+		this.disabledButtons.previous = false;
+		this.disabledButtons.selectPage = false;
+		this.disabledButtons.next = false;
 	}
 
 	protected buttonClasses(): void {

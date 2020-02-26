@@ -72,7 +72,7 @@ export class ParsedFile extends BaseModel {
 	 * @param addedStatus
 	 */
 	public addStatus(addedStatus: string): ParsedFile {
-		if (!this.hasStatus(addedStatus)) {
+		if (addedStatus.length > 0 && !this.hasStatus(addedStatus)) {
 			this._statuses.push(addedStatus);
 		}
 

@@ -5,6 +5,7 @@ namespace App\Parser\Base;
 use App\Converter\ModelConverter;
 use App\Entity\Parser\File;
 use App\Entity\User;
+use App\Enum\FileType;
 use App\Enum\PaginationMode;
 use App\Factory\RedisFactory;
 use App\Model\ParserRequest;
@@ -114,6 +115,7 @@ class AbstractParser
 
         $targetDirectory = $this->settings->getCommonSetting('downloadDirectory');
         $targetDirectory .= $ds.preg_replace('/[^a-zA-Z0-9\-\_]/', '_', $this->parserName);
+        $targetDirectory .= $ds.(($file->getType() === FileType::Video) ? 'movies' : '');
 
         if ($parserDownloadFolder = $this->settings->getParserSetting($this->parserName, 'downloadFolder')) {
             preg_match_all('/\%[a-zA-Z0-9]{1,}\%/', $parserDownloadFolder, $variables);

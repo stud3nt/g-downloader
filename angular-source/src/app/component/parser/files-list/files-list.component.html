@@ -1,4 +1,4 @@
-<div *ngIf="parserRequest.files.length > 0">
+<div *ngIf="parserRequest.files !== null && parserRequest.files.length > 0">
     <div class="grid-container grid-200">
         <article id="{{ file.identifier }}" [ngClass]="determineFileClass(file)" *ngFor="let file of parserRequest.files" (click)="toggleFileQueue(file)">
             <div class="tile-header-image">
@@ -8,17 +8,6 @@
                 <div class="tile-header-icon bg-success" *ngIf="file.type === FileType.Image">
                     <i class="fa fa-image"></i>
                 </div>
-                <!--
-                <div class="tile-header-icon bg-info" *ngIf="file.hasStatus(FileStatus.Queued)">
-                    <i class="fa fa-database"></i>
-                </div>
-                <div class="tile-header-icon bg-info" *ngIf="file.hasStatus(FileStatus.Downloading)">
-                    <i class="fa fa-cloud-download"></i>
-                </div>
-                <div class="tile-header-icon bg-primary" *ngIf="file.hasStatus(FileStatus.Downloaded)">
-                    <i class="fa fa-save"></i>
-                </div>
-                -->
                 <div class="tile-header-icon bg-default" *ngIf="file.hasStatus(FileStatus.Waiting)">
                     <i class="fa fa-spinner fa-spin fa-fw"></i>
                 </div>

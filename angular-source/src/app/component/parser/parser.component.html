@@ -74,10 +74,6 @@
                 <app-nodes-list [parserRequest]="parserRequest"></app-nodes-list>
                 <app-files-list [parserRequest]="parserRequest"></app-files-list>
             </div>
-
-            <div class="box-footer clearfix" *ngIf="parserRequest.pagination.active">
-                <app-paginator class="pull-right" (onPaginate)="changeNodePage($event)" [pagination]="parserRequest.pagination"></app-paginator>
-            </div>
         </div>
     </div>
 </div>

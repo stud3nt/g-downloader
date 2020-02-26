@@ -1,9 +1,9 @@
 <div class="btn-group" *ngIf="loadMore === false">
-    <button type="button" [className]="buttonClass" (click)="selectPage(previousPage)">
+    <button type="button" [className]="buttonClass" (click)="selectPage(previousPage)" [disabled]="disabledButtons.previous">
         « PREVIOUS ({{ previousPage }})
     </button>
     <div class="btn-group">
-        <button type="button" [className]="buttonClass + ' dropdown-toggle'" data-toggle="dropdown" aria-expanded="false">
+        <button type="button" [className]="buttonClass + ' dropdown-toggle'" data-toggle="dropdown" aria-expanded="false" [disabled]="disabledButtons.selectPage">
             {{ currentPage}} <span class="caret"></span>
         </button>
         <ul class="dropdown-menu">
@@ -14,17 +14,40 @@
             </li>
         </ul>
     </div>
-    <button type="button" [className]="buttonClass" (click)="selectPage(nextPage)">
+    <button type="button" [className]="buttonClass" (click)="selectPage(nextPage)" [disabled]="disabledButtons.next">
         NEXT ({{ nextPage }}) »
     </button>
 </div>
 
+<div class="btn-group" *ngIf="pagination.selectors">
+    <div class="input-group-btn">
+        <button type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+            {{ currentSelector ? currentSelector.label : '' }} &nbsp; &nbsp; <span class="fa fa-caret-down"></span>
+        </button>
+        <ul class="dropdown-menu">
+            <li *ngFor="let selector of pagination.selectors">
+                <a style="cursor:pointer;" [innerHTML]="selector.label" (click)="setPaginationSelector(selector)"></a>
+            </li>
+        </ul>
+    </div>
+    <div class="input-group-btn" *ngIf="currentSelector && selectorChildrens.length > 0">
+        <button type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+             {{ currentSelector ? (currentSelector.getSelectedChildren()).label : '' }}  &nbsp; &nbsp; <span class="fa fa-caret-down"></span>
+        </button>
+        <ul class="dropdown-menu">
+            <li *ngFor="let child of selectorChildrens">
+                <a style="cursor:pointer;" [innerHTML]="child.label" (click)="setPaginationSelector(currentSelector, child)"></a>
+            </li>
+        </ul>
+    </div>
+</div>
+
 <div class="btn-group" *ngIf="loadMore === true">
-    <button [className]="buttonClass" type="button" (click)="toggleLoadMore(1)">
+    <button [className]="buttonClass" type="button" (click)="toggleLoadMore(1)" [disabled]="disabledButtons.loadMore">
         <i class="fa fa-cloud-download"></i> &nbsp; LOAD MORE
     </button>
     <div class="btn-group" *ngIf="pagination">
-        <button type="button" [className]="buttonClass + ' dropdown-toggle'" data-toggle="dropdown" aria-expanded="false">
+        <button type="button" [className]="buttonClass + ' dropdown-toggle'" data-toggle="dropdown" aria-expanded="false" [disabled]="disabledButtons.loadMore">
             LOAD MORE RESULTS <span class="caret"></span>
         </button>
         <ul class="dropdown-menu">

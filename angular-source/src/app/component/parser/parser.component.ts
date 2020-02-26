@@ -139,6 +139,7 @@ export class ParserComponent implements OnInit {
 	 */
 	public reopenCurrentNode(reloadCache: boolean = false): void {
 		this.parserRequest.clearParsedData();
+		this.parserRequest.clearTokens();
 		this.parserRequest.ignoreCache = reloadCache;
 		this.sendParserRequest(() => {
 			window.scrollTo(0, 0);
@@ -197,6 +198,12 @@ export class ParserComponent implements OnInit {
 		this._filesTemp = (pagination.mode === PaginationMode.LoadMore) // new files will be added to current;
 			? this.parserRequest.files
 			: null;
+
+		if (pagination.reset) {
+			this._filesTemp = null;
+			this.parserRequest.clearTokens();
+			pagination.reset = false;
+		}
 
 		this.parserRequestAction = false;
 		this.parserRequest.pagination = pagination;
@@ -269,6 +276,7 @@ export class ParserComponent implements OnInit {
 					successFunction();
 			}
 		}, (error) => {
+			console.log(error);
 			this.pageLoaderDataService.hide();
 			this.parserRequestAction = false;
 
@@ -325,7 +333,7 @@ export class ParserComponent implements OnInit {
 							setTimeout(() => this.sendWebsocketRequest(), 400);
 					},
 					(error) => {
-						this.toastrService.addError('PARSER ERROR', error.message);
+						this.toastrService.addError('WEBSOCKET ERROR', error.message);
 						console.log(error);
 					},
 					() => {

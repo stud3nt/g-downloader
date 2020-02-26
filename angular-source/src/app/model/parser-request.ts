@@ -16,6 +16,7 @@ export class ParserRequest extends BaseModel {
 		this._parsedNodes = [];
 
 		this.status = new Status();
+		this.pagination = new Pagination(((obj && typeof obj.pagination !== 'undefined') ? obj.pagination : null));
 
 		if (obj) {
 			if (obj.currentNode)
@@ -28,9 +29,6 @@ export class ParserRequest extends BaseModel {
 			if (obj.parsedNodes)
 				for (let parsedNode of obj.parsedNodes)
 					this._parsedNodes.push(new ParserNode(parsedNode));
-
-			if (obj.pagination)
-				Object.assign(this._pagination, obj.pagination);
 
 			if (obj.status)
 				Object.assign(this.status, obj.status);
@@ -49,7 +47,7 @@ export class ParserRequest extends BaseModel {
 	// breadcrumbs - object with nodes
 	private _breadcrumbNodes: ParserNode[] = [];
 
-	private _pagination: Pagination = new Pagination();
+	private _pagination: Pagination = new Pagination(null);
 
 	private _tokens = {
 		before: <string> null,
@@ -81,17 +79,18 @@ export class ParserRequest extends BaseModel {
 		this._parsedNodes = [];
 	}
 
-	public resetNodes() {
+	public resetNodes(): ParserRequest {
 		this._parsedNodes = [];
 		this._currentNode = null;
 
 		return this;
 	}
 
-	public resetPagination() {
+	public resetPagination(): ParserRequest {
 		this._pagination = new Pagination();
 		return this;
 	}
+
 	public resetSorting() {
 		this._sorting = {
 			submit: null,
@@ -99,6 +98,13 @@ export class ParserRequest extends BaseModel {
 		};
 
 		return this;
+	}
+
+	public clearTokens(): void {
+		this.tokens = {
+			before: null,
+			after: null
+		};
 	}
 
 	public isRequestDuplicated(): boolean {

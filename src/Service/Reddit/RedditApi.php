@@ -58,14 +58,29 @@ class RedditApi
      */
     public function getSubreddit(ParserRequest $parserRequest)
     {
+        $pagination = $parserRequest->getPagination();
+
+        if ($activeSelector = $pagination->getActiveSelector()) {
+            $selector = $activeSelector->getValue();
+            $activeChildren = $activeSelector->getActiveChildren();
+
+            if ($activeChildren)
+                $selectorChildren = $activeChildren->getValue();
+            else
+                $selectorChildren = 'all';
+        } else {
+            $selector = 'hot';
+            $selectorChildren = 'all';
+        }
+
         $callOptions = array(
             'after' => $parserRequest->tokens->after,
             'before' => null,
             'count' => 100,
-            //'limit' => 100,
             'preview' => true,
             'thumbnail' => true,
-            'show' => 'all',
+            'show' => $selectorChildren,
+            't' => $selectorChildren,
             'rtj' => 'only',
             'redditWebClient' => 'web2x',
             'app' => 'web2x-client-production',
@@ -78,7 +93,7 @@ class RedditApi
             'thumbnail_width' => 200
         );
 
-        return $this->apiCall('/'.$parserRequest->currentNode->url."/hot", "GET", $callOptions);
+        return $this->apiCall('/'.$parserRequest->currentNode->url."/".$selector, "GET", $callOptions);
     }
 
     /**

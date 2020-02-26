@@ -20,6 +20,8 @@ class WebsocketController extends Controller
         $application = new Application($kernel);
         $application->setAutoExit(false);
 
+        echo $this->renderView('websocket/panel_top.html.twig');
+
         $input = new ArrayInput([
             'command' => 'app:websocket:server'
         ]);
@@ -29,8 +31,8 @@ class WebsocketController extends Controller
 
         $content = $output->fetch();
 
-        return $this->render('websocket/panel.html.twig', [
-            'content' => $content
-        ]);
+        echo $content;
+
+        return $this->render('websocket/panel_bottom.html.twig');
     }
 }

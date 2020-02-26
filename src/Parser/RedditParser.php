@@ -9,6 +9,7 @@ use App\Enum\NodeLevel;
 use App\Enum\ParserType;
 use App\Factory\RedisFactory;
 use App\Model\Pagination;
+use App\Model\PaginationSelector;
 use App\Model\ParsedFile;
 use App\Model\ParsedNode;
 use App\Model\ParserRequest;
@@ -28,6 +29,55 @@ class RedditParser extends AbstractParser implements ParserInterface
 
     /** @var RedditApi */
     protected $redditApi;
+
+    /** @var array */
+    private $selectorsData = [
+        'hot' => [
+            'label' => 'Hot',
+            'childrens' => null
+        ],
+        'new' => [
+            'label' => 'New',
+            'childrens' => null
+        ],
+        'random' => [
+            'label' => 'Random',
+            'childrens' => null
+        ],
+        'rising' => [
+            'label' => 'Rising',
+            'childrens' => null
+        ],
+        'top' => [
+            'label' => 'Top',
+            'childrens' => [
+                'hour' => [
+                    'label' => 'Last hour',
+                    'childrens' => null
+                ],
+                'day' => [
+                    'label' => 'Today',
+                    'childrens' => null
+                ],
+                'week' => [
+                    'label' => 'This week',
+                    'childrens' => null
+                ],
+                'month' => [
+                    'label' => 'This month',
+                    'childrens' => null
+                ],
+                'year' => [
+                    'label' => 'This year',
+                    'childrens' => null
+                ],
+                'all' => [
+                    'label' => 'All Time',
+                    'childrens' => null
+                ]
+            ]
+        ]
+    ];
 
     /**
      * RedditParser constructor.
@@ -324,37 +374,50 @@ class RedditParser extends AbstractParser implements ParserInterface
         return $subfolder;
     }
 
-    private function preparePaginationSelectors(ParserRequest &$pagination)
+    private function preparePaginationSelectors(ParserRequest &$parserRequest)
     {
-        $selectors = [
-            'hot' => [
-                'label' => 'Hot',
-                'childrens' => null
-            ],
-            'new' => [
-                'label' => 'New',
-                'childrens' => null
-            ],
-            'random' => [
-                'label' => 'Random',
-                'childrens' => null
-            ],
-            'rising' => [
-                'label' => 'Rising',
-                'childrens' => null
-            ],
-            'top' => [
-                'label' => 'Top',
-                'childrens' => [
-                    'hour' => 'Last hour',
-                    'day' => 'Today',
-                    'week' => 'This week',
-                    'month' => 'This month',
-                    'year' => 'This year',
-                    'all' => 'All Time'
-                ]
-            ]
-        ];
+        $pagination = $parserRequest->getPagination();
+
+        if (!$pagination->getSelectors() || $pagination->getSelectorsCount() === 0) {
+            $parserRequest->setPagination(
+                $pagination->setSelectors(
+                    $this->createPaginationSelectors($this->selectorsData)
+                )
+            );
+        }
+
+        return $parserRequest;
+    }
+
+    private function createPaginationSelectors(array $selectorsData = []): array
+    {
+        $selectors = [];
+        $counter = 0;
+
+        foreach ($selectorsData as $selectorSymbol => $selectorData) {
+            $paginationSelector = new PaginationSelector();
+            $paginationSelector->setValue($selectorSymbol);
+            $paginationSelector->setLabel($selectorData['label'] ?? null);
+
+            if ($counter === 0)
+                $paginationSelector->setIsActive(true);
+
+            if (array_key_exists('childrens', $selectorData) && $selectorData['childrens']) {
+                $childrens = $this->createPaginationSelectors($selectorData['childrens']);
+
+                if ($counter === 0) {
+                    $firstKey = key($childrens);
+                    $childrens[$firstKey]->setIsActive(true);
+                }
+
+                $paginationSelector->setChildrens($childrens);
+            }
+
+            $selectors[] = $paginationSelector;
+            $counter++;
+        }
+
+        return $selectors;
     }
 }
 

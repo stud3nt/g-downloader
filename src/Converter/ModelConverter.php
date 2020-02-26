@@ -125,9 +125,8 @@ class ModelConverter
             foreach ($convertVariables as $variableName => $variableConfig) {
                 $value = $this->getModelVariableValue($variableName, $variableConfig);
 
-                if ($value instanceof \stdClass) { // TO_THINK_ABOUT: deep custom values converting???
+                if ($value instanceof \stdClass) // TO_THINK_ABOUT: deep custom values converting???
                     $value = json_decode(json_encode($value), true);
-                }
 
                 $variablesArray[$variableName] = $value;
             }
@@ -155,9 +154,8 @@ class ModelConverter
                     ModelVariable::class
                 );
 
-                if (is_object($variableAnnotations)) {
+                if (is_object($variableAnnotations))
                     $convertVariablesArray[$variableName] = json_decode(json_encode($variableAnnotations));
-                }
             }
         }
 
@@ -182,9 +180,8 @@ class ModelConverter
             if ($variableConfig->type === 'array') {
                 $arrayValue = [];
 
-                foreach ($value as $row) {
+                foreach ($value as $row)
                     $arrayValue[] = $variableConverter->convert($row);
-                }
 
                 $value = $arrayValue;
             } else {
@@ -209,19 +206,22 @@ class ModelConverter
             $variableConverterClass = 'App\\Converter\\'.$variableConfig->converter.'Converter';
             $variableConverter = new $variableConverterClass($variableConfig->converterOptions);
 
-            if (!is_array($value)) {
-                $value = json_decode($value, true);
-            }
+            if (!is_array($value))
+                if (StringHelper::isJson($value))
+                    $value = json_decode($value, true);
+                else
+                    $value = json_decode(json_encode($value), true);
 
             if ($variableConfig->type === 'array') {
                 $setArrayValues = [];
 
-                foreach ($value as $valueRow) {
-                    $object = new $variableConfig->converterOptions->class();
-                    $setArrayValues[] = ($valueRow instanceof $variableConfig->converterOptions->class)
-                        ? $valueRow
-                        : $variableConverter->setData($valueRow, $object, $skipEmptyFields);
-                }
+                if ($value)
+                    foreach ($value as $valueRow) {
+                        $object = new $variableConfig->converterOptions->class();
+                        $setArrayValues[] = ($valueRow instanceof $variableConfig->converterOptions->class)
+                            ? $valueRow
+                            : $variableConverter->setData($valueRow, $object, $skipEmptyFields);
+                    }
 
                 $value = $setArrayValues;
             } else {

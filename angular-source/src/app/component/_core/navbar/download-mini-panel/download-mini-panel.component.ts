@@ -95,7 +95,7 @@ export class DownloadMiniPanelComponent implements OnInit {
 		}
 
 		this.downloaderService.startDownloadProcess().subscribe((response: JsonResponse) => {
-			if (this._downloaderStatus === DownloaderStatus.Downloading && typeof response.data !== 'undefined' && response.data.filesCount > 0) {
+			if (this._downloaderStatus === DownloaderStatus.Downloading && response.data !== null && response.data.filesCount > 0) {
 				this._downloaderStatus = DownloaderStatus.Continuation;
 				this.start();
 			} else {

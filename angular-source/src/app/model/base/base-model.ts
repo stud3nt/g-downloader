@@ -21,7 +21,18 @@ export class BaseModel {
 				continue;
 
 			if (typeof parameterValue === 'object') {
-				if (parameterValue !== null && typeof parameterValue['toArray'] === 'function') {
+				if (parameterValue !== null && parameterValue instanceof Array) {
+					properParameterValue = [];
+
+					for (let paramKey in parameterValue) {
+						let tmpParam = parameterValue[paramKey];
+
+						if (typeof parameterValue[paramKey]['toArray'] === 'function')
+							properParameterValue[paramKey] = tmpParam.toArray();
+						else
+							properParameterValue[paramKey] = '['+JSON.stringify(tmpParam)+']';
+					}
+				} else if (parameterValue !== null && typeof parameterValue['toArray'] === 'function') {
 					properParameterValue = JSON.stringify(parameterValue.toArray());
 				} else {
 					properParameterValue = JSON.stringify(parameterValue);
@@ -35,5 +46,4 @@ export class BaseModel {
 
 		return array;
 	}
-
 }
