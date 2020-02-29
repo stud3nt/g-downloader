@@ -63,7 +63,7 @@ class Pagination extends AbstractModel
 
     /**
      * @var integer
-     * @ModelVariable()
+     * @ModelVariable(type="integer")
      */
     public $currentPackage = 1;
 

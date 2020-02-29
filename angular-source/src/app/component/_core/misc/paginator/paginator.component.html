@@ -48,7 +48,7 @@
     </button>
     <div class="btn-group" *ngIf="pagination">
         <button type="button" [className]="buttonClass + ' dropdown-toggle'" data-toggle="dropdown" aria-expanded="false" [disabled]="disabledButtons.loadMore">
-            LOAD MORE RESULTS <span class="caret"></span>
+            {{ pagination.packageSize }} <span class="caret"></span>
         </button>
         <ul class="dropdown-menu">
             <li *ngFor="let pck of packages">

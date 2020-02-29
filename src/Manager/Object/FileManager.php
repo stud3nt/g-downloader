@@ -17,7 +17,6 @@ use App\Model\ParsedFile;
 use App\Model\ParserRequest;
 use App\Model\Status;
 use App\Repository\FileRepository;
-use App\Service\FileCache;
 use App\Utils\FilesHelper;
 use Doctrine\ORM\AbstractQuery;
 use Doctrine\ORM\NonUniqueResultException;

@@ -96,7 +96,7 @@ class DownloadedFile extends AbstractModel
             case ParserType::Boards4chan:
             case ParserType::Reddit:
             case ParserType::Imagefap:
-                $this->changeImageDimensions(2140, 1400);
+                $this->changeImageDimensions(2000, 1600);
                 break;
         }
 

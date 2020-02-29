@@ -115,7 +115,7 @@ class AbstractParser
 
         $targetDirectory = $this->settings->getCommonSetting('downloadDirectory');
         $targetDirectory .= $ds.preg_replace('/[^a-zA-Z0-9\-\_]/', '_', $this->parserName);
-        $targetDirectory .= $ds.(($file->getType() === FileType::Video) ? 'movies' : '');
+        $targetDirectory .= (($file->getType() === FileType::Video) ? '_webms' : '');
 
         if ($parserDownloadFolder = $this->settings->getParserSetting($this->parserName, 'downloadFolder')) {
             preg_match_all('/\%[a-zA-Z0-9]{1,}\%/', $parserDownloadFolder, $variables);
@@ -138,20 +138,23 @@ class AbstractParser
             $fs->mkdir($targetDirectory, 0777);
         }
 
-        $file->setTargetFilePath($targetDirectory.$ds.$file->getName().'.jpg');
+        $redis = (new RedisFactory())->initializeConnection();
+
+        if ($file->getType() === FileType::Video)
+            $targetFilePath = $targetDirectory.$ds.$file->getName().'.'.$file->getExtension();
+        else
+            $targetFilePath = $targetDirectory.$ds.$file->getName().'.jpg';
+
+        $file->setTargetFilePath($targetFilePath);
         $file->setTempFilePath($this->previewTempDir.$file->getName().'.'.$file->getExtension());
         $file->setCurlRequest(
             $curlService->prepareCurlRequest(
                 $file->getFileUrl() ?? $file->getUrl(),
                 null,
-                function($resource, $downloadSize, $downloaded, $uploadSize, $uploaded) use ($file) {
+                function($resource, $downloadSize, $downloaded, $uploadSize, $uploaded) use ($file, $redis) {
                     if ($downloadSize > 0) {
-                        $redis = (new RedisFactory())->initializeConnection();
-
-                        if ($redis->exists($file->getRedisDownloadKey()))
-                            $redis->del($file->getRedisDownloadKey());
-
                         $redis->set($file->getRedisDownloadKey(), round(($downloaded / $downloadSize) * 100));
+                        $redis->expire($file->getRedisDownloadKey(), 20);
                     }
                 }
             )

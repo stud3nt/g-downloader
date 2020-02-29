@@ -16,6 +16,7 @@ use App\Model\ParserRequest;
 use App\Model\SettingsModel;
 use App\Parser\Base\AbstractParser;
 use App\Parser\Base\ParserInterface;
+use App\Parser\FileService\GfycatParser;
 use App\Service\Reddit\RedditApi;
 use App\Traits\CurrentUrlTrait;
 use App\Utils\FilesHelper;
@@ -280,11 +281,29 @@ class RedditParser extends AbstractParser implements ParserInterface
         return $parserRequest;
     }
 
+    /**
+     * @param ParsedFile $parsedFile
+     * @return ParsedFile
+     * @throws \PHPHtmlParser\Exceptions\ChildNotFoundException
+     * @throws \PHPHtmlParser\Exceptions\CircularException
+     * @throws \PHPHtmlParser\Exceptions\CurlException
+     * @throws \PHPHtmlParser\Exceptions\NotLoadedException
+     * @throws \PHPHtmlParser\Exceptions\StrictException
+     */
     public function getFileData(ParsedFile &$parsedFile) : ParsedFile
     {
-        $fileHeader = $this->getFileHeadersData(
-            $parsedFile->getUrl()
-        );
+        if ($parsedFile->getType() === FileType::Video) {
+            if (GfycatParser::isGfycat($parsedFile))
+                GfycatParser::completeFileData($parsedFile);
+
+            $fileHeader = $this->getFileHeadersData(
+                $parsedFile->getFileUrl()
+            );
+        } else {
+            $fileHeader = $this->getFileHeadersData(
+                $parsedFile->getUrl()
+            );
+        }
 
         $parsedFile->setSize($fileHeader['size']);
         $parsedFile->setMimeType($fileHeader['mimeType']);
@@ -305,28 +324,8 @@ class RedditParser extends AbstractParser implements ParserInterface
     {
         $this->clearCache();
 
-        // gfycat -> extract file url from page
-        if (parse_url($parsedFile->getUrl())['host'] === 'gfycat.com') {
-            $dom = $this->loadDomFromUrl($parsedFile->getUrl());
-            $videos = $dom->getElementsByTag('video');
-
-            /** @var HtmlNode $video */
-            /** @var HtmlNode $source */
-            foreach ($videos as $video) {
-                if ($video->getAttribute('class') === 'video media') {
-                    $sources = $video->find('source');
-
-                    foreach ($sources as $source) {
-                        $src = $source->getAttribute('src');
-
-                        if (strpos($src, 'giant.gfycat.com') && strpos($src, '.mp4')) {
-                            $parsedFile->setFileUrl($src);
-                            break;
-                        }
-                    }
-                }
-            }
-        }
+        if (GfycatParser::isGfycat($parsedFile))
+            GfycatParser::completeFileData($parsedFile);
 
         $previewFilePath = $this->previewTempDir.$parsedFile->getFullFilename();
         $previewWebPath = $this->previewTempFolder.$parsedFile->getFullFilename();

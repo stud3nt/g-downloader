@@ -13,10 +13,14 @@
                 <button type="button" class="btn btn-default" (click)="toggleSettingsModal()" title="SETTINGS">
                     <i class="fa fa-cogs"></i>
                 </button>
-
                 <button type="button" class="btn btn-default">
                     <i class="fa fa-building-o"></i>
                 </button>
+            </span>
+
+            <input [value]="parserRequest.currentNode ? parserRequest.currentNode.url : ''" type="text" class="form-control">
+
+            <div class="input-group-btn">
                 <button type="button" [disabled]="parserRequest.currentNode.identifier === null" (click)="markCurrentNode(NodeStatus.Queued)" [ngClass]="getCurrentNodeButtonClass(NodeStatus.Queued)">
                     <span *ngIf="parserRequest.currentNode.hasStatus(NodeStatus.Queued)">
                         <i class="fa fa-remove" ></i>
@@ -55,8 +59,7 @@
                 <a type="button" *ngIf="nextNodeUrl" class="btn btn-default" [href]="nextNodeUrl">
                     <i class="fa fa-long-arrow-right"></i>
                 </a>
-            </span>
-            <input [value]="parserRequest.currentNode ? parserRequest.currentNode.url : ''" type="text" class="form-control">
+            </div>
         </div>
 
         <div class="input-group input-group-sm" *ngIf="parserRequest.pagination.active">

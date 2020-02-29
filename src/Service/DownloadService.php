@@ -50,15 +50,13 @@ class DownloadService
                     ->setFileEntity($fileEntity)
                     ->prepareTempFiles();
 
-                if ($fileEntity->getType() === FileType::Image) {
+                if ($fileEntity->getType() === FileType::Image)
                     $result->optimize();
-                }
 
                 $result->saveTargetFile();
 
-                if ($result) {
+                if ($result)
                     $downloadedFiles[] = $filesList[$fileKey];
-                }
             }
         }
 

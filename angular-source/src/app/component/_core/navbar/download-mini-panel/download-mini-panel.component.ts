@@ -109,10 +109,10 @@ export class DownloadMiniPanelComponent implements OnInit {
 	 */
 	public stop(): void {
 		this._downloaderStatus = DownloaderStatus.Breaking;
-		this.dropdownFilesQueue = [];
 		this.downloaderService.stopDownloadProcess().subscribe((response) => {
 			this._websocketDelay = 1500;
 			this._downloaderStatus = DownloaderStatus.Idle;
+			this.dropdownFilesQueue = [];
 		});
 	}
 

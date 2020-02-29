@@ -29,13 +29,7 @@ class FileController extends Controller
      * @throws \Exception
      * @throws \ReflectionException
      */
-    public function toggleFileQueue(
-        Request $request,
-        ParserService $parserService,
-        NodeManager $nodeManager,
-        DownloadManager $downloadManager,
-        FileManager $fileManager
-    ) : JsonResponse
+    public function toggleFileQueue(Request $request, ParserService $parserService, NodeManager $nodeManager, DownloadManager $downloadManager, FileManager $fileManager): JsonResponse
     {
         $parsedFile = (new ParsedFileFactory())->buildFromRequestData(
             $request->request->all()

@@ -92,6 +92,7 @@ export class PaginatorComponent implements OnInit, OnChanges {
 	public setPaginationSelector(selector: PaginationSelector, children: PaginationSelector = null): void {
 		clearTimeout(this.selectorTimeout);
 
+		this.createPaginationData();
 		this.selectorChildrens = [];
 		this.currentSelector = selector;
 		this.disabledButtons.loadMore = true;
@@ -124,12 +125,12 @@ export class PaginatorComponent implements OnInit, OnChanges {
 		this.selectorTimeout = setTimeout(() => {
 			this.onPaginate.next(this.pagination);
 			this.disabledButtons.loadMore = false;
-		}, (children !== null) ? 100 : 5000);
+		}, (selector.childrens.length === 0 || children) ? 100 : 50000);
 	};
 
-	public toggleLoadMore(currentPackage: number = 1): void {
+	public toggleLoadMore(pck = null): void {
 		this.pagination.mode = PaginationMode.LoadMore;
-		this.pagination.currentPackage = currentPackage;
+		this.pagination.currentPackage = pck.packageId;
 		this.onPaginate.next(this.pagination);
 	}
 
@@ -177,10 +178,12 @@ export class PaginatorComponent implements OnInit, OnChanges {
 
 		if (this.pagination.packageSize > 0) {
 			for (let packageId = this.pagination.minPackage; packageId <= this.pagination.maxPackage; packageId++) {
-				this.packages.push({
-					packageId: packageId,
-					packageSize: (packageId * this.pagination.packageSize) + ' results'
-				});
+				let pck: any = {};
+
+				pck.packageId = packageId;
+				pck.packageSize = (packageId * this.pagination.packageSize);
+
+				this.packages.push(pck);
 			}
 		}
 
@@ -195,9 +198,8 @@ export class PaginatorComponent implements OnInit, OnChanges {
 				break;
 
 			case PaginationMode.Numbers:
-				for (let x = 1; x <= this.pagination.totalPages; x++) {
+				for (let x = 1; x <= this.pagination.totalPages; x++)
 					this.pages.push(x);
-				}
 
 				this.currentPage = this.pagination.currentPage;
 				break;
@@ -224,9 +226,8 @@ export class PaginatorComponent implements OnInit, OnChanges {
 			previousPageIndex = page;
 		}
 
-		if (this.nextPage === null) {
+		if (this.nextPage === null)
 			this.nextPage = (this.pagination.mode === PaginationMode.Letters) ? '0' : this.pagination.totalPages;
-		}
 	}
 
 }
