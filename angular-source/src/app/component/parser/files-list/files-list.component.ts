@@ -1,6 +1,5 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { ParserRequest } from "../../../model/parser-request";
-import { NodeStatus } from "../../../enum/node-status";
 import { ParsedFile } from "../../../model/parsed-file";
 import { NodeFileService } from "../../../service/node-file.service";
 import { FileStatus } from "../../../enum/file-status";
@@ -24,8 +23,6 @@ export class FilesListComponent implements OnInit {
 
 	@Input() parserRequest: ParserRequest;
 
-	public objectStatus = NodeStatus;
-
 	public FileStatus = FileStatus;
 	public FileType = FileType;
 
@@ -40,7 +37,7 @@ export class FilesListComponent implements OnInit {
 		protected auth: AuthService,
 		protected webSocketService: WebSocketService,
 		protected modal: ModalDataService
-	) { }
+	) {}
 
 	ngOnInit() {}
 

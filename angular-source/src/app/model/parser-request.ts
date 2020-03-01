@@ -74,6 +74,36 @@ export class ParserRequest extends BaseModel {
 	public onError: (error) => any = null;
 	public onComplete: () => any = null;
 
+	public clearFilesDuplicates(): void {
+		if (this._files.length < 1)
+			return;
+
+		let filesDataArray = [];
+
+		for (let file of this._files) {
+			if (typeof filesDataArray[file.identifier] === 'undefined')
+				filesDataArray[file.identifier] = 1;
+			else
+				filesDataArray[file.identifier]++;
+		}
+
+		let reversedFiles = this._files.reverse();
+		let clearedReversedFiles = [];
+
+		for (let reversedFileKey in reversedFiles) {
+			let file = reversedFiles[reversedFileKey];
+
+			if (filesDataArray[file.identifier] === 1) {
+				clearedReversedFiles.push(file);
+				filesDataArray[file.identifier]--;
+			} else if (filesDataArray[file.identifier] > 1) {
+				filesDataArray[file.identifier]--;
+			}
+		}
+
+		this._files = clearedReversedFiles.reverse();
+	}
+
 	public clearParsedData() : void {
 		this._files = [];
 		this._parsedNodes = [];

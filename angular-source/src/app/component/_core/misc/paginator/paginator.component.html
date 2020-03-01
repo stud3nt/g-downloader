@@ -42,20 +42,22 @@
     </div>
 </div>
 
+&nbsp; &nbsp;
+
 <div class="btn-group" *ngIf="loadMore === true">
-    <button [className]="buttonClass" type="button" (click)="toggleLoadMore(1)" [disabled]="disabledButtons.loadMore">
-        <i class="fa fa-cloud-download"></i> &nbsp; LOAD MORE
-    </button>
     <div class="btn-group" *ngIf="pagination">
         <button type="button" [className]="buttonClass + ' dropdown-toggle'" data-toggle="dropdown" aria-expanded="false" [disabled]="disabledButtons.loadMore">
-            {{ pagination.packageSize }} <span class="caret"></span>
+            PACKAGE SIZE: {{ selectedPackage.packageSize }} <span class="caret"></span>
         </button>
         <ul class="dropdown-menu">
             <li *ngFor="let pck of packages">
-                <a style="cursor:pointer;" (click)="toggleLoadMore(pck.packageId)">
+                <a style="cursor:pointer;" (click)="setPackage(pck)">
                     {{ pck.packageSize }} results
                 </a>
             </li>
         </ul>
     </div>
+    <button [className]="buttonClass" type="button" (click)="toggleLoadMore()" [disabled]="disabledButtons.loadMore">
+         LOAD &nbsp; <i class="fa fa-cloud-download"></i>
+    </button>
 </div>

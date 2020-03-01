@@ -272,6 +272,8 @@ export class ParserComponent implements OnInit {
 				if (this._filesTemp) // adding new files at end of list;
 					this.parserRequest.files = [...this._filesTemp, ...this.parserRequest.files];
 
+				this.parserRequest.clearFilesDuplicates();
+
 				if (successFunction)
 					successFunction();
 			}

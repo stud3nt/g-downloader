@@ -26,6 +26,7 @@ export class PaginatorComponent implements OnInit, OnChanges {
 	public nextPage;
 
 	public disabledButtons: any = {};
+	public selectedPackage = null;
 
 	public selectors: PaginationSelector[] = [];
 	public selectorChildrens: PaginationSelector[] = [];
@@ -128,9 +129,14 @@ export class PaginatorComponent implements OnInit, OnChanges {
 		}, (selector.childrens.length === 0 || children) ? 100 : 50000);
 	};
 
-	public toggleLoadMore(pck = null): void {
-		this.pagination.mode = PaginationMode.LoadMore;
+	public setPackage(pck): void {
+		this.selectedPackage = pck;
 		this.pagination.currentPackage = pck.packageId;
+	}
+
+	public toggleLoadMore(): void {
+		this.pagination.mode = PaginationMode.LoadMore;
+		this.pagination.currentPackage = this.selectedPackage.packageId;
 		this.onPaginate.next(this.pagination);
 	}
 
@@ -184,6 +190,9 @@ export class PaginatorComponent implements OnInit, OnChanges {
 				pck.packageSize = (packageId * this.pagination.packageSize);
 
 				this.packages.push(pck);
+
+				if (!this.selectedPackage)
+					this.selectedPackage = pck;
 			}
 		}
 
