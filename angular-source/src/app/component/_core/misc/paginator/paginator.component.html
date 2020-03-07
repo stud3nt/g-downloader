@@ -32,7 +32,7 @@
     </div>
     <div class="input-group-btn" *ngIf="currentSelector && selectorChildrens.length > 0">
         <button type="button" class="btn btn-default btn-sm dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
-             {{ currentSelector ? (currentSelector.getSelectedChildren()).label : '' }}  &nbsp; &nbsp; <span class="fa fa-caret-down"></span>
+             {{ currentSelector ? (currentSelector.getActiveChildren()).label : '' }}  &nbsp; &nbsp; <span class="fa fa-caret-down"></span>
         </button>
         <ul class="dropdown-menu">
             <li *ngFor="let child of selectorChildrens">

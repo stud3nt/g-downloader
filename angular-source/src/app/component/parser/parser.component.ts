@@ -32,7 +32,13 @@ import { Subscription } from "rxjs";
 export class ParserComponent implements OnInit {
 
 	@HostListener('document:keydown', ['$event']) onKeydownHandler(event: KeyboardEvent) {
-		let scrollValue = (document.getElementsByClassName('tile').item(0).clientHeight);
+		let tiles = document.getElementsByClassName('tile');
+
+		if (!tiles)
+			return;
+
+		let scrollValue = (tiles.item(0).clientHeight);
+
 		scrollValue += scrollValue;
 		scrollValue += 24;
 
@@ -65,8 +71,7 @@ export class ParserComponent implements OnInit {
 	public parserBreadcrumbs = [];
 
 	/** Template variables **/
-	public actionBeltClass: string = ''; // classes for action belt
-	public actionBeltMaskClass: string = ''; // classes for action belt mask
+	public toolbarDisplayMode: string = ''; // classes for action belt
 	public scrollTopClass: string = ''; // classes for "scroll top" button
 	public previousNodeUrl: string = null;
 	public nextNodeUrl: string = null;
@@ -172,15 +177,6 @@ export class ParserComponent implements OnInit {
 		);
 	}
 
-	/**
-	 * Determines classes for action belt based on current scrollY value;
-	 */
-	public determineActionBeltClass(): void {
-		this.actionBeltClass = 'actionbelt_container' + ((this.scrollY > 80) ? ' fixed' : '');
-		this.actionBeltMaskClass = 'actionbelt_mask' + ((this.scrollY > 80) ? ' visible' : '');
-		this.scrollTopClass = 'scroll-top-container'+((this.scrollY > 200) ? ' visible' : '');
-	}
-
 	public toggleSettingsModal(): void {
 
 	}
@@ -221,7 +217,7 @@ export class ParserComponent implements OnInit {
 	 */
 	protected scrollEvent = (event: any = null): void => {
 		this.scrollY = window.scrollY;
-		this.determineActionBeltClass();
+		this.toolbarDisplayMode = (this.scrollY > 80) ? 'fixed' : 'standard';
 	};
 
 	/**

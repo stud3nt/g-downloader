@@ -124,7 +124,7 @@ class ParsedNode extends AbstractModel
     /**
      * @ModelVariable()
      */
-    public $lastViewedAt = '';
+    public $lastViewedAt = null;
 
     private $statusesNames = [
         NodeStatus::Queued,
@@ -642,7 +642,7 @@ class ParsedNode extends AbstractModel
                 $this->lastViewedAt = $difference->d.' day'.(($difference->d > 1) ? 's' : '');
             }
         } else {
-            $this->lastViewedAt = $lastViewedAt;
+            $this->lastViewedAt = ($lastViewedAt !== '') ? $lastViewedAt : null;
         }
 
         return $this;

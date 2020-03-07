@@ -102,8 +102,8 @@ class DownloadedFile extends AbstractModel
 
         $this->adjustCompression(
             $this->detectExpectedCompressionRatio(),
-            (620*1024)
-        ); // max image size: 620KB
+            (820*1024)
+        ); // max image size: 820KB
 
         return $this;
     }
@@ -155,19 +155,17 @@ class DownloadedFile extends AbstractModel
         if ($imageRatio > $expectedRatio && $imagePixels > $maxExpectedPixels) { // obrazek jest szerszy, niż docelowe granice
             $this->height = round(($imageHeight * 1.25));
 
-            if ($this->height > ($expectedHeight * 1.10) || ($this->height < ($expectedHeight * 0.94))) {
+            if ($this->height > ($expectedHeight * 1.10) || ($this->height < ($expectedHeight * 0.94)))
                 $this->height = $expectedHeight;
-            }
 
             $this->width = round($imageWidth * ($this->height / $imageHeight));
         } elseif ($imageRatio < $expectedRatio && $imagePixels > $maxExpectedPixels) { // obrazek jest węższy, niż docelowe granice
             $this->width = round(($imageWidth * 1.4));
 
-            if ($this->width > $expectedWidth) {
+            if ($this->width > $expectedWidth)
                 $this->width = $expectedWidth;
-            } elseif ($this->width < ($expectedHeight * 0.75)) {
+            elseif ($this->width < ($expectedHeight * 0.75))
                 $this->width = ($this->width * 1.2);
-            }
 
             $this->height = round($imageHeight * ($this->width / $imageWidth));
         }

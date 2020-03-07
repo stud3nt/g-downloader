@@ -23,6 +23,26 @@ abstract class NodeLevel extends Enum
         ];
     }
 
+    public static function getLevelName(string $name): ?string
+    {
+        switch ($name) {
+            case self::File:
+                return 'File data';
+
+            case self::Gallery:
+                return 'Files list';
+
+            case self::Board:
+                return 'Galleries list';
+
+            case self::BoardsList:
+                return 'Boards list';
+
+            case self::Owner:
+                return 'Users list';
+        }
+    }
+
     public static function determineNextLevel(string $baseLevel): ?string
     {
         $level = null;

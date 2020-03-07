@@ -1,0 +1,113 @@
+<div [ngClass]="_toolbarMaskClasses"></div>
+
+<div [ngClass]="_toolbarContainerClasses">
+    <div class="toolbar__row bordered bg-light-grey">
+        <span class="action_title" [innerHTML]="_nodeTitle"></span>
+    </div>
+    <div class="toolbar__row" id="action-toolbar">
+        <div class="toolbar__row__buttonbox">
+            <div class="buttonbox_label">
+                NODE OPERATIONS
+            </div>
+            <div class="buttonbox_buttons">
+                <a class="button button-small" title="Refresh">
+                    <i class="fa fa-refresh"></i> &nbsp; REFRESH
+                </a>
+                <a class="button button-small" title="Saved nodes">
+                    <i class="fa fa-list-alt"></i> &nbsp; SAVED NODES
+                </a>
+                <a class="button button-small" title="Filtering">
+                    <i class="fa fa-building-o"></i> &nbsp; FILTERING
+                </a>
+                <a class="button button-small" title="Settings">
+                    <i class="fa fa-cogs"></i> &nbsp; SETTINGS
+                </a>
+            </div>
+        </div>
+
+        <div class="toolbar__row__buttonbox">
+            <div class="buttonbox_label">
+                NODE STATUSES
+            </div>
+            <div class="buttonbox_buttons">
+                <a [ngClass]="nodeStatusButtonClass(NodeStatus.Queued)" title="QUEUED" (click)="nodeMarking(NodeStatus.Queued)">
+                    <i class="fa fa-remove" *ngIf="_parserRequest.currentNode.hasStatus(NodeStatus.Queued)"></i>
+                    <i class="fa fa-save" *ngIf="!_parserRequest.currentNode.hasStatus(NodeStatus.Queued)"></i>
+                    &nbsp; QUEUED
+                </a>
+                <a [ngClass]="nodeStatusButtonClass(NodeStatus.Favorited)" title="FAVORITED" (click)="nodeMarking(NodeStatus.Favorited)">
+                    <i class="fa fa-star-o" *ngIf="_parserRequest.currentNode.hasStatus(NodeStatus.Favorited)"></i>
+                    <i class="fa fa-star" *ngIf="!_parserRequest.currentNode.hasStatus(NodeStatus.Favorited)"></i>
+                    &nbsp; FAVORITED
+                </a>
+                <a [ngClass]="nodeStatusButtonClass(NodeStatus.Blocked)" title="BLOCKED" (click)="nodeMarking(NodeStatus.Blocked)">
+                    <i class="fa fa-unlock" *ngIf="_parserRequest.currentNode.hasStatus(NodeStatus.Blocked)"></i>
+                    <i class="fa fa-lock" *ngIf="!_parserRequest.currentNode.hasStatus(NodeStatus.Blocked)"></i>
+                    &nbsp; BLOCKED
+                </a>
+                <a [ngClass]="nodeStatusButtonClass(NodeStatus.Finished)" title="FINISHED" (click)="nodeMarking(NodeStatus.Finished)">
+                    <i class="fa fa-check-circle" *ngIf="_parserRequest.currentNode.hasStatus(NodeStatus.Finished)"></i>
+                    <i class="fa fa-check-circle-o" *ngIf="!_parserRequest.currentNode.hasStatus(NodeStatus.Finished)"></i>
+                    &nbsp; FINISHED
+                </a>
+            </div>
+        </div>
+
+        <div class="toolbar__row__buttonbox" *ngIf="_pagination.active && _pagination.selectors.length > 0">
+            <div class="buttonbox_label">
+                NODE SELECTORS
+            </div>
+            <div class="buttonbox_buttons">
+                <select class="select select-small" [(ngModel)]="_activeSelectorValue" (change)="setActiveSelector(_activeSelectorValue)">
+                    <option *ngFor="let selector of _pagination.selectors" [value]="selector.value" [selected]="selector.value === _activeSelectorValue" (click)="_pagination.setActiveSelectorByValue(_activeSelectorValue)">
+                        {{ selector.label | uppercase }}
+                    </option>
+                </select>
+
+                <select class="select select-small" *ngIf="_activeSelectorValue && _pagination.getActiveSelector().childrens.length > 0" [(ngModel)]="_activeSelectorChildrenValue" (change)="setActiveChildren(_activeSelectorChildrenValue)">
+                    <option *ngFor="let child of _pagination.getActiveSelector().childrens" [value]="child.value" [selected]="child.value === _activeSelectorChildrenValue">
+                        {{ child.label | uppercase }}
+                    </option>
+                </select>
+            </div>
+        </div>
+
+        <div class="toolbar__row__buttonbox" *ngIf="_pagination.active && _pagination.mode !== PaginationMode.LoadMore">
+            <div class="buttonbox_label">
+                PAGINATION
+            </div>
+            <div class="buttonbox_buttons">
+                <a class="button button-small" title="Previous page" (click)="changePage(-1)">
+                    <i class="fa fa-angle-left"></i>
+                </a>
+                <select class="select select-small" [ngModel]="_currentPage" (change)="nodePaginating()">
+                    <option *ngFor="let page of _pages" [value]="page" [selected]="page === _currentPage">
+                        {{ page | uppercase }}
+                    </option>
+                </select>
+                <a class="button button-small" title="Next page" (click)="changePage(1)">
+                    <i class="fa fa-angle-right"></i>
+                </a>
+            </div>
+        </div>
+
+        <div class="toolbar__row__buttonbox" *ngIf="_pagination.active && _pagination.mode === PaginationMode.LoadMore">
+            <div class="buttonbox_label">
+                PACKAGE LOADING
+            </div>
+            <div class="buttonbox_buttons">
+                <select class="select select-small" [(ngModel)]="_activePackage.id" title="CHOOSE PACKAGE">
+                    <option *ngFor="let _package of _packages" [selected]="_package.id == _activePackage.id" [value]="_package.id">
+                        {{ _package.size }} RESULTS
+                    </option>
+                </select>
+                <a class="button button-small" title="Load more results" (click)="nodePaginating()">
+                    LOAD &nbsp; <i class="fa fa-cloud-download"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="toolbar__row">
+
+    </div>
+</div>

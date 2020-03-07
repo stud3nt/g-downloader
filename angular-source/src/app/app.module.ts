@@ -30,6 +30,7 @@ import { MenuNodeComponent } from "./component/_core/menu/menu-node/menu-node.co
 import { ToastrComponent } from './component/_core/toastr/toastr.component';
 import { DownloadMiniPanelComponent } from "./component/_core/navbar/download-mini-panel/download-mini-panel.component";
 import { DownloaderComponent } from './component/tools/downloader/downloader.component';
+import { ParserToolbarComponent } from "./component/parser/parser-toolbar/parser-toolbar.component";
 
 @NgModule({
 	declarations: [
@@ -58,7 +59,8 @@ import { DownloaderComponent } from './component/tools/downloader/downloader.com
 		TruncateStringPipe,
 		LoginComponent,
 		ToastrComponent,
-		DownloaderComponent
+		DownloaderComponent,
+		ParserToolbarComponent
 	],
 	imports: [
 		BrowserModule,

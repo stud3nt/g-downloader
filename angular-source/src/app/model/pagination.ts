@@ -56,15 +56,18 @@ export class Pagination extends BaseModel {
 	private _reset: boolean = false;
 
 	public getActiveSelector() {
-		if (this._selectors) {
-			for (let selector of this._selectors) {
-				if (selector.isActive) {
+		if (this._selectors)
+			for (let selector of this._selectors)
+				if (selector.isActive)
 					return selector;
-				}
-			}
-		}
 
 		return this._selectors[0];
+	}
+
+	public setActiveSelectorByValue(selectorValue: string = null): void {
+		if (this._selectors && selectorValue)
+			for (let selectorKey in this._selectors)
+				this._selectors[selectorKey].isActive = (this._selectors[selectorKey].value === selectorValue);
 	}
 
 	get active(): boolean {

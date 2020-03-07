@@ -1,7 +1,7 @@
-import {Component, EventEmitter, Input, Output, OnInit, OnChanges, SimpleChanges} from '@angular/core';
+import { Component, EventEmitter, Input, Output, OnInit, OnChanges, SimpleChanges } from '@angular/core';
 import { PaginationMode } from "../../../../enum/pagination-mode";
 import { Pagination } from "../../../../model/pagination";
-import {PaginationSelector} from "../../../../model/pagination-selector";
+import { PaginationSelector } from "../../../../model/pagination-selector";
 
 @Component({
 	selector: 'app-paginator',
@@ -63,7 +63,7 @@ export class PaginatorComponent implements OnInit, OnChanges {
 
 	public initializeSelector(): void {
 		this.currentSelector = (this.pagination.getActiveSelector());
-		this.selectorChildrens = this.currentSelector.childrens;
+		this.selectorChildrens = this.currentSelector ? this.currentSelector.childrens : null;
 	}
 
 	/**

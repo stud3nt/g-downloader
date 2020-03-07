@@ -28,18 +28,22 @@ export class PaginationSelector extends BaseModel {
 	// pagination: current page
 	private _childrens: PaginationSelector[] = [];
 
-	public getSelectedChildren(): (PaginationSelector | null) {
+	public getActiveChildren(): (PaginationSelector | null) {
 		if (this._childrens) {
-			for (let child of this._childrens) {
-				if (child.isActive === true) {
+			for (let child of this._childrens)
+				if (child.isActive === true)
 					return child;
-				}
-			}
 
 			return this._childrens[0];
 		}
 
 		return null;
+	}
+
+	public setActiveChildrenByValue(childrenValue: string): void {
+		if (this._childrens && childrenValue)
+			for (let childKey in this._childrens)
+				this._childrens[childKey].isActive = (this._childrens[childKey].value === childrenValue);
 	}
 
 	public deactivateChildrens(): void {

@@ -5,6 +5,7 @@ namespace App\Service;
 
 use App\Entity\User;
 use App\Enum\NodeLevel;
+use App\Enum\ParserType;
 use App\Factory\RedisFactory;
 use App\Manager\SettingsManager;
 use App\Model\AbstractModel;
@@ -61,6 +62,11 @@ class ParserService
             }
         }
 
+        if (!$parserRequest->getCurrentNode()->getName())
+            $parserRequest->getCurrentNode()->setName(
+                $this->generateCurrentNodeName($parserRequest)
+            );
+
         return $parserRequest;
     }
 
@@ -88,5 +94,20 @@ class ParserService
         return class_exists($parserClass)
             ? new $parserClass($parserSettings, $user)
             : null;
+    }
+
+    protected function generateCurrentNodeName(ParserRequest $parserRequest): string
+    {
+        $currentNode = $parserRequest->getCurrentNode();
+        $parserData = ParserType::getData();
+        $parserName = (array_key_exists($currentNode->getParser(), $parserData))
+            ? mb_strtoupper($parserData[$currentNode->getParser()]).':'
+            : '';
+
+        return $parserName.' '.mb_strtoupper(
+            NodeLevel::getLevelName(
+                $currentNode->getLevel()
+            )
+        );
     }
 }
