@@ -79,7 +79,9 @@ class DownloadController extends Controller
 
             return $this->jsonSuccess();
         } catch (\Exception $ex) {
-            return $this->jsonSuccess($ex->getMessage());
+            return $this->jsonSuccess(
+                $ex->getMessage()
+            );
         }
     }
 }

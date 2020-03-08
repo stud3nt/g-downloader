@@ -135,6 +135,9 @@ class File extends AbstractEntity
     protected $tempFilePath;
     protected $targetFilePath;
 
+    /** @var boolean */
+    protected $corrupted = false;
+
     public function __construct()
     {
         if (!$this->id) {
@@ -446,6 +449,25 @@ class File extends AbstractEntity
     public function setDescription(?string $description): self
     {
         $this->description = $description;
+
+        return $this;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isCorrupted(): bool
+    {
+        return $this->corrupted;
+    }
+
+    /**
+     * @param bool $corrupted
+     * @return File
+     */
+    public function setCorrupted(bool $corrupted): self
+    {
+        $this->corrupted = $corrupted;
 
         return $this;
     }

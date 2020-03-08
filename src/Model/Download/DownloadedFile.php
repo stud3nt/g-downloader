@@ -57,20 +57,24 @@ class DownloadedFile extends AbstractModel
         if (!$this->resource)
             throw new \Exception('File resource is empty.');
 
-        $tempPathinfo = pathinfo($this->tempFilePath);
+        if (!file_exists($this->tempFilePath)) {
+            $this->fileEntity->setCorrupted(true);
+        } else {
+            $tempPathinfo = pathinfo($this->tempFilePath);
 
-        $this->tempFileDir = $tempPathinfo['dirname'];
-        $this->operationalFileDir = $this->tempFileDir;
-        $this->operationalFilePath = $this->operationalFileDir.DIRECTORY_SEPARATOR.$tempPathinfo['basename']
-            .StringHelper::randomStr(12).'.'.$tempPathinfo['extension'];
+            $this->tempFileDir = $tempPathinfo['dirname'];
+            $this->operationalFileDir = $this->tempFileDir;
+            $this->operationalFilePath = $this->operationalFileDir.DIRECTORY_SEPARATOR.$tempPathinfo['basename']
+                .StringHelper::randomStr(12).'.'.$tempPathinfo['extension'];
 
-        if (!$this->fs->exists($this->tempFileDir))
-            $this->fs->mkdir($this->tempFileDir);
+            if (!$this->fs->exists($this->tempFileDir))
+                $this->fs->mkdir($this->tempFileDir);
 
-        if (!$this->fs->exists($this->operationalFileDir))
-            $this->fs->mkdir($this->operationalFileDir);
+            if (!$this->fs->exists($this->operationalFileDir))
+                $this->fs->mkdir($this->operationalFileDir);
 
-        file_put_contents($this->tempFilePath, $this->resource);
+            file_put_contents($this->tempFilePath, $this->resource);
+        }
 
         return $this;
     }
@@ -84,7 +88,7 @@ class DownloadedFile extends AbstractModel
         if (!$this->tempFilePath)
             throw new \Exception('Target file path must be specified before saving.');
         else if (!file_exists($this->tempFilePath))
-            throw new \Exception('File resource is empty.');
+            return $this;
 
         $this->convertToJpg();
 
@@ -215,7 +219,7 @@ class DownloadedFile extends AbstractModel
         if (!$this->targetFilePath)
             throw new \Exception('Target file path must be specified before saving.');
         else if (!file_exists($this->tempFilePath))
-            throw new \Exception('Temporary file not exists.');
+            return true;
 
         return copy($this->tempFilePath, $this->targetFilePath);
     }

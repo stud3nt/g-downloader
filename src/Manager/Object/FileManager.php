@@ -267,9 +267,12 @@ class FileManager extends EntityManager
         if ($downloadedFiles) {
             /** @var File $downloadedFile */
             foreach ($downloadedFiles as $downloadedFile) {
-                $this->em->persist(
-                    $downloadedFile->setDownloadedAt(new \DateTime('now'))
-                );
+                $downloadedFile->setDownloadedAt(new \DateTime('now'));
+
+                if ($downloadedFile->isCorrupted())
+                    $this->em->remove($downloadedFile);
+                else
+                    $this->em->persist($downloadedFile);
             }
 
             $this->em->flush();
