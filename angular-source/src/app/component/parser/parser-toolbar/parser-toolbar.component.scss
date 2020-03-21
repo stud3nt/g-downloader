@@ -10,6 +10,42 @@
     }
 }
 
+.tags {
+    &_container {
+        display: inline-block;
+        min-height: 10px;
+        min-width: 1px;
+
+        .tag {
+            display: inline-block;
+            background: #ededed;
+            font-size: 12px;
+            font-weight: bold;
+            padding: 4px;
+            border: 1px #c7c7c7 solid;
+            -moz-border-radius: 3px;
+            border-radius: 3px;
+            -webkit-border-radius: 3px;
+            margin-left: 4px;
+
+            &:first-of-type {
+                margin-left: 0;
+            }
+
+            &_button {
+                cursor: pointer;
+                color: #3f3f3f;
+                margin-left: 1px;
+                padding: 2px 4px;
+
+                &:hover {
+                    color: #9e9e9e;
+                }
+            }
+        }
+    }
+}
+
 .parser_toolbar {
     display: block;
     width: 100%;
@@ -90,6 +126,53 @@
                             &-small {
                                 font-size: 13px;
                                 padding: 3px 7px;
+                            }
+                        }
+
+                        .tags {
+                            &_input_area {
+                                display: inline-block;
+                                position: relative;
+
+                                &_autocomplete {
+                                    position: absolute;
+                                    z-index: 999;
+                                    background: #ffffff;
+                                    min-width: 140px;
+                                    border: 1px #e2e2e2 solid;
+
+                                    ul {
+                                        list-style-type: none;
+                                        padding: 0;
+
+                                        a {
+                                            padding: 5px 10px;
+                                            display: block;
+                                            width: 100%;
+                                            border-top: 1px #e2e2e2 solid;
+                                            color: #000000;
+
+                                            &:hover {
+                                                cursor: pointer;
+                                                background: #f8f8f8;
+                                            }
+                                        }
+                                    }
+                                }
+
+                                .input {
+                                    background: #f2f2f2;
+                                    border: 1px $border-light-grey solid;
+                                    color: #0E2231;
+                                    display: inline-block;
+                                    margin-right: 4px;
+                                    width: 100px;
+
+                                    &-small {
+                                        font-size: 12px;
+                                        padding: 4px;
+                                    }
+                                }
                             }
                         }
 

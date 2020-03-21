@@ -31,4 +31,6 @@ interface ParserInterface
     public function generateFileCurlRequest(File &$file): File;
 
     public function determineFileSubfolder(File $file): ?string;
+
+    public function clearParserCache(ParserRequest $parserRequest): void;
 }

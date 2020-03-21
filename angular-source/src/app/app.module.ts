@@ -31,6 +31,8 @@ import { ToastrComponent } from './component/_core/toastr/toastr.component';
 import { DownloadMiniPanelComponent } from "./component/_core/navbar/download-mini-panel/download-mini-panel.component";
 import { DownloaderComponent } from './component/tools/downloader/downloader.component';
 import { ParserToolbarComponent } from "./component/parser/parser-toolbar/parser-toolbar.component";
+import { TagsComponent } from './component/lists/tags/tags.component';
+import { CategoriesComponent } from './component/lists/categories/categories.component';
 
 @NgModule({
 	declarations: [
@@ -60,7 +62,9 @@ import { ParserToolbarComponent } from "./component/parser/parser-toolbar/parser
 		LoginComponent,
 		ToastrComponent,
 		DownloaderComponent,
-		ParserToolbarComponent
+		ParserToolbarComponent,
+		TagsComponent,
+		CategoriesComponent
 	],
 	imports: [
 		BrowserModule,

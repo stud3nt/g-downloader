@@ -45,8 +45,8 @@ class DownloadService
                 $fileEntity = $filesList[$fileKey];
 
                 $result = (new DownloadedFile())
-                    ->setResource($fileResource)
                     ->setFileEntity($fileEntity)
+                    ->setResource($fileResource)
                     ->prepareTempFiles();
 
                 if ($fileEntity->getType() === FileType::Image)

@@ -8,6 +8,8 @@ import { ListComponent as UsersListComponent } from "./component/users/list/list
 import { EditorComponent as UsersEditorComponent } from "./component/users/list/editor/editor.component";
 import { GroupsComponent as UsersGroupsComponent } from "./component/users/groups/groups.component";
 import { LoginComponent } from "./component/security/login/login.component";
+import { TagsComponent } from "./component/lists/tags/tags.component";
+import { CategoriesComponent } from "./component/lists/categories/categories.component";
 
 @NgModule({
 	imports: [
@@ -55,5 +57,13 @@ export const routes : Routes = [
 	{
 		path: 'users/groups',
 		component: UsersGroupsComponent
+	},
+	{
+		path: 'lists/tags',
+		component: TagsComponent
+	},
+	{
+		path: 'lists/categories',
+		component: CategoriesComponent
 	}
 ];

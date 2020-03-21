@@ -4,6 +4,7 @@ namespace App\Model;
 
 use App\Annotation\ModelVariable;
 use App\Enum\NodeStatus;
+use Doctrine\Common\Collections\ArrayCollection;
 
 class ParsedNode extends AbstractModel
 {
@@ -125,6 +126,30 @@ class ParsedNode extends AbstractModel
      * @ModelVariable()
      */
     public $lastViewedAt = null;
+
+    /**
+     * @var boolean
+     * @ModelVariable(type="boolean")
+     */
+    public $allowCategory = false;
+
+    /**
+     * @var boolean
+     * @ModelVariable(type="boolean")
+     */
+    public $allowTags = false;
+
+    /**
+     * @var Category|null
+     * @ModelVariable(converter="Model", converterOptions={"class":"App\Model\Category"})
+     */
+    public $category = null;
+
+    /**
+     * @var Tag[]|null
+     * @ModelVariable(converter="Model", converterOptions={"class":"App\Model\Tag"}, type="array")
+     */
+    public $tags = [];
 
     private $statusesNames = [
         NodeStatus::Queued,
@@ -644,6 +669,116 @@ class ParsedNode extends AbstractModel
         } else {
             $this->lastViewedAt = ($lastViewedAt !== '') ? $lastViewedAt : null;
         }
+
+        return $this;
+    }
+
+    /**
+     * @return Category|null
+     */
+    public function getCategory(): ?Category
+    {
+        return $this->category;
+    }
+
+    /**
+     * @param Category|null $category
+     * @return $this;
+     */
+    public function setCategory(?Category $category): self
+    {
+        $this->category = $category;
+
+        return $this;
+    }
+
+    /**
+     * @return \App\Entity\Tag[]|null
+     */
+    public function getTags()
+    {
+        return $this->tags;
+    }
+
+    /**
+     * @param mixed $tag
+     * @return $this;
+     */
+    public function addTag($tag): self
+    {
+        $this->tags[] = $tag;
+
+        return $this;
+    }
+
+    /**
+     * @param mixed $tag
+     * @return $this
+     */
+    public function removeTag($tag): self
+    {
+        if (false !== $key = array_search($tag, $this->tags, true)) {
+            array_splice($this->tags, $key, 1);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return ParsedNode
+     */
+    public function clearTags(): self
+    {
+        $this->tags = [];
+
+        return $this;
+    }
+
+    /**
+     * @param mixed $tags
+     * @return $this;
+     */
+    public function setTags($tags): self
+    {
+        $this->tags = $tags;
+
+        return $this;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isAllowCategory(): bool
+    {
+        return $this->allowCategory;
+    }
+
+    /**
+     * @param bool $allowCategory
+     * @return $this
+     */
+    public function setAllowCategory(bool $allowCategory): self
+    {
+        $this->allowCategory = $allowCategory;
+
+        return $this;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isAllowTags(): bool
+    {
+        return $this->allowTags;
+    }
+
+    /**
+     * @param bool $allowTags
+     * @return $this
+     */
+    public function setAllowTags(bool $allowTags): self
+    {
+        $this->allowTags = $allowTags;
 
         return $this;
     }

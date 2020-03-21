@@ -25,6 +25,7 @@ class IndexController extends Controller
      * @Route("/users/list", name="app_users_list", options={"expose"=true})
      * @Route("/users/list/edit/{userToken}", name="app_users_editor", options={"expose"=true})
      * @Route("/users/groups", name="app_users_groups", options={"expose"=true})
+     * @Route("/lists/{listName}", name="app_lists", options={"expose"=true})
      *
      * @throws \Exception
      */

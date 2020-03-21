@@ -4,6 +4,8 @@ namespace App\Entity\Parser;
 
 use App\Annotation\EntityVariable;
 use App\Entity\Base\AbstractEntity;
+use App\Entity\Category;
+use App\Entity\Tag;
 use App\Entity\Traits\{CreatedAtTrait, IdentifierTrait, NameTrait, ParserTrait, UpdatedAtTrait, UrlTrait};
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -106,17 +108,32 @@ class Node extends AbstractEntity
     protected $files;
 
     /**
-     * One Category has Many Categories.
      * @ORM\OneToMany(targetEntity="App\Entity\Parser\Node", mappedBy="parentNode")
      */
     private $childrenNodes;
 
     /**
-     * Many Categories have One Category.
      * @ORM\ManyToOne(targetEntity="App\Entity\Parser\Node", inversedBy="childrenNodes")
      * @ORM\JoinColumn(name="parent_node_id", referencedColumnName="id")
      */
     private $parentNode;
+
+    /**
+     * @ORM\ManyToOne(targetEntity="App\Entity\Category", cascade={"persist"})
+     * @ORM\JoinColumn(name="category_id", referencedColumnName="id")
+     * @EntityVariable(convertable=true, writable=true, readable=true, converter="Entity", converterOptions={"class":"App\Entity\Category"})
+     */
+    private $category;
+
+    /**
+     * @ORM\ManyToMany(targetEntity="App\Entity\Tag", cascade={"persist"})
+     * @EntityVariable(convertable=true, writable=true, type="array", readable=true, converter="Entity", converterOptions={"class":"App\Entity\Tag"})
+     * @ORM\JoinTable(name="parsed_nodes_tags",
+     *      joinColumns={@ORM\JoinColumn(name="parsed_node_id", referencedColumnName="id")},
+     *      inverseJoinColumns={@ORM\JoinColumn(name="tag_id", referencedColumnName="id")}
+     *  )
+     */
+    private $tags;
 
     public function __construct()
     {
@@ -129,6 +146,7 @@ class Node extends AbstractEntity
         $this->files = new ArrayCollection();
         $this->childrens = new ArrayCollection();
         $this->childrenNodes = new ArrayCollection();
+        $this->tags = new ArrayCollection();
     }
 
     public function getLevel(): ?string
@@ -356,4 +374,66 @@ class Node extends AbstractEntity
         return $this;
     }
 
+    /**
+     * @return Collection|Tag[]
+     */
+    public function getTags(): Collection
+    {
+        return $this->tags;
+    }
+
+    /**
+     * @return $this
+     */
+    public function setTags($tags): self
+    {
+        $this->tags = $tags;
+
+        return $this;
+    }
+
+    /**
+     * @param Tag $tag
+     * @return Node
+     */
+    public function addTag(Tag $tag): self
+    {
+        if (!$this->tags->contains($tag)) {
+            $this->tags->add($tag);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Category|null
+     */
+    public function getCategory(): ?Category
+    {
+        return $this->category;
+    }
+
+    /**
+     * @param Category $category
+     * @return Node
+     */
+    public function setCategory(Category $category = null): self
+    {
+        $this->category = $category;
+
+        return $this;
+    }
+
+    /**
+     * @param Tag $tag
+     * @return Node
+     */
+    public function removeTag(Tag $tag): self
+    {
+        if ($this->tags->contains($tag)) {
+            $this->tags->removeElement($tag);
+        }
+
+        return $this;
+    }
 }

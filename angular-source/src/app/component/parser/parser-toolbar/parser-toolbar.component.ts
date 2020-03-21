@@ -3,6 +3,8 @@ import {ParserRequest} from "../../../model/parser-request";
 import {NodeStatus} from "../../../enum/node-status";
 import {Pagination} from "../../../model/pagination";
 import {PaginationMode} from "../../../enum/pagination-mode";
+import {ParserNode} from "../../../model/parser-node";
+import {Tag} from "../../../model/tag";
 
 @Component({
 	selector: 'app-parser-toolbar',
@@ -15,9 +17,20 @@ export class ParserToolbarComponent implements OnInit {
 	public PaginationMode = PaginationMode;
 
 	public _parserRequest: ParserRequest = null;
+	public _currentNode: ParserNode = null;
 	public _pagination: Pagination = null;
 
+	public _nodeCategory: string = null;
+	public _inputTagName: string = null;
+	public _tagInputVisible: boolean = false;
+
+	// tag search timeout variable;
+	private _tagSearchTimeout = null;
+	// tag search - found tags;
+	public _foundTags: Tag[] = [];
+
 	public _displayMode: string = 'standard';
+	public _containerHeight: number = 0;
 
 	// pages packages list
 	public _packages: any[] = [];
@@ -34,7 +47,6 @@ export class ParserToolbarComponent implements OnInit {
 	// currently selected page
 	public _currentPage: any = null;
 
-	// node title
 	public _nodeTitle: string = '&nbsp;';
 	public _toolbarContainerClasses: string = 'parser_toolbar';
 	public _toolbarMaskClasses: string = 'parser_toolbar_mask';
@@ -46,14 +58,17 @@ export class ParserToolbarComponent implements OnInit {
 	@Input() set parserRequest(parserRequest: ParserRequest) {
 		let countString = '';
 
-		if (parserRequest.files)
+		if (parserRequest.files && parserRequest.parsedNodes.length === 0)
 			countString = ' ('+parserRequest.files.length+' files)';
 		else if (parserRequest.parsedNodes)
 			countString = ' ('+parserRequest.parsedNodes.length+' subnodes)';
 
 		this._nodeTitle = ('&nbsp;' + ((parserRequest.currentNode && parserRequest.currentNode.name) ? (parserRequest.currentNode.name + countString) : ''));
 		this._parserRequest = parserRequest;
+		this._currentNode = parserRequest.currentNode;
 		this._pagination = parserRequest.pagination;
+		this._nodeCategory = (this._currentNode.category) ? this._currentNode.category.symbol : null;
+
 		this.createPaginationData();
 	}
 
@@ -65,20 +80,24 @@ export class ParserToolbarComponent implements OnInit {
 		if (mode === 'fixed') {
 			this._toolbarContainerClasses += ' fixed';
 			this._toolbarMaskClasses += ' visible';
+			this._containerHeight = document.getElementById('parser-toolbar-container').offsetHeight + 10;
+		} else {
+			this._containerHeight = 0;
 		}
 	}
 
-	@Output() onCurrentNodeMarking = new EventEmitter<string>();
+	@Output() onNodeUpdate = new EventEmitter<ParserNode>();
 	@Output() onNodePaginating = new EventEmitter<Pagination>();
 
 	ngOnInit() {}
 
 	public nodeMarking(selectedStatus: string): void {
-		this.onCurrentNodeMarking.next(selectedStatus);
+		this._parserRequest.currentNode.toggleStatus(selectedStatus);
+		this.onNodeUpdate.next(this._parserRequest.currentNode);
 	}
 
 	public nodePaginating(reset: boolean = false): void {
-		this._pagination.currentPackage = this._activePackage.id;
+		this._pagination.currentPackage = (this._activePackage) ? this._activePackage.id : null;
 		this._pagination.reset = reset;
 
 		switch (this._pagination.mode) {
@@ -99,12 +118,87 @@ export class ParserToolbarComponent implements OnInit {
 			for (let pageKey in this._pages) {
 				let page = this._pages[pageKey];
 
-				if (page === this._currentPage && typeof this._pages[(pageKey + value)] !== 'undefined')
+				if (page === this._currentPage && typeof this._pages[(pageKey + value)] !== 'undefined') {
 					this._currentPage = this._pages[(pageKey + value)];
+					break;
+				}
 			}
 
 			this.nodePaginating();
 		}
+	}
+
+	public setCategory(): void {
+		this._parserRequest.currentNode.category = null;
+
+		let categories = this._parserRequest.categories;
+
+		if (categories) {
+			for (let category of categories) {
+				if (category.symbol === this._nodeCategory) {
+					this._parserRequest.currentNode.category = category;
+					break;
+				}
+			}
+		}
+
+		this.onNodeUpdate.next(this._parserRequest.currentNode);
+	}
+
+	public openTagInput(): void {
+		this._tagInputVisible = true;
+
+		setTimeout(() => {
+			document.getElementById('toolbar-tag-input').focus();
+		}, 10);
+	}
+
+	public toggleTag(event: KeyboardEvent): void {
+		clearTimeout(this._tagSearchTimeout);
+
+		if (event.key === 'Enter' && this._inputTagName.length > 0) { // tag creation
+			let tagName = this._inputTagName.toUpperCase();
+			let tag = this._parserRequest.findTagByName(tagName);
+
+			if (!tag) {
+				tag = new Tag();
+				tag.name = tagName;
+
+				this._parserRequest.tags.push(tag);
+			}
+
+			this._parserRequest.currentNode.addTag(tag);
+			this._inputTagName = null;
+			this._tagInputVisible = false;
+			this._foundTags = [];
+
+			this.onNodeUpdate.next(this._parserRequest.currentNode);
+		} else {
+			this._tagSearchTimeout = setTimeout(() => {
+				for (let tagIndex in this._parserRequest.tags) {
+					if (this._inputTagName.length < 3 || this._foundTags.length >= 10)
+						break;
+
+					let processedTag = this._parserRequest.tags[tagIndex];
+
+					if (processedTag.name.indexOf(this._inputTagName) !== -1)
+						this._foundTags.push(processedTag);
+				}
+			}, 300);
+		}
+	}
+
+	public addTag(tag: Tag): void {
+		this._parserRequest.currentNode.addTag(tag);
+		this._tagInputVisible = false;
+		this._foundTags = [];
+		this.onNodeUpdate.next(this._parserRequest.currentNode);
+	}
+
+	public removeTag(tag: Tag): void {
+		this._parserRequest.currentNode.removeTag(tag);
+		this._inputTagName = null;
+		this.onNodeUpdate.next(this._parserRequest.currentNode);
 	}
 
 	public setActiveSelector(selector: string): void {
@@ -123,7 +217,16 @@ export class ParserToolbarComponent implements OnInit {
 		}
 	}
 
-	public createPaginationData(): void {
+	public nodeStatusButtonClass(checkedStatus: string): string {
+		let buttonClasses = 'button button-small';
+
+		if (this._parserRequest.currentNode && this._parserRequest.currentNode.hasStatus(checkedStatus))
+			buttonClasses += ' active';
+
+		return buttonClasses;
+	}
+
+	private createPaginationData(): void {
 		this._pages = [];
 		this._packages = [];
 
@@ -141,7 +244,7 @@ export class ParserToolbarComponent implements OnInit {
 				for (let x = 1; x <= this._pagination.totalPages; x++)
 					this._pages.push(x);
 
-				this._currentPage = this._pagination.currentPage;
+				this._currentPage = (this._pagination.currentPage + this._pagination.pageShift);
 				break;
 
 			case PaginationMode.LoadMore:
@@ -171,14 +274,4 @@ export class ParserToolbarComponent implements OnInit {
 				}
 			}
 	}
-
-	public nodeStatusButtonClass(checkedStatus: string): string {
-		let buttonClasses = 'button button-small';
-
-		if (this._parserRequest.currentNode && this._parserRequest.currentNode.hasStatus(checkedStatus))
-			buttonClasses += ' active';
-
-		return buttonClasses;
-	}
-
 }

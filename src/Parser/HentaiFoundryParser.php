@@ -285,6 +285,10 @@ class HentaiFoundryParser extends AbstractParser implements ParserInterface
             }
         }
 
+        $parserRequest->getCurrentNode()
+            ->setAllowCategory(true)
+            ->setAllowTags(true);
+
         return $parserRequest;
     }
 
@@ -328,7 +332,7 @@ class HentaiFoundryParser extends AbstractParser implements ParserInterface
     public function getFilePreview(ParsedFile &$parsedFile) : ParsedFile
     {
         $this->login($parsedFile);
-        $this->clearCache();
+        $this->clearFileCache();
 
         if (!$parsedFile->getFileUrl() || !$parsedFile->getName() || $parsedFile->getExtension()) {
             $this->getFileData($parsedFile);

@@ -4,7 +4,6 @@ namespace App\Model;
 
 use App\Annotation\ModelVariable;
 use App\Converter\ModelConverter;
-use App\Entity\User;
 use App\Model\Interfaces\StatusInterface;
 
 class ParserRequest extends AbstractModel implements StatusInterface
@@ -103,6 +102,18 @@ class ParserRequest extends AbstractModel implements StatusInterface
      * @ModelVariable(type="string")
      */
     public $requestIdentifier = null;
+
+    /**
+     * @var array
+     * @ModelVariable(converter="Model", converterOptions={"class":"App\Model\Category"}, type="array")
+     */
+    public $categories = [];
+
+    /**
+     * @var array
+     * @ModelVariable(converter="Model", converterOptions={"class":"App\Model\Tag"}, type="array")
+     */
+    public $tags = [];
 
     public function __construct()
     {
@@ -543,6 +554,92 @@ class ParserRequest extends AbstractModel implements StatusInterface
     public function setApiToken(string $apiToken): self
     {
         $this->apiToken = $apiToken;
+
+        return $this;
+    }
+
+    /**
+     * @return array
+     */
+    public function getCategories(): array
+    {
+        return $this->categories;
+    }
+
+    /**
+     * @param array $categories
+     * @return $this
+     */
+    public function setCategories(array $categories = []): self
+    {
+        $this->categories = $categories;
+
+        return $this;
+    }
+
+    /**
+     * @param mixed $category
+     * @return $this
+     */
+    public function addCategory($category): self
+    {
+        $this->categories[] = $category;
+
+        return $this;
+    }
+
+    /**
+     * @param mixed $category
+     * @return $this
+     */
+    public function removeCategory($category): self
+    {
+        if (false !== $key = array_search($category, $this->categories, true)) {
+            array_splice($this->categories, $key, 1);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return array
+     */
+    public function getTags(): array
+    {
+        return $this->tags;
+    }
+
+    /**
+     * @param array $tags
+     * @return $this
+     */
+    public function setTags(array $tags): self
+    {
+        $this->tags = $tags;
+
+        return $this;
+    }
+
+    /**
+     * @param mixed $tag
+     * @return $this
+     */
+    public function addTag($tag): self
+    {
+        $this->tags[] = $tag;
+
+        return $this;
+    }
+
+    /**
+     * @param mixed $tag
+     * @return $this
+     */
+    public function removeTag($tag): self
+    {
+        if (false !== $key = array_search($tag, $this->tags, true)) {
+            array_splice($this->tags, $key, 1);
+        }
 
         return $this;
     }

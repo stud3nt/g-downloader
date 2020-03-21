@@ -1,8 +1,8 @@
 <app-parser-toolbar
     [parserRequest]="parserRequest"
     [displayMode]="toolbarDisplayMode"
-    (onCurrentNodeMarking)="markCurrentNode($event)"
     (onNodePaginating)="changeNodePage($event)"
+    (onNodeUpdate)="updateNode($event)"
 ></app-parser-toolbar>
 
 <div class="row">

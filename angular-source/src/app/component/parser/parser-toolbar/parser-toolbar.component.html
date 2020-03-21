@@ -1,16 +1,16 @@
-<div [ngClass]="_toolbarMaskClasses"></div>
+<div [ngClass]="_toolbarMaskClasses" id="parser-toolbar-mask" [ngStyle]="{'height':(_containerHeight+'px')}"></div>
 
-<div [ngClass]="_toolbarContainerClasses">
+<div [ngClass]="_toolbarContainerClasses" id="parser-toolbar-container">
     <div class="toolbar__row bordered bg-light-grey">
         <span class="action_title" [innerHTML]="_nodeTitle"></span>
     </div>
     <div class="toolbar__row" id="action-toolbar">
         <div class="toolbar__row__buttonbox">
             <div class="buttonbox_label">
-                NODE OPERATIONS
+                OPERATIONS
             </div>
             <div class="buttonbox_buttons">
-                <a class="button button-small" title="Refresh">
+                <a class="button button-small" title="Refresh" (click)="nodePaginating(true)">
                     <i class="fa fa-refresh"></i> &nbsp; REFRESH
                 </a>
                 <a class="button button-small" title="Saved nodes">
@@ -27,7 +27,7 @@
 
         <div class="toolbar__row__buttonbox">
             <div class="buttonbox_label">
-                NODE STATUSES
+                STATUSES
             </div>
             <div class="buttonbox_buttons">
                 <a [ngClass]="nodeStatusButtonClass(NodeStatus.Queued)" title="QUEUED" (click)="nodeMarking(NodeStatus.Queued)">
@@ -55,7 +55,7 @@
 
         <div class="toolbar__row__buttonbox" *ngIf="_pagination.active && _pagination.selectors.length > 0">
             <div class="buttonbox_label">
-                NODE SELECTORS
+                SELECTORS
             </div>
             <div class="buttonbox_buttons">
                 <select class="select select-small" [(ngModel)]="_activeSelectorValue" (change)="setActiveSelector(_activeSelectorValue)">
@@ -82,7 +82,7 @@
                 </a>
                 <select class="select select-small" [ngModel]="_currentPage" (change)="nodePaginating()">
                     <option *ngFor="let page of _pages" [value]="page" [selected]="page === _currentPage">
-                        {{ page | uppercase }}
+                        {{ page }}
                     </option>
                 </select>
                 <a class="button button-small" title="Next page" (click)="changePage(1)">
@@ -106,8 +106,52 @@
                 </a>
             </div>
         </div>
+
+        <div class="toolbar__row__buttonbox" *ngIf="_currentNode.allowCategory">
+            <div class="buttonbox_label">
+                MAIN CATEGORY
+            </div>
+            <div class="buttonbox_buttons">
+                <select class="select select-small" [(ngModel)]="_nodeCategory" (change)="setCategory()">
+                    <option [value]="null">-- NONE --</option>
+                    <option *ngFor="let category of _parserRequest.categories" [value]="category.symbol">
+                        {{ ((category.label !== null) ? category.label : category.name) }}
+                    </option>
+                </select>
+            </div>
+        </div>
+
+        <div class="toolbar__row__buttonbox" *ngIf="_currentNode.allowTags">
+            <div class="buttonbox_label">
+                NODE TAGS
+            </div>
+            <div class="buttonbox_buttons">
+                <a class="button button-small" *ngIf="_tagInputVisible === false" title="Create tag" (click)="openTagInput()">
+                    <i class="fa fa-plus"></i> &nbsp; ADD
+                </a>
+                <div class="tags_input_area" *ngIf="_tagInputVisible === true">
+                    <input type="text" id="toolbar-tag-input" class="input input-small" [(ngModel)]="_inputTagName" (keydown)="toggleTag($event)" />
+                    <div class="tags_input_area_autocomplete" *ngIf="_foundTags.length > 0">
+                        <ul>
+                            <li *ngFor="let foundTag of _foundTags">
+                                <a [innerHTML]="foundTag.name" (click)="addTag(foundTag)"></a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="tags_container" *ngIf="_parserRequest.currentNode.tags.length > 0">
+                    <div class="tag" *ngFor="let tag of _parserRequest.currentNode.tags">
+                        {{ tag.name }}
+                        <a class="tag_button">
+                            <i class="fa fa-remove" (click)="removeTag(tag)"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-    <div class="toolbar__row">
+
+    <div class="toolbar__row" id="parser-toolbar-action-area">
 
     </div>
 </div>

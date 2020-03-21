@@ -7,12 +7,15 @@ use App\Converter\ModelConverter;
 use App\Entity\Parser\Node;
 use App\Enum\NodeStatus;
 use App\Manager\Base\EntityManager;
+use App\Manager\CategoryManager;
+use App\Manager\TagManager;
 use App\Model\AbstractModel;
 use App\Model\ParsedNode;
 use App\Model\ParserRequest;
 use App\Repository\NodeRepository;
 use App\Utils\StringHelper;
 use Doctrine\Persistence\ObjectManager;
+use Symfony\Component\Debug\Debug;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use ReflectionException;
 
@@ -29,12 +32,22 @@ class NodeManager extends EntityManager
     /** @var ModelConverter */
     protected $modelConverter;
 
-    public function __construct(ObjectManager $em, TokenStorageInterface $tokenStorage, EntityConverter $entityConverter)
+    /** @var TagManager */
+    protected $tagManager;
+
+    /** @var CategoryManager */
+    protected $categoryManager;
+
+    public function __construct(ObjectManager $em, TokenStorageInterface $tokenStorage, EntityConverter $entityConverter, TagManager $tagManager, CategoryManager $categoryManager)
     {
         parent::__construct($em, $tokenStorage);
 
         $this->entityConverter = $entityConverter;
+        $this->entityConverter->setEntityManager($em);
         $this->modelConverter = new ModelConverter();
+
+        $this->tagManager = $tagManager;
+        $this->categoryManager = $categoryManager;
     }
 
     public function getOneByParsedNode(ParsedNode $node): ?Node
@@ -87,6 +100,8 @@ class NodeManager extends EntityManager
             $this->entityConverter->setData($currentNode, $savedNode);
             $this->save($savedNode);
         }
+
+        return $parserRequest;
     }
 
     /**
@@ -98,6 +113,7 @@ class NodeManager extends EntityManager
      * @throws \Doctrine\ORM\ORMException
      * @throws \Doctrine\ORM\OptimisticLockException
      * @throws \ReflectionException
+     * @throws \Exception
      */
     public function completeParsedNodes(ParserRequest &$parserRequest): ParserRequest
     {
@@ -124,6 +140,9 @@ class NodeManager extends EntityManager
             $savedNodes = $this->repository->findByParentAndIdentifiers($parentNodeEntity, $parsedNodesIdentifiers);
 
             if ($savedNodes) {
+                $tagsModels = $this->tagManager->getTagsModels();
+                $categoriesModels = $this->categoryManager->getCategoriesModels();
+
                 /** @var Node $savedNode */
                 /** @var ParsedNode $parsedNode */
                 foreach ($parsedNodes as $parsedNodeKey => $parsedNode) {
@@ -138,6 +157,25 @@ class NodeManager extends EntityManager
                             $this->updateNodeStatuses($parsedNode, $savedNode);
                             $this->em->persist($savedNode);
 
+                            $category = $savedNode->getCategory();
+                            $tags = $savedNode->getTags();
+
+                            if ($category) {
+                                $parsedNode->setCategory(
+                                    $categoriesModels[$category->getId()]
+                                );
+                            }
+
+                            if ($tags) {
+                                $parsedNode->clearTags();
+
+                                foreach ($tags as $tag) {
+                                    $parsedNode->addTag(
+                                        $tagsModels[$tag->getId()]
+                                    );
+                                }
+                            }
+
                             $parsedNodes[$parsedNodeKey] = $parsedNode;
                         }
                     }
@@ -147,7 +185,7 @@ class NodeManager extends EntityManager
                 $parserRequest->setParsedNodes($parsedNodes)->sortParsedNodesByStatus(['favorited' => 'DESC']);
             }
 
-            if ($parsedNodesForSave) {
+            if ($parsedNodesForSave) { // save new parsed nodes to database;
                 foreach ($parsedNodesForSave as $parsedNodeForSave) {
                     $nodeEntity = new Node();
                     $nodeEntity->setParentNode($parentNodeEntity);
@@ -163,6 +201,11 @@ class NodeManager extends EntityManager
         return $parserRequest;
     }
 
+    /**
+     * @param ParsedNode $parsedNode
+     * @param Node $savedNode
+     * @throws \Exception
+     */
     public function updateNodeStatuses(ParsedNode &$parsedNode, Node &$savedNode): void
     {
         if ($savedNode->getImagesNo() !== $parsedNode->getImagesNo()) {
@@ -210,6 +253,7 @@ class NodeManager extends EntityManager
         }
 
         $this->entityConverter->setData($nodeData, $dbNode);
+
         $this->save($dbNode);
     }
 }

@@ -9,6 +9,10 @@ use App\Enum\EntityConvertType;
 use App\Model\AbstractModel;
 use App\Utils\StringHelper;
 use Doctrine\Common\Annotations\AnnotationReader;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Util\Debug;
+use Doctrine\ORM\PersistentCollection;
+use Doctrine\Persistence\ObjectManager;
 use Symfony\Component\Intl\Exception\MethodNotImplementedException;
 
 class EntityConverter extends BaseConverter
@@ -18,11 +22,29 @@ class EntityConverter extends BaseConverter
 
     private $entity;
 
+    /** @var ObjectManager */
+    public $em;
+
     private $convertType = EntityConvertType::Array;
 
-    public function __construct()
+    private $converterOptions = [];
+
+    public function __construct($converterOptions = [])
     {
         $this->annotationReader = new AnnotationReader();
+        $this->converterOptions = $converterOptions;
+    }
+
+    /**
+     * @required
+     * @param ObjectManager $em
+     * @return EntityConverter
+     */
+    public function setEntityManager(ObjectManager $em): self
+    {
+        $this->em = $em;
+
+        return $this;
     }
 
     public function loadEntity(AbstractEntity $entity)
@@ -42,7 +64,7 @@ class EntityConverter extends BaseConverter
     /**
      * Converts specified entity to array|stdClass|json
      *
-     * @param AbstractEntity $entity - entity to conversion
+     * @param AbstractEntity|AbstractEntity[] $entity - entity to conversion
      * @param string|null $modelConvertName - convert model name (optional)
      * @param int $maxDepth - max depth of conversion relations (default: 2)
      * @return mixed
@@ -220,7 +242,21 @@ class EntityConverter extends BaseConverter
         if ($value && $variableConfig->converter) {
             $variableConverterClass = 'App\\Converter\\'.$variableConfig->converter.'Converter';
             $variableConverter = new $variableConverterClass($variableConfig->converterOptions);
-            $value = $variableConverter->convertFromEntityValue($value);
+
+            if (method_exists($variableConverter, 'setEntityManager'))
+                $variableConverter->setEntityManager($this->em);
+
+            if ($value instanceof AbstractEntity) {
+                $value = $variableConverter->convertFromEntityValue($value);
+            } else {
+                $newValue = [];
+
+                foreach ($value as $v) {
+                    $newValue[] = $variableConverter->convertFromEntityValue($v);
+                }
+
+                $value = $newValue;
+            }
         }
 
         return $value;
@@ -232,11 +268,20 @@ class EntityConverter extends BaseConverter
             return;
         }
 
-        $entitySetter = 'set'.ucfirst($variableName);
+        if (substr($variableName, -1, 1) === 's') {
+            $adderVariableName = substr($variableName, 0, strlen($variableName) - 1);
+        } elseif (substr($variableName, -2, 2) === 'es' && strlen($variableName) > 4) {
+            $adderVariableName = substr($variableName, 0, strlen($variableName) - 2);
+        } else {
+            $adderVariableName = $variableName;
+        }
 
-        if (!method_exists($this->entity, $entitySetter)) { // method does not exists in entity
+        $entitySetter = 'set'.ucfirst($variableName);
+        $entityAdder = 'add'.ucfirst($adderVariableName);
+
+        if (!method_exists($this->entity, $entitySetter) && !method_exists($this->entity, $entityAdder)) { // method does not exists in entity
             throw new MethodNotImplementedException(
-                'Setter method: "'.$entitySetter.'" does not exists in class '.get_class($this->entity)
+                'Setter method: "'.$entitySetter.'" and "'.$entityAdder.'" does not exists in class '.get_class($this->entity)
             );
         }
 
@@ -244,7 +289,21 @@ class EntityConverter extends BaseConverter
         if ($variableConfig->converter) {
             $variableConverterClass = 'App\\Converter\\'.$variableConfig->converter.'Converter';
             $variableConverter = new $variableConverterClass($variableConfig->converterOptions);
-            $value = $variableConverter->convertToEntityValue($value);
+
+            if (method_exists($variableConverter, 'setEntityManager'))
+                $variableConverter->setEntityManager($this->em);
+
+            if ($variableConfig->type === 'array') {
+                $newValue = [];
+
+                foreach ($value as $k => $v) {
+                    $newValue[$k] = $variableConverter->convertToEntityValue($v);
+                }
+
+                $value = $newValue;
+            } else {
+                $value = $variableConverter->convertToEntityValue($value);
+            }
         } else {
             if ($value === 'null') {
                 $value = null;
@@ -279,6 +338,67 @@ class EntityConverter extends BaseConverter
             }
         }
 
-        $this->entity->$entitySetter($value);
+        if ($variableConfig->type === 'array') {
+            $this->entity->$entitySetter(new ArrayCollection());
+
+            foreach ($value as $v) {
+                $this->entity->$entityAdder($v);
+            }
+        } else {
+            $this->entity->$entitySetter($value);
+        }
+    }
+
+    /**
+     * @param $value
+     * @return mixed
+     * @throws \ReflectionException
+     */
+    public function convertToEntityValue($value)
+    {
+        if (property_exists($this->converterOptions, 'class') && !empty($value)) {
+            if (is_array($value) && array_key_exists('id', $value))
+                $entityId = $value['id'];
+            elseif (is_object($value) && property_exists($value, 'id'))
+                $entityId = $value->id;
+            else
+                $entityId = 0;
+
+            if ($entityId && (int)$entityId > 0)
+                $entity = $this->em->getRepository($this->converterOptions->class)->findOneBy(['id' => $entityId]);
+            if (!$entityId || !$entity)
+                $entity = new $this->converterOptions->class();
+
+            $entityConverter = new EntityConverter();
+            $entityConverter->setEntityManager($this->em);
+            $entityConverter->setData($value, $entity);
+
+            return $entity;
+        }
+
+        return $value;
+    }
+
+    /**
+     * @param $value
+     * @return mixed
+     * @throws \ReflectionException
+     */
+    public function convertFromEntityValue($value)
+    {
+        if (property_exists($this->converterOptions, 'class')) {
+            if (is_array($value) || $value instanceof AbstractEntity) {
+                $entityConverter = new EntityConverter();
+                $entityConverter->setEntityManager($this->em);
+
+                return $entityConverter->convert($value);
+            } elseif ($value instanceof PersistentCollection && $value->isEmpty()) {
+                return $value;
+            } elseif (empty($value)) {
+                return $value;
+            }
+        }
+
+        return $value;
     }
 }

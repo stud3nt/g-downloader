@@ -1,4 +1,6 @@
 import { BaseModel } from "./base/base-model";
+import { Category } from "./category";
+import { Tag } from "./tag";
 
 export class ParserNode extends BaseModel {
 
@@ -47,6 +49,14 @@ export class ParserNode extends BaseModel {
 	private _settings: object = {};
 
 	private _lastViewedAt: string = '---';
+
+	private _allowTags: boolean = false;
+
+	private _allowCategory: boolean = false;
+
+	private _category: Category = null;
+
+	private _tags: Tag[] = [];
 
 	// statuses
 	private _queued: boolean = false;
@@ -238,6 +248,78 @@ export class ParserNode extends BaseModel {
 		this._lastViewedAt = value;
 	}
 
+	get category(): Category {
+		return this._category;
+	}
+
+	set category(value: Category) {
+		this._category = value;
+	}
+
+	get tags(): Tag[] {
+		return this._tags;
+	}
+
+	set tags(value: Tag[]) {
+		this._tags = value;
+	}
+
+	/**
+	 * Checks if node has specified tag
+	 * @param tag
+	 */
+	public hasTag = (tag: Tag): boolean => {
+		if (this._tags.length > 0) {
+			for (let currentTag of this._tags) {
+				if (tag.name === currentTag.name)
+					return true;
+			}
+		}
+
+		return false;
+	};
+
+	/**
+	 * Adds tag to array
+	 * @param tag
+	 */
+	public addTag = (tag: Tag): ParserNode => {
+		if (!this.hasTag(tag))
+			this._tags.push(tag);
+
+		return this;
+	};
+
+	public removeTag = (tag: Tag): ParserNode => {
+		if (this.hasTag(tag)) {
+			let tagsList = this._tags;
+
+			this._tags = [];
+
+			for (let tagIndex in tagsList) {
+				let checkedTag = tagsList[tagIndex];
+
+				if (checkedTag.name !== tag.name)
+					this._tags.push(checkedTag);
+			}
+		}
+
+		return this;
+	};
+
+	/**
+	 * Toggles status (add if not exists, remove if exists);
+	 * @param status
+	 */
+	public toggleStatus = (status: string): ParserNode => {
+		if (this.hasStatus(status))
+			this.removeStatus(status);
+		else
+			this.addStatus(status);
+
+		return this;
+	};
+
 	/**
 	 * Adds status to library
 	 *
@@ -313,5 +395,21 @@ export class ParserNode extends BaseModel {
 
 	set hasStatus(value: (checkedStatus: string) => boolean) {
 		this._hasStatus = value;
+	}
+
+	get allowTags(): boolean {
+		return this._allowTags;
+	}
+
+	set allowTags(value: boolean) {
+		this._allowTags = value;
+	}
+
+	get allowCategory(): boolean {
+		return this._allowCategory;
+	}
+
+	set allowCategory(value: boolean) {
+		this._allowCategory = value;
 	}
 }

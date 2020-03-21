@@ -6,7 +6,6 @@ import { ParserRequest } from "../model/parser-request";
 import { ParserNode } from "../model/parser-node";
 import { HttpHelper } from "../helper/http-helper";
 import { map } from "rxjs/operators";
-import { NodeStatus } from "../enum/node-status";
 
 @Injectable({
 	providedIn: 'root'
@@ -35,27 +34,14 @@ export class ParserService {
 	}
 
 	/**
-	 * Change node status request
+	 * Update and save existing node data
 	 *
-	 * @param node
-	 * @param status
+	 * @param parserRequest
 	 */
-	public markNode(node: ParserNode, status: string = null) {
-		if (status === null || node.hasStatus(NodeStatus.Waiting)) {
-			return;
-		} else {
-			node.addStatus(NodeStatus.Waiting);
-		}
+	public updateNode(parserRequest: ParserRequest) {
+		let formData = HttpHelper.convert(parserRequest);
 
-		if (node.hasStatus(status)) {
-			node.removeStatus(status);
-		} else {
-			node.addStatus(status);
-		}
-
-		let formData = HttpHelper.convert(node);
-
-		return this.http.post(this.router.generateUrl('api_parsers_mark_node'), formData);
+		return this.http.post(this.router.generateUrl('api_node_update'), formData);
 	}
 
 }

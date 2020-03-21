@@ -9,6 +9,7 @@ use App\Manager\DownloadManager;
 use App\Manager\Object\FileManager;
 use App\Manager\Object\NodeManager;
 use App\Service\ParserService;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
@@ -19,6 +20,7 @@ class FileController extends Controller
      * Get downloading status
      *
      * @Route("/api/file/toggle_queue", name="api_file_toggle_queue", options={"expose"=true}, methods={"POST"})
+     * @IsGranted("ROLE_ADMIN")
      *
      * @param Request $request
      * @param ParserService $parserService
@@ -59,6 +61,7 @@ class FileController extends Controller
     /**
      * Get downloading status
      *
+     * @IsGranted("ROLE_ADMIN")
      * @Route("/api/file/toggle_preview", name="api_file_toggle_preview", options={"expose"=true}, methods={"POST"})
      * @throws \Exception
      */

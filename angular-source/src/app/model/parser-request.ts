@@ -4,6 +4,8 @@ import { Pagination } from "./pagination";
 import { BaseModel } from "./base/base-model";
 import { Status } from "./status";
 import { StatusCode } from "../enum/status-code";
+import {Category} from "./category";
+import {Tag} from "./tag";
 
 export class ParserRequest extends BaseModel {
 
@@ -29,6 +31,10 @@ export class ParserRequest extends BaseModel {
 			if (obj.parsedNodes)
 				for (let parsedNode of obj.parsedNodes)
 					this._parsedNodes.push(new ParserNode(parsedNode));
+
+			if (obj.nodesCategories)
+				for (let cat of obj.nodesCategories)
+					this._categories.push(new Category(cat));
 
 			if (obj.status)
 				Object.assign(this.status, obj.status);
@@ -69,6 +75,10 @@ export class ParserRequest extends BaseModel {
 
 	// request identifier
 	private _requestIdentifier: string = null;
+
+	private _categories: Category[] = [];
+
+	private _tags: Tag[] = [];
 
 	public onSuccess: () => any = null;
 	public onError: (error) => any = null;
@@ -135,6 +145,16 @@ export class ParserRequest extends BaseModel {
 			before: null,
 			after: null
 		};
+	}
+
+	public findTagByName(tagName: string): (Tag|null) {
+		if (this._tags)
+			for (let tag of this._tags) {
+				if (tag.name.toLowerCase() === tag.name.toLowerCase())
+					return tag;
+			}
+		else
+			return null;
 	}
 
 	public isRequestDuplicated(): boolean {
@@ -272,5 +292,21 @@ export class ParserRequest extends BaseModel {
 
 	set requestIdentifier(value: string) {
 		this._requestIdentifier = value;
+	}
+
+	get categories(): Category[] {
+		return this._categories;
+	}
+
+	set categories(value: Category[]) {
+		this._categories = value;
+	}
+
+	get tags(): Tag[] {
+		return this._tags;
+	}
+
+	set tags(value: Tag[]) {
+		this._tags = value;
 	}
 }

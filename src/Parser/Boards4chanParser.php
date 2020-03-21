@@ -107,7 +107,8 @@ class Boards4chanParser extends AbstractParser implements ParserInterface
      */
     public function getBoardData(ParserRequest &$parserRequest) : ParserRequest
     {
-        $parserRequest->clearParsedData();
+        $parserRequest->clearParsedData()
+            ->getCurrentNode()->setAllowCategory(true)->setAllowTags(true);
         $parserRequest->getPagination()->disable();
 
         $this->updateUrlsFromBoardUrls($parserRequest->getCurrentNode()->getUrl());
@@ -217,7 +218,8 @@ class Boards4chanParser extends AbstractParser implements ParserInterface
      */
     public function getGalleryData(ParserRequest &$parserRequest) : ParserRequest
     {
-        $parserRequest->clearParsedNodes();
+        $parserRequest->clearParsedNodes()
+            ->getCurrentNode()->setAllowCategory(true)->setAllowTags(true);;
 
         if (!$this->getParserCache($parserRequest)) {
             $parserRequest->pagination->disable();
@@ -301,7 +303,7 @@ class Boards4chanParser extends AbstractParser implements ParserInterface
 
     public function getFilePreview(ParsedFile &$parsedFile) : ParsedFile
     {
-        $this->clearCache();
+        $this->clearFileCache();
 
         $previewFilePath = $this->previewTempDir.$parsedFile->getFullFilename();
         $previewWebPath = $this->previewTempFolder.$parsedFile->getFullFilename();

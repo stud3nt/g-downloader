@@ -96,11 +96,11 @@ class SecurityController extends Controller
             $manager = $this->get(UserManager::class);
             $user = $this->getUser();
 
+            $user->setApiToken(StringHelper::randomStr(64));
+            $manager->save($user);
+
             $this->get('security.token_storage')->setToken(null);
             $request->getSession()->invalidate();
-
-            $user->setToken(StringHelper::randomStr(64));
-            $manager->save($user);
 
             return $this->jsonSuccess();
         } catch (\Exception $e) {

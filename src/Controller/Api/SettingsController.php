@@ -3,10 +3,9 @@
 namespace App\Controller\Api;
 
 use App\Controller\Api\Base\Controller;
-use App\Enum\DownloaderStatus;
 use App\Manager\DownloadManager;
 use App\Manager\SettingsManager;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
@@ -14,8 +13,8 @@ use Symfony\Component\Routing\Annotation\Route;
 class SettingsController extends Controller
 {
     /**
-     * @Route("/api/settings/data", name="api_settings_load", options={"expose"=true})
-     * @Method({"GET"})
+     * @Route("/api/settings/data", name="api_settings_load", options={"expose"=true}, methods={"GET"})
+     * @IsGranted("ROLE_ADMIN")
      */
     public function load(Request $request) : JsonResponse
     {
@@ -27,8 +26,8 @@ class SettingsController extends Controller
     }
 
     /**
-     * @Route("/api/settings/save", name="api_settings_save", options={"expose"=true})
-     * @Method({"POST"})
+     * @Route("/api/settings/save", name="api_settings_save", options={"expose"=true}, methods={"POST"})
+     * @IsGranted("ROLE_ADMIN")
      */
     public function save(Request $request) : JsonResponse
     {

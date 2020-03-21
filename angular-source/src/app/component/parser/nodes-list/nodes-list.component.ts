@@ -38,7 +38,16 @@ export class NodesListComponent implements OnInit {
 	 * @param status
 	 */
 	public markNode(node: ParserNode, status: string): void {
-		let request = this.parserService.markNode(node, status);
+		if (status === null || node.hasStatus(NodeStatus.Waiting))
+			return;
+		else
+			node.addStatus(NodeStatus.Waiting);
+
+		node.toggleStatus(status);
+
+		this.parserRequest.currentNode = node;
+
+		let request = this.parserService.updateNode(this.parserRequest);
 
 		if (!request)
 			return;

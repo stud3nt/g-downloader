@@ -2,11 +2,14 @@
 
 namespace App\Controller\Api\Base;
 
+use App\Converter\EntityConverter;
 use App\Converter\ModelConverter;
 use App\Entity\User;
+use App\Manager\CategoryManager;
 use App\Manager\Object\FileManager;
 use App\Manager\Object\NodeManager;
 use App\Manager\SettingsManager;
+use App\Manager\TagManager;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController as BaseController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -20,12 +23,29 @@ class Controller extends BaseController
     /** @var ContainerInterface */
     protected $container;
 
+    /** @var ModelConverter */
+    protected $modelConverter;
+
+    /** @var EntityConverter */
+    protected $entityConverter;
+
+    /** @var NodeManager */
+    protected $nodeManager;
+
     /**
      * @param ContainerInterface $container
      */
     public function __construct(ContainerInterface $container)
     {
         $this->container = $container;
+
+        $this->modelConverter = $this->get(ModelConverter::class);
+        $this->nodeManager = $this->get(NodeManager::class);
+        $this->fileManager = $this->get(FileManager::class);
+        $this->entityConverter = $this->get(EntityConverter::class);
+        $this->entityConverter->setEntityManager(
+            $this->getDoctrine()->getManager()
+        );
     }
 
     /** @required */
@@ -87,9 +107,12 @@ class Controller extends BaseController
     public static function getSubscribedServices(): array
     {
         return array_merge(parent::getSubscribedServices(), [
+            CategoryManager::class,
             NodeManager::class,
             ModelConverter::class,
-            FileManager::class
+            FileManager::class,
+            EntityConverter::class,
+            TagManager::class
         ]);
     }
 

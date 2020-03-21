@@ -278,6 +278,14 @@ class Status extends AbstractModel
             $this->redis->expire($this->requestIdentifier, $expire);
     }
 
+    public function clear(): bool
+    {
+         if ($this->redis->exists($this->requestIdentifier))
+             $this->redis->del($this->requestIdentifier);
+
+         return true;
+    }
+
     /**
      * @return array|null
      * @throws \ReflectionException

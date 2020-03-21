@@ -70,6 +70,16 @@ class ParserService
         return $parserRequest;
     }
 
+    /**
+     * @param ParserRequest $parserRequest
+     * @param User $user
+     */
+    public function clearParserRequestCache(ParserRequest $parserRequest, User $user)
+    {
+        $parser = $parserRequest->getCurrentNode()->getParser();
+        $this->loadParser($parser, $user)->clearParserCache($parserRequest);
+    }
+
     public function loadParser($parser, User $user)
     {
         if (is_array($parser)) {

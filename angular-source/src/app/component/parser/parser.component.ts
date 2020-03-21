@@ -154,10 +154,12 @@ export class ParserComponent implements OnInit {
 	/**
 	 * Adds/removes status in current node
 	 *
-	 * @param status
+	 * @param node: ParserNode
 	 */
-	public markCurrentNode(status: string): void {
-		this.parserService.markNode(this.parserRequest.currentNode, status).subscribe((response) => {
+	public updateNode(node: ParserNode): void {
+		this.parserRequest.currentNode = node;
+
+		this.parserService.updateNode(this.parserRequest).subscribe((response) => {
 			this.parserRequest.currentNode.removeStatus(NodeStatus.Waiting);
 		}, (error) => {
 			this.parserRequest.currentNode.removeStatus(NodeStatus.Waiting);
@@ -175,10 +177,6 @@ export class ParserComponent implements OnInit {
 		return this.nodesListComponent.getNodeButtonClass(
 			this.parserRequest.currentNode, status
 		);
-	}
-
-	public toggleSettingsModal(): void {
-
 	}
 
 	public scrollTop(): void {

@@ -2,7 +2,6 @@
 
 namespace App\Controller\Front;
 
-use App\Controller\Front\Base\Controller;
 use App\Entity\Parser\Node;
 use App\Enum\ParserType;
 use App\Factory\RedisFactory;
@@ -10,17 +9,12 @@ use App\Manager\Object\FileManager;
 use App\Model\ParsedFile;
 use App\Model\ParsedNode;
 use App\Model\ParserRequest;
-use App\Parser\Boards4chanParser;
 use App\Converter\EntityConverter;
-use App\Parser\HentaiFoundryParser;
-use App\Parser\ImagefapParser;
-use App\Parser\RedditParser;
 use App\Service\DownloadService;
 use App\Service\FileCache;
 use App\Service\ParserService;
 use App\Utils\StringHelper;
 use Doctrine\Common\Util\Debug;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Stopwatch\Stopwatch;

@@ -12,6 +12,7 @@ use App\Model\ParserRequest;
 use App\Model\SettingsModel;
 use App\Service\{FileCache, CurlRequest};
 use App\Utils\AppHelper;
+use Doctrine\Common\Util\Debug;
 use GuzzleHttp\Client;
 use PHPHtmlParser\Dom;
 use Symfony\Component\Filesystem\Filesystem;
@@ -98,7 +99,7 @@ class AbstractParser
      */
     public function __destruct()
     {
-        $this->clearCache();
+        $this->clearFileCache();
     }
 
     /**
@@ -229,7 +230,7 @@ class AbstractParser
         return true;
     }
 
-    protected function clearCache() : void
+    protected function clearFileCache() : void
     {
         $cacheDirs = [$this->thumbnailTempDir, $this->previewTempDir];
         $currentTimestamp = (new \DateTime())->getTimestamp();
@@ -312,9 +313,22 @@ class AbstractParser
     protected function setParserCache(ParserRequest &$parserRequest, $expirationTime = 10) : void
     {
         $key = $this->determineCacheKey($parserRequest);
+
         $data = $this->modelConverter->convert($parserRequest);
 
         $this->cache->set($key, $data, $expirationTime);
+    }
+
+    /**
+     * Clearing cache for parser request;
+     *
+     * @param ParserRequest $parserRequest
+     */
+    public function clearParserCache(ParserRequest $parserRequest): void
+    {
+        $this->cache->remove(
+            $this->determineCacheKey($parserRequest)
+        );
     }
 
     /**

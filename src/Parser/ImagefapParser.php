@@ -122,6 +122,8 @@ class ImagefapParser extends AbstractParser implements ParserInterface
      */
     public function getBoardsListData(ParserRequest &$parserRequest) : ParserRequest
     {
+        $parserRequest->getCurrentNode()->setAllowCategory(true)->setAllowTags(true);
+
         if (!$this->getParserCache($parserRequest)) {
             $currentName = $parserRequest->currentNode->getName();
 
@@ -206,6 +208,8 @@ class ImagefapParser extends AbstractParser implements ParserInterface
      */
     public function getBoardData(ParserRequest &$parserRequest) : ParserRequest
     {
+        $parserRequest->getCurrentNode()->setAllowCategory(true)->setAllowTags(true);
+
         if (!$this->getParserCache($parserRequest)) {
             $boardUrl = $parserRequest->currentNode->getUrl();
             $pagination = $parserRequest->pagination;
@@ -453,6 +457,10 @@ class ImagefapParser extends AbstractParser implements ParserInterface
             $this->setParserCache($parserRequest, 0);
         }
 
+        $parserRequest->getCurrentNode()
+            ->setAllowCategory(true)
+            ->setAllowTags(true);
+
         return $parserRequest;
     }
 
@@ -495,7 +503,7 @@ class ImagefapParser extends AbstractParser implements ParserInterface
      */
     public function getFilePreview(ParsedFile &$parsedFile) : ParsedFile
     {
-        $this->clearCache();
+        $this->clearFileCache();
 
         if (empty($parsedFile->getFileUrl()) || empty($parsedFile->getName()) || empty($parsedFile->getExtension())) {
             $this->getFileData($parsedFile);

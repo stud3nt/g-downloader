@@ -6,7 +6,6 @@ use App\Enum\ParserType;
 use App\Model\SettingsModel;
 use Symfony\Component\Cache\Adapter\FilesystemAdapter;
 use Symfony\Component\Cache\CacheItem;
-use Symfony\Component\Debug\Debug;
 
 class RedditOauth
 {

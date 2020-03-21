@@ -155,6 +155,10 @@ class RedditParser extends AbstractParser implements ParserInterface
             $this->setParserCache($parserRequest, 0);
         }
 
+        $parserRequest->getCurrentNode()
+            ->setAllowCategory(true)
+            ->setAllowTags(true);
+
         return $parserRequest;
     }
 
@@ -170,6 +174,10 @@ class RedditParser extends AbstractParser implements ParserInterface
         $parserRequest->clearParsedData()
             ->getPagination()
             ->loadMorePagination();
+
+        $parserRequest->getCurrentNode()
+            ->setAllowCategory(true)
+            ->setAllowTags(true);
 
         $this->preparePaginationSelectors($parserRequest);
 
@@ -322,7 +330,7 @@ class RedditParser extends AbstractParser implements ParserInterface
      */
     public function getFilePreview(ParsedFile &$parsedFile) : ParsedFile
     {
-        $this->clearCache();
+        $this->clearFileCache();
 
         if (GfycatParser::isGfycat($parsedFile))
             GfycatParser::completeFileData($parsedFile);

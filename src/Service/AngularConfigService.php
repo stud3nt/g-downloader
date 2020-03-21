@@ -143,6 +143,27 @@ class AngularConfigService
             ],
             [
                 'route' => null,
+                'label' => 'Lists',
+                'icon' => 'fa-list',
+                'childs' => [
+                    [
+                        'route' => 'app_lists',
+                        'routeParams' => [
+                            'listName' => 'categories'
+                        ],
+                        'label' => 'Categories'
+                    ],
+                    [
+                        'route' => 'app_lists',
+                        'routeParams' => [
+                            'listName' => 'tags'
+                        ],
+                        'label' => 'Tags'
+                    ]
+                ]
+            ],
+            [
+                'route' => null,
                 'label' => 'Users',
                 'icon' => 'fa-users',
                 'childs' => [

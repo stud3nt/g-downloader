@@ -48,7 +48,11 @@ export class HttpHelper {
 				switch (output) {
 					case HttpHelper.FormData:
 						outputData = (!outputData) ? (new FormData()) : outputData;
-						outputData.append(dataIndex, convertedData[dataIndex]);
+
+						if (Array.isArray(convertedData[dataIndex]))
+							outputData.append(dataIndex, JSON.stringify(convertedData[dataIndex]))
+						else
+							outputData.append(dataIndex, convertedData[dataIndex]);
 						break;
 
 					case HttpHelper.Object:

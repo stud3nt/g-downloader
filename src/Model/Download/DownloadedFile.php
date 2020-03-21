@@ -41,8 +41,8 @@ class DownloadedFile extends AbstractModel
 
     public function __destruct()
     {
-        if (file_exists($this->tempFilePath))
-            unlink($this->tempFilePath);
+        //if (file_exists($this->tempFilePath))
+            //unlink($this->tempFilePath);
     }
 
     /**
@@ -87,8 +87,6 @@ class DownloadedFile extends AbstractModel
     {
         if (!$this->tempFilePath)
             throw new \Exception('Target file path must be specified before saving.');
-        else if (!file_exists($this->tempFilePath))
-            return $this;
 
         $this->convertToJpg();
 
@@ -196,7 +194,7 @@ class DownloadedFile extends AbstractModel
 
                 Image::open($this->tempFilePath)
                     ->scaleResize($testWidth, $testHeight)
-                    ->save($this->operationalFilePath, 'jpg', (80 - (2*$i)));
+                    ->save($this->operationalFilePath, 'jpg', (100 - (4*$i)));
 
                 $controlFilesize = filesize($this->operationalFilePath);
                 $controlCompressionRatio = (($testWidth * $testHeight) / $controlFilesize);
@@ -219,7 +217,7 @@ class DownloadedFile extends AbstractModel
         if (!$this->targetFilePath)
             throw new \Exception('Target file path must be specified before saving.');
         else if (!file_exists($this->tempFilePath))
-            return true;
+            throw new \Exception('Temp file not exists');
 
         return copy($this->tempFilePath, $this->targetFilePath);
     }
@@ -300,6 +298,10 @@ class DownloadedFile extends AbstractModel
 
         $this->tempFilePath = $fileEntity->getTempFilePath();
         $this->targetFilePath = $fileEntity->getTargetFilePath();
+
+        $file = fopen($this->tempFilePath,"w");
+        fwrite($file,"");
+        fclose($file);
 
         return $this;
     }
