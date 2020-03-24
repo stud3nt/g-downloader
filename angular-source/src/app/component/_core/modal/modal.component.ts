@@ -48,6 +48,8 @@ export class ModalComponent implements OnInit {
 		if (!this.id) {
 			console.error('modal must have an id');
 			return;
+		} else {
+			this.modalService.selectModal(this.id);
 		}
 
 		// move element to bottom of page (just before </body>) so it can be displayed above everything else
@@ -116,38 +118,40 @@ export class ModalComponent implements OnInit {
 	}
 
 	// remove self from modal service when component is destroyed
-	ngOnDestroy(): void {
-		this.modalService.remove(this.id);
+	public ngOnDestroy(): void {
+		this.modalService.remove();
 		this.element.remove();
 		this._modalStyle = { display: 'block' };
 	}
 
 	// open modal
-	open(): void {
+	public open(): void {
 		this.element.style.display = 'block';
 		this._modalStyle = { display: 'block' };
 	}
 
 	// SAVE action
-	save(): void {
+	public save(): void {
 		this.onSave.emit(Math.random());
 		this.closeModal();
 	}
 
-	// OK action
-	ok(): void {
-
-	}
-
-	// CANCEL action
-	cancel(): void {
-
-	}
-
 	// CLOSE action
-	close(): void {
+	public close(): void {
 		this.closeModal();
 		this.onClose.emit(Math.random());
+	}
+
+	public showLoader(): void {
+		this._loaderVisible = true;
+	}
+
+	public setLoaderText(text: string = ''): void {
+		this.modalLoaderText = text;
+	}
+
+	public hideLoader(): void {
+		this._loaderVisible = false;
 	}
 
 	public closeOutline() : void {

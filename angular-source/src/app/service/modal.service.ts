@@ -1,28 +1,78 @@
 import { Injectable } from '@angular/core';
 
 @Injectable({
-  providedIn: 'root'
+	providedIn: 'root'
 })
 export class ModalService {
 
 	private modals: any[] = [];
 
-	add(modal: any) {
+	private currentModalId: any = null;
+
+	public selectModal(id: string): ModalService {
+		this.currentModalId = id;
+		return this;
+	}
+
+	public add(modal: any) {
 		this.modals.push(modal);
 	}
 
-	remove(id: string) {
-		this.modals = this.modals.filter(x => x.id !== id);
+	public remove(): ModalService {
+		this.modals = this.modals.filter(x => x.id !== this.currentModalId);
+		return this;
 	}
 
-	open(id: string) {
-		const modal = this.modals.find(x => x.id === id);
-		modal.open();
+	public open(): ModalService {
+		let modal = this.getCurrentModal();
+
+		if (modal)
+			modal.open();
+
+		return this;
 	}
 
-	close(id: string) {
-		const modal = this.modals.find(x => x.id === id);
-		modal.close();
+	public showLoader(): ModalService {
+		let modal = this.getCurrentModal();
+
+		if (modal)
+			modal.showLoader();
+
+		return this;
+	}
+
+	public setLoaderText(loaderText: string = ''): ModalService {
+		let modal = this.getCurrentModal();
+
+		if (modal)
+			modal.setLoaderText(loaderText);
+
+		return this;
+	}
+
+	public hideLoader(): ModalService {
+		const modal = this.getCurrentModal();
+
+		if (modal)
+			modal.hideLoader();
+
+		return this;
+	}
+
+	public close(): ModalService {
+		let modal = this.getCurrentModal();
+
+		if (modal)
+			modal.close();
+
+		return this;
+	}
+
+	private getCurrentModal(id: string = null): (any|null) {
+		if (!id)
+			id = this.currentModalId;
+
+		return this.modals.find(x => x.id === id);
 	}
 
 }

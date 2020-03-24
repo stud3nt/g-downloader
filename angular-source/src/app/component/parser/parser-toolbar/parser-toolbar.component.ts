@@ -5,6 +5,7 @@ import {Pagination} from "../../../model/pagination";
 import {PaginationMode} from "../../../enum/pagination-mode";
 import {ParserNode} from "../../../model/parser-node";
 import {Tag} from "../../../model/tag";
+import {ParserToolbarAction} from "../../../enum/parser-toolbar-action";
 
 @Component({
 	selector: 'app-parser-toolbar',
@@ -15,6 +16,7 @@ export class ParserToolbarComponent implements OnInit {
 
 	public NodeStatus = NodeStatus;
 	public PaginationMode = PaginationMode;
+	public ToolbarAction = ParserToolbarAction;
 
 	public _parserRequest: ParserRequest = null;
 	public _currentNode: ParserNode = null;
@@ -23,6 +25,10 @@ export class ParserToolbarComponent implements OnInit {
 	public _nodeCategory: string = null;
 	public _inputTagName: string = null;
 	public _tagInputVisible: boolean = false;
+
+	public _toolbarAction: string = null;
+
+	public _assesments = [];
 
 	// tag search timeout variable;
 	private _tagSearchTimeout = null;
@@ -93,7 +99,7 @@ export class ParserToolbarComponent implements OnInit {
 
 	public nodeMarking(selectedStatus: string): void {
 		this._parserRequest.currentNode.toggleStatus(selectedStatus);
-		this.onNodeUpdate.next(this._parserRequest.currentNode);
+		this.updateCurrentNode();
 	}
 
 	public nodePaginating(reset: boolean = false): void {
@@ -142,7 +148,7 @@ export class ParserToolbarComponent implements OnInit {
 			}
 		}
 
-		this.onNodeUpdate.next(this._parserRequest.currentNode);
+		this.updateCurrentNode();
 	}
 
 	public openTagInput(): void {
@@ -153,11 +159,18 @@ export class ParserToolbarComponent implements OnInit {
 		}, 10);
 	}
 
+	public toggleToolbarAction(action: string = null): void {
+		this._toolbarAction = ((this._toolbarAction === null) ? action : null);
+	}
+
 	public toggleTag(event: KeyboardEvent): void {
 		clearTimeout(this._tagSearchTimeout);
 
+		this._foundTags = [];
+
+		let tagName = (this._inputTagName) ? this._inputTagName.toUpperCase() : '';
+
 		if (event.key === 'Enter' && this._inputTagName.length > 0) { // tag creation
-			let tagName = this._inputTagName.toUpperCase();
 			let tag = this._parserRequest.findTagByName(tagName);
 
 			if (!tag) {
@@ -172,7 +185,7 @@ export class ParserToolbarComponent implements OnInit {
 			this._tagInputVisible = false;
 			this._foundTags = [];
 
-			this.onNodeUpdate.next(this._parserRequest.currentNode);
+			this.updateCurrentNode();
 		} else {
 			this._tagSearchTimeout = setTimeout(() => {
 				for (let tagIndex in this._parserRequest.tags) {
@@ -181,7 +194,7 @@ export class ParserToolbarComponent implements OnInit {
 
 					let processedTag = this._parserRequest.tags[tagIndex];
 
-					if (processedTag.name.indexOf(this._inputTagName) !== -1)
+					if (processedTag.name.indexOf(tagName) !== -1)
 						this._foundTags.push(processedTag);
 				}
 			}, 300);
@@ -192,12 +205,22 @@ export class ParserToolbarComponent implements OnInit {
 		this._parserRequest.currentNode.addTag(tag);
 		this._tagInputVisible = false;
 		this._foundTags = [];
-		this.onNodeUpdate.next(this._parserRequest.currentNode);
+		this.updateCurrentNode();
 	}
 
 	public removeTag(tag: Tag): void {
 		this._parserRequest.currentNode.removeTag(tag);
 		this._inputTagName = null;
+		this.updateCurrentNode();
+	}
+
+	public clearRatingForm(): void {
+		this._parserRequest.currentNode.description = this._currentNode.description;
+		this._parserRequest.currentNode.rating = this._currentNode.rating;
+		this._toolbarAction = null;
+	}
+
+	public updateCurrentNode(): void {
 		this.onNodeUpdate.next(this._parserRequest.currentNode);
 	}
 
@@ -229,6 +252,7 @@ export class ParserToolbarComponent implements OnInit {
 	private createPaginationData(): void {
 		this._pages = [];
 		this._packages = [];
+		this._assesments = [];
 
 		switch (this._pagination.mode) {
 			case PaginationMode.Letters:
@@ -273,5 +297,8 @@ export class ParserToolbarComponent implements OnInit {
 					this._activeSelectorChildrenValue = child.value;
 				}
 			}
+
+		for (let x = 1; x <= 10; x++)
+			this._assesments.push(x);
 	}
 }

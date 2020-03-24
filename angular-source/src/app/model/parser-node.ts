@@ -18,7 +18,11 @@ export class ParserNode extends BaseModel {
 
 	private _label: string;
 
+	private _rating: number = 0;
+
 	private _description: string = null;
+
+	private _customDescription: string = null;
 
 	private _level: string = null;
 
@@ -86,6 +90,14 @@ export class ParserNode extends BaseModel {
 
 	set label(value: string) {
 		this._label = value;
+	}
+
+	get rating(): number {
+		return this._rating;
+	}
+
+	set rating(value: number) {
+		this._rating = value;
 	}
 
 	get description(): string {
@@ -411,5 +423,13 @@ export class ParserNode extends BaseModel {
 
 	set allowCategory(value: boolean) {
 		this._allowCategory = value;
+	}
+
+	get customDescription(): string {
+		return this._customDescription;
+	}
+
+	set customDescription(value: string) {
+		this._customDescription = value;
 	}
 }

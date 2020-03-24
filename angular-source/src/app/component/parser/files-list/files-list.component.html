@@ -1,3 +1,12 @@
+<universal-modal
+    [id]="_previewModalId"
+    [modalTitle]="_previewModalTitle"
+    [modalType]="ModalType.PreviewAndSave"
+    (onSave)="savePreviewedFile()"
+>
+    <div [innerHTML]="_previewModalContent"></div>
+</universal-modal>
+
 <div *ngIf="parserRequest.files !== null && parserRequest.files.length > 0">
     <div class="grid-container grid-200">
         <article id="{{ file.identifier }}" [ngClass]="determineFileClass(file)" *ngFor="let file of parserRequest.files" (click)="toggleFileQueue(file)">
@@ -27,6 +36,22 @@
                 </div>
             </div>
             <div class="tile-data">
+                <table class="table table-hover">
+                    <tbody>
+                        <tr *ngIf="file.uploadedAt !== null && file.uploadedAt.length > 0">
+                            <th width="20%">Created:</th>
+                            <td>
+                                {{ (file.uploadedAt !== null) ? (file.uploadedAt) : '---' }}
+                            </td>
+                        </tr>
+                        <tr *ngIf="file.ratio >= 0">
+                            <th>Ratio:</th>
+                            <td>
+                                {{ file.ratio }}
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
                 <span class="data-label bg-info" *ngIf="file.hasStatus(FileStatus.Queued)">
                     <i class="fa fa-database"></i> &nbsp; Queued
                 </span>
@@ -41,9 +66,6 @@
                 </span>
                 <span class="data-label" *ngIf="file.size || file.textSize">
                     <i class="fa fa-database"></i> &nbsp; {{ file.textSize ? file.textSize : file.size + ' bytes' }}
-                </span>
-                <span class="data-label" *ngIf="file.uploadedAt">
-                    <i class="fa fa-upload"></i> &nbsp; {{ file.uploadedAt }}
                 </span>
             </div>
             <div class="tile-footer">

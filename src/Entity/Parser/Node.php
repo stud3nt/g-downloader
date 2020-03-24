@@ -36,10 +36,22 @@ class Node extends AbstractEntity
     protected $level;
 
     /**
+     * @ORM\Column(name="personal_rating", type="integer", length=6, options={"unsigned"=true, "default":0})
+     * @EntityVariable(convertable=true, writable=true, readable=true)
+     */
+    protected $rating = 0;
+
+    /**
      * @ORM\Column(name="description", type="string", length=4096, nullable=true)
      * @EntityVariable(convertable=true, writable=true, readable=true)
      */
     protected $description;
+
+    /**
+     * @ORM\Column(name="custom_description", type="text", nullable=true)
+     * @EntityVariable(convertable=true, writable=true, readable=true)
+     */
+    protected $customDescription;
 
     /**
      * @ORM\Column(name="ratio", type="integer", length=6, options={"unsigned"=true, "default":0})
@@ -433,6 +445,44 @@ class Node extends AbstractEntity
         if ($this->tags->contains($tag)) {
             $this->tags->removeElement($tag);
         }
+
+        return $this;
+    }
+
+    /**
+     * @return int|null
+     */
+    public function getRating(): ?int
+    {
+        return $this->rating;
+    }
+
+    /**
+     * @param int $rating
+     * @return Node
+     */
+    public function setRating(int $rating): self
+    {
+        $this->rating = $rating;
+
+        return $this;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getCustomDescription(): ?string
+    {
+        return $this->customDescription;
+    }
+
+    /**
+     * @param string|null $customDescription
+     * @return Node
+     */
+    public function setCustomDescription(?string $customDescription): self
+    {
+        $this->customDescription = $customDescription;
 
         return $this;
     }

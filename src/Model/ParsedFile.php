@@ -4,6 +4,7 @@ namespace App\Model;
 
 use App\Annotation\ModelVariable;
 use App\Model\Interfaces\StatusInterface;
+use App\Utils\DateTimeHelper;
 use App\Utils\FilesHelper;
 
 class ParsedFile extends AbstractModel implements StatusInterface
@@ -67,6 +68,11 @@ class ParsedFile extends AbstractModel implements StatusInterface
      * @ModelVariable()
      */
     public $uploadedAt;
+
+    /**
+     * @ModelVariable(type="integer")
+     */
+    public $ratio = -1;
 
     /**
      * @ModelVariable()
@@ -331,7 +337,10 @@ class ParsedFile extends AbstractModel implements StatusInterface
      */
     public function setUploadedAt($uploadedAt): self
     {
-        $this->uploadedAt = $uploadedAt;
+        if ($uploadedAt instanceof \DateTime)
+            $this->uploadedAt = DateTimeHelper::dateDifference($uploadedAt).' ago';
+        else
+            $this->uploadedAt = $uploadedAt;
 
         return $this;
     }
@@ -702,6 +711,25 @@ class ParsedFile extends AbstractModel implements StatusInterface
     public function setStatus(Status $status): self
     {
         $this->status = $status;
+
+        return $this;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getRatio()
+    {
+        return $this->ratio;
+    }
+
+    /**
+     * @param mixed $ratio
+     * @return $this
+     */
+    public function setRatio($ratio): self
+    {
+        $this->ratio = $ratio;
 
         return $this;
     }

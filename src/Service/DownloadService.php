@@ -68,7 +68,7 @@ class DownloadService
      * @param array $filesList
      * @param User $user
      */
-    protected function prepareParsersForFiles(array $filesList, User $user): void
+    public function prepareParsersForFiles(array $filesList, User $user): void
     {
         /** @var File $file */
         foreach ($filesList as $file) {

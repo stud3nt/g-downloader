@@ -48,6 +48,12 @@ class ParsedNode extends AbstractModel
      * @var string
      * @ModelVariable(type="string")
      */
+    public $customDescription;
+
+    /**
+     * @var string
+     * @ModelVariable(type="string")
+     */
     public $url;
 
     /**
@@ -55,6 +61,12 @@ class ParsedNode extends AbstractModel
      * @ModelVariable(type="integer")
      */
     public $ratio = 0;
+
+    /**
+     * @var integer
+     * @ModelVariable(type="integer")
+     */
+    public $rating = 0;
 
     /**
      * @var integer
@@ -779,6 +791,44 @@ class ParsedNode extends AbstractModel
     public function setAllowTags(bool $allowTags): self
     {
         $this->allowTags = $allowTags;
+
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getCustomDescription(): string
+    {
+        return $this->customDescription;
+    }
+
+    /**
+     * @param string $customDescription
+     * @return $this
+     */
+    public function setCustomDescription(string $customDescription = null): self
+    {
+        $this->customDescription = $customDescription;
+
+        return $this;
+    }
+
+    /**
+     * @return int
+     */
+    public function getRating(): int
+    {
+        return $this->rating;
+    }
+
+    /**
+     * @param int $rating
+     * @return $this
+     */
+    public function setRating(int $rating): self
+    {
+        $this->rating = $rating;
 
         return $this;
     }

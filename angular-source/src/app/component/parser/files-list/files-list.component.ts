@@ -14,6 +14,7 @@ import { JsonResponse } from "../../../model/json-response";
 import { Status } from "../../../model/status";
 import { WebsocketOperation } from "../../../enum/websocket-operation";
 import { AuthService } from "../../../service/auth.service";
+import {ModalService} from "../../../service/modal.service";
 
 @Component({
   selector: 'app-files-list',
@@ -28,6 +29,12 @@ export class FilesListComponent implements OnInit {
 
 	public lockTiles = false;
 
+	public _previewModalId: string = 'file-preview-modal';
+	public _previewModalTitle: string = '';
+	public _previewModalContent: string = '';
+
+	public ModalType = ModalType;
+
 	private _webSocketName = 'file_loader_websocket';
 
 	constructor(
@@ -36,10 +43,12 @@ export class FilesListComponent implements OnInit {
 		protected toastrService: ToastrDataService,
 		protected auth: AuthService,
 		protected webSocketService: WebSocketService,
-		protected modal: ModalDataService
+		protected modalService: ModalService
 	) {}
 
-	ngOnInit() {}
+	ngOnInit() {
+		this.modalService.selectModal(this._previewModalId);
+	}
 
 	public determineFileClass(file: ParsedFile) : string {
 		let nodeClass = 'tile tile-250';
@@ -83,19 +92,11 @@ export class FilesListComponent implements OnInit {
 	public openFilePreview(file: ParsedFile) : void {
 		let modalTitle = file.title ? file.title : (file.name+'.'+file.extension);
 
-		this.modal.open(ModalType.Preview, modalTitle)
-			.showLoader()
-			.setLoaderText('Loading...');
+		this.modalService.open().showLoader();
 
 		this.nodeFileService.toggleFilePreview(file).subscribe((result: ParsedFile) => {
-			if (result.width < 600)
-				this.modal.setSize(ModalSize.Small);
-			else if (result.width > 600 && result.width < 1000)
-				this.modal.setSize(ModalSize.Medium);
-			else
-				this.modal.setSize(ModalSize.Large);
-
-			this.modal.setBody(result.htmlPreview).hideLoader();
+			this._previewModalContent = result.htmlPreview;
+			this.modalService.hideLoader();
 		});
 
 		if (this.webSocketService.isConnected(this._webSocketName))
@@ -110,13 +111,13 @@ export class FilesListComponent implements OnInit {
 						let status = new Status(jsonResponse.data);
 
 						if (status.progress < 100) {
-							this.modal.setLoaderText(status.progress+'%');
+							this.modalService.setLoaderText(status.progress+'%');
 
 							setTimeout(() => {
 								this.sendPreviewStatusRequest(file);
 							}, 250);
 						} else  {
-							this.modal.setLoaderText('DONE.');
+							this.modalService.setLoaderText('DONE.');
 						}
 					}
 				}
@@ -129,6 +130,10 @@ export class FilesListComponent implements OnInit {
 		);
 
 		this.sendPreviewStatusRequest(file);
+	}
+
+	public savePreviewedFile(): void {
+
 	}
 
 	public sendPreviewStatusRequest(file: ParsedFile): void {

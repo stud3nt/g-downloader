@@ -150,7 +150,7 @@ export class ParserRequest extends BaseModel {
 	public findTagByName(tagName: string): (Tag|null) {
 		if (this._tags)
 			for (let tag of this._tags) {
-				if (tag.name.toLowerCase() === tag.name.toLowerCase())
+				if (tagName.length > 2 && tag.name.toUpperCase() === tagName.toUpperCase())
 					return tag;
 			}
 		else

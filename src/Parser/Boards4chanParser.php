@@ -107,8 +107,7 @@ class Boards4chanParser extends AbstractParser implements ParserInterface
      */
     public function getBoardData(ParserRequest &$parserRequest) : ParserRequest
     {
-        $parserRequest->clearParsedData()
-            ->getCurrentNode()->setAllowCategory(true)->setAllowTags(true);
+        $parserRequest->clearParsedData();
         $parserRequest->getPagination()->disable();
 
         $this->updateUrlsFromBoardUrls($parserRequest->getCurrentNode()->getUrl());
@@ -188,6 +187,10 @@ class Boards4chanParser extends AbstractParser implements ParserInterface
                 ->send();
         }
 
+        $parserRequest->getCurrentNode()
+            ->setAllowCategory(false)
+            ->setAllowTags(false);
+
         return $parserRequest;
     }
 
@@ -247,6 +250,11 @@ class Boards4chanParser extends AbstractParser implements ParserInterface
                             $thumbnailUrl = 'http:'.$thumbnail->getAttribute('src');
 
                             $fileData = $this->extractFileInfoFromText($div->find('div.fileText')->text());
+                            $date = (new \DateTime())->setTimeZone(new \DateTimeZone('UTC'))
+                                ->setTimestamp(
+                                    (int)$div->find('span.dateTime')->getAttribute('data-utc')
+                                )
+                                ->setTimezone(new \DateTimeZone('Europe/Warsaw'));
 
                             $parsedFile = (new ParsedFile(ParserType::Boards4chan, FilesHelper::getFileType($imageUrl, true)))
                                 ->setIdentifier(FilesHelper::getFileName($imageUrl))
@@ -260,6 +268,7 @@ class Boards4chanParser extends AbstractParser implements ParserInterface
                                 ->setTextSize($fileData['textSize'])
                                 ->setWidth($fileData['width'])
                                 ->setHeight($fileData['height'])
+                                ->setUploadedAt($date)
                             ;
 
                             $localThumbnailUrl = $this->thumbnailTempDir.FilesHelper::getFileName($thumbnailUrl, true);

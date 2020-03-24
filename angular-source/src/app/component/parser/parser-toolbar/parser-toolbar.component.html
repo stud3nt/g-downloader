@@ -149,9 +149,49 @@
                 </div>
             </div>
         </div>
+
+        <div class="toolbar__row__buttonbox">
+            <div class="buttonbox_label">
+                NODE RATING
+            </div>
+            <div class="buttonbox_buttons">
+                <a [ngClass]="'button button-small'+((_toolbarAction === ToolbarAction.Rating) ? ' active' : '')" class="" title="Create tag" (click)="toggleToolbarAction(ToolbarAction.Rating)">
+                    <i class="fa fa-star"></i> &nbsp; RATE/COMMENT
+                </a>
+            </div>
+        </div>
     </div>
 
-    <div class="toolbar__row" id="parser-toolbar-action-area">
+    <div class="toolbar__row" id="parser-toolbar-action-area" *ngIf="_toolbarAction !== null">
+        <div class="toolbar__row__actionbox" id="toolbar-rating-area" *ngIf="_toolbarAction === ToolbarAction.Rating">
+            <form role="form">
+                <div class="form-group">
+                    <label>Rating &nbsp;</label>
+                    <div class="btn-group">
+                        <button type="button" [className]="'btn btn-sm '+(_parserRequest.currentNode.rating >= f ? 'btn-primary' : 'btn-default')" *ngFor="let f of _assesments" (click)="_parserRequest.currentNode.rating = f">
+                            <i class="fa fa-star"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="toolbar-description-textarea">Comment</label>
+                    <textarea id="toolbar-description-textarea" class="form-control" rows="3" placeholder="" [(ngModel)]="_parserRequest.currentNode.customDescription" name="custom-description"></textarea>
+                </div>
+                <div class="form-group">
+                    <button type="button" class="btn btn-sm btn-primary" (click)="updateCurrentNode()">
+                        <i class="fa fa-save"></i> &nbsp; SAVE
+                    </button>
+                    <button type="button" class="btn btn-sm btn-default" (click)="clearRatingForm()">
+                        <i class="fa fa-remove"></i> &nbsp; CANCEL
+                    </button>
+                </div>
+            </form>
+        </div>
+        <div class="toolbar__row__actionbox" id="toolbar-filtration-area" *ngIf="_toolbarAction === ToolbarAction.Filtering">
 
+        </div>
+        <div class="toolbar__row__actionbox" id="toolbar-nodes-list-area" *ngIf="_toolbarAction === ToolbarAction.NodesList">
+
+        </div>
     </div>
 </div>

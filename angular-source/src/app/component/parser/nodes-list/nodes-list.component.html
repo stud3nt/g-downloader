@@ -31,14 +31,14 @@
                 <table class="table table-hover">
                     <tbody>
                         <tr>
-                            <th>Last viewed at</th>
+                            <th>Date</th>
                             <th>
                                 {{ (node.lastViewedAt !== null) ? (node.lastViewedAt + ' ago') : '---' }}
                             </th>
                         </tr>
 
                         <tr *ngIf="node.imagesNo && node.imagesNo > 0">
-                            <th>Images</th>
+                            <th>Files</th>
                             <td>
                                 {{ node.imagesNo }}
                             </td>
@@ -52,6 +52,19 @@
                         <tr *ngIf="node.commentsNo">
                             <th>Comments</th>
                             <td>{{ node.commentsNo ? node.commentsNo : '----' }}</td>
+                        </tr>
+                        <tr *ngIf="node.category !== null">
+                            <th>Category</th>
+                            <td>{{ (node.category && node.category.label) ? node.category.label : node.category.name }}</td>
+                        </tr>
+                        <tr *ngIf="node.tags !== null && node.tags.length > 0">
+                            <td colspan="12">
+                                <div class="tags_container">
+                                    <div class="tag" *ngFor="let tag of node.tags">
+                                        {{ tag.name }}
+                                    </div>
+                                </div>
+                            </td>
                         </tr>
                     </tbody>
                 </table>

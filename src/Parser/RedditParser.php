@@ -156,8 +156,8 @@ class RedditParser extends AbstractParser implements ParserInterface
         }
 
         $parserRequest->getCurrentNode()
-            ->setAllowCategory(true)
-            ->setAllowTags(true);
+            ->setAllowCategory(false)
+            ->setAllowTags(false);
 
         return $parserRequest;
     }
@@ -253,6 +253,11 @@ class RedditParser extends AbstractParser implements ParserInterface
                 $mimeType = FilesHelper::getFileMimeType($clearFileUrl, true);
             }
 
+            $createdAt = (new \DateTime())
+                ->setTimezone(new \DateTimeZone('UTC'))
+                ->setTimestamp($child->created_utc)
+                ->setTimezone(new \DateTimeZone('Europe/Warsaw'));
+
             $parsedFile = (new ParsedFile(ParserType::Reddit, $fileType))
                 ->setName(FilesHelper::getFileName($clearFileUrl))
                 ->setTitle($child->title)
@@ -262,6 +267,8 @@ class RedditParser extends AbstractParser implements ParserInterface
                 ->setHeight($image->source->height)
                 ->setMimeType($mimeType)
                 ->setSize(0)
+                ->setUploadedAt($createdAt)
+                ->setRatio($child->ups)
             ;
 
             if ($child->domain === 'gfycat.com') {

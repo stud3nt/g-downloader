@@ -50,6 +50,8 @@ export class ParsedFile extends BaseModel {
 
 	private _uploadedAt: string;
 
+	private _ratio: number = -1;
+
 	private _htmlPreview: string = null;
 
 	// file type (image, movie)
@@ -297,5 +299,13 @@ export class ParsedFile extends BaseModel {
 
 	set status(value: Status) {
 		this._status = value;
+	}
+
+	get ratio(): number {
+		return this._ratio;
+	}
+
+	set ratio(value: number) {
+		this._ratio = value;
 	}
 }
