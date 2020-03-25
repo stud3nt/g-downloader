@@ -140,6 +140,17 @@ export class ParserRequest extends BaseModel {
 		return this;
 	}
 
+	public updateFile(modifiedFile: ParsedFile): void {
+		if (this._files) {
+			for (let fileKey in this._files) {
+				let file = this._files[fileKey];
+
+				if (file.identifier === modifiedFile.identifier)
+					this._files[fileKey] = modifiedFile;
+			}
+		}
+	}
+
 	public clearTokens(): void {
 		this.tokens = {
 			before: null,

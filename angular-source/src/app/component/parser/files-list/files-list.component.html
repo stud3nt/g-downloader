@@ -3,8 +3,9 @@
     [modalTitle]="_previewModalTitle"
     [modalType]="ModalType.PreviewAndSave"
     (onSave)="savePreviewedFile()"
+    (onClose)="closeFilePreview()"
 >
-    <div [innerHTML]="_previewModalContent"></div>
+    <div [ngClass]="_previewClass" [innerHTML]="_previewModalContent" (click)="toggleFilePreviewMode()"></div>
 </universal-modal>
 
 <div *ngIf="parserRequest.files !== null && parserRequest.files.length > 0">
@@ -26,8 +27,8 @@
                 </span>
             </div>
             <div class="tile-image">
-                <img [alt]="file.name" *ngIf="file.thumbnail !== null" [src]="file.thumbnail" />
-                <img [alt]="file.name" *ngIf="file.localThumbnail !== null" [src]="file.localThumbnail" />
+                <img [alt]="file.name" *ngIf="file.thumbnail !== null && file.thumbnail !== 'null'" [src]="file.thumbnail" />
+                <img [alt]="file.name" *ngIf="file.localThumbnail !== null && file.localThumbnail !== 'null'" [src]="file.localThumbnail" />
                 <img [alt]="file.name" *ngIf="file.thumbnail === null && !file.localThumbnail === null" src="/app/assets/img/no-image.png" />
 
                 <div class="tile-image-icon">

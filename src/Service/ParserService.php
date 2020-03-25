@@ -80,6 +80,11 @@ class ParserService
         $this->loadParser($parser, $user)->clearParserCache($parserRequest);
     }
 
+    /**
+     * @param $parser
+     * @param User $user
+     * @return ParserInterface|array|null
+     */
     public function loadParser($parser, User $user)
     {
         if (is_array($parser)) {

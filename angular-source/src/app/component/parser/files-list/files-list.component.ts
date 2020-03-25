@@ -4,8 +4,6 @@ import { ParsedFile } from "../../../model/parsed-file";
 import { NodeFileService } from "../../../service/node-file.service";
 import { FileStatus } from "../../../enum/file-status";
 import { FileType } from "../../../enum/file-type";
-import { ModalDataService } from "../../../service/data/modal-data.service";
-import { ModalSize } from "../../../enum/modal-size";
 import { ModalType } from "../../../enum/modal-type";
 import { DownloaderDataService } from "../../../service/data/downloader-data.service";
 import { ToastrDataService } from "../../../service/data/toastr-data.service";
@@ -14,7 +12,7 @@ import { JsonResponse } from "../../../model/json-response";
 import { Status } from "../../../model/status";
 import { WebsocketOperation } from "../../../enum/websocket-operation";
 import { AuthService } from "../../../service/auth.service";
-import {ModalService} from "../../../service/modal.service";
+import { ModalService } from "../../../service/modal.service";
 
 @Component({
   selector: 'app-files-list',
@@ -32,6 +30,9 @@ export class FilesListComponent implements OnInit {
 	public _previewModalId: string = 'file-preview-modal';
 	public _previewModalTitle: string = '';
 	public _previewModalContent: string = '';
+
+	public _previewFile: ParsedFile = null;
+	public _previewClass: string = 'files-preview';
 
 	public ModalType = ModalType;
 
@@ -90,9 +91,13 @@ export class FilesListComponent implements OnInit {
 	}
 
 	public openFilePreview(file: ParsedFile) : void {
-		let modalTitle = file.title ? file.title : (file.name+'.'+file.extension);
+		let modalTitle = ((file.title && file.title !== 'null') ? file.title : (file.name+'.'+file.extension));
 
-		this.modalService.open().showLoader();
+		this._previewFile = file;
+		this.modalService
+			.open()
+			.setTitle(modalTitle)
+			.showLoader();
 
 		this.nodeFileService.toggleFilePreview(file).subscribe((result: ParsedFile) => {
 			this._previewModalContent = result.htmlPreview;
@@ -132,8 +137,24 @@ export class FilesListComponent implements OnInit {
 		this.sendPreviewStatusRequest(file);
 	}
 
-	public savePreviewedFile(): void {
+	public toggleFilePreviewMode(): void {
+		if (this._previewClass === 'files-preview')
+			this._previewClass += ' enlargement-content';
+		else
+			this._previewClass = 'files-preview';
+	}
 
+	public closeFilePreview(): void {
+		this._previewFile = null;
+		this._previewClass = 'files-preview';
+	}
+
+	public savePreviewedFile(): void {
+		this.nodeFileService.downloadFilePreview(this._previewFile).subscribe((parsedFile: ParsedFile) => {
+			this.parserRequest.updateFile(parsedFile);
+		}, (error) => {
+			this.toastrService.addError('An error occured.');
+		});
 	}
 
 	public sendPreviewStatusRequest(file: ParsedFile): void {

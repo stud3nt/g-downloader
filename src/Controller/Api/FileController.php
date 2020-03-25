@@ -4,10 +4,13 @@ namespace App\Controller\Api;
 
 use App\Controller\Api\Base\Controller;
 use App\Converter\ModelConverter;
+use App\Enum\FileStatus;
 use App\Factory\ParsedFileFactory;
 use App\Manager\DownloadManager;
 use App\Manager\Object\FileManager;
 use App\Manager\Object\NodeManager;
+use App\Model\ParsedFile;
+use App\Service\DownloadService;
 use App\Service\ParserService;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -44,7 +47,7 @@ class FileController extends Controller
         );
         $parser->getFileData($parsedFile);
 
-        if ($queuedFile = $fileManager->getQueueFileByParsedFile($parsedFile)) { // file exists => removing...
+        if ($queuedFile = $fileManager->getFileEntityByParsedFile($parsedFile)) { // file exists => removing...
             $fileManager->removeParsedFileFromQueue($parsedFile, $queuedFile);
             $downloadManager->decreaseQueueByParsedFile($user, $parsedFile);
         } else {
@@ -67,15 +70,7 @@ class FileController extends Controller
      */
     public function toggleFilePreview(Request $request, ParserService $parserService) : JsonResponse
     {
-        $parsedFile = (new ParsedFileFactory())->buildFromRequestData(
-            $request->request->all()
-        );
-
-        $parser = $parserService->loadParser(
-            $parsedFile->getParser(),
-            $this->getUser()
-        );
-        $parser->getFilePreview($parsedFile);
+        $parsedFile = $this->prepareParsedFilePreview($request, $parserService);
         $parsedFile->setHtmlPreview(
             $this->get('twig')->render('file_preview/'.$parsedFile->getType().'.html.twig', [
                 'parsedFile' => $parsedFile
@@ -85,5 +80,59 @@ class FileController extends Controller
         return $this->json(
             $this->get(ModelConverter::class)->convert($parsedFile)
         );
+    }
+
+    /**
+     *
+     * @Route("/api/file/save_previewed_file", name="api_file_download_preview", options={"expose"=true}, methods={"POST"})
+     * @IsGranted("ROLE_ADMIN")
+     *
+     * @param Request $request
+     * @param ParserService $parserService
+     * @param FileManager $fileManager
+     * @return JsonResponse
+     * @throws \ReflectionException
+     * @throws \Exception
+     */
+    public function savePreviewedFile(Request $request, ParserService $parserService, DownloadService $downloadService, FileManager $fileManager, NodeManager $nodeManager): JsonResponse
+    {
+        $parsedFile = $this->prepareParsedFilePreview($request, $parserService);
+        $parsedFile->addStatus(FileStatus::Queued);
+
+        $fileEntity = $fileManager->getFileEntityByParsedFile($parsedFile, true);
+        $fileEntity->setParentNode(
+            $nodeManager->getOneByParsedNode(
+                $parsedFile->getParentNode()
+            )
+        );
+
+        if ($downloadService->downloadFileByEntity($fileEntity, $this->getUser()))
+            $parsedFile->addStatus(FileStatus::Downloaded);
+
+        $fileManager->save($fileEntity);
+
+        return $this->json(
+            $this->get(ModelConverter::class)->convert($parsedFile)
+        );
+    }
+
+    /**
+     * @param Request $request
+     * @param ParserService $parserService
+     * @return ParsedFile
+     * @throws \ReflectionException
+     */
+    protected function prepareParsedFilePreview(Request $request, ParserService $parserService): ParsedFile
+    {
+        $parsedFile = (new ParsedFileFactory())->buildFromRequestData(
+            $request->request->all()
+        );
+        $parser = $parserService->loadParser(
+            $parsedFile->getParser(),
+            $this->getUser()
+        );
+        $parser->getFilePreview($parsedFile);
+
+        return $parsedFile;
     }
 }

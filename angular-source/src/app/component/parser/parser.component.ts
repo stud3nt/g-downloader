@@ -34,7 +34,7 @@ export class ParserComponent implements OnInit {
 	@HostListener('document:keydown', ['$event']) onKeydownHandler(event: KeyboardEvent) {
 		let tiles = document.getElementsByClassName('tile');
 
-		if (!tiles)
+		if (!tiles || tiles.length === 0)
 			return;
 
 		let scrollValue = (tiles.item(0).clientHeight);

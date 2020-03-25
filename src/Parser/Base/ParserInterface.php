@@ -33,4 +33,6 @@ interface ParserInterface
     public function determineFileSubfolder(File $file): ?string;
 
     public function clearParserCache(ParserRequest $parserRequest): void;
+
+    public function prepareFileTargetDirectories(File &$file): File;
 }

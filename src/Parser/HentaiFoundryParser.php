@@ -343,14 +343,16 @@ class HentaiFoundryParser extends AbstractParser implements ParserInterface
 
         $parsedFile->setLocalUrl($previewWebPath);
 
-        $this->downloadFile($parsedFile->getFileUrl(), $previewFilePath, function($resource, $downloadSize, $downloaded, $uploadSize, $uploaded) use ($parsedFile) {
-            if ($downloadSize > 0) {
-                $redis = (new RedisFactory())->initializeConnection();
-                $redis->set($parsedFile->getRedisPreviewKey(), round(($downloaded / $downloadSize) * 100));
-                $redis->expire($parsedFile->getRedisPreviewKey(), 10);
-            }
-        });
-
+        if (!file_exists($previewFilePath)) {
+            $this->downloadFile($parsedFile->getFileUrl(), $previewFilePath, function($resource, $downloadSize, $downloaded, $uploadSize, $uploaded) use ($parsedFile) {
+                if ($downloadSize > 0) {
+                    $redis = (new RedisFactory())->initializeConnection();
+                    $redis->set($parsedFile->getRedisPreviewKey(), round(($downloaded / $downloadSize) * 100));
+                    $redis->expire($parsedFile->getRedisPreviewKey(), 10);
+                }
+            });
+        }
+        
         return $parsedFile;
     }
 

@@ -103,14 +103,13 @@ class AbstractParser
     }
 
     /**
-     * Generates CURL request for file download and defines file locations (temporary and target);
+     * Prepares file target directories and sets it to file entity;
      *
      * @param File $file
      * @return File
      */
-    public function generateFileCurlRequest(File &$file): File
+    public function prepareFileTargetDirectories(File &$file): File
     {
-        $curlService = new CurlRequest();
         $ds = DIRECTORY_SEPARATOR;
         $fs = new Filesystem();
 
@@ -139,8 +138,6 @@ class AbstractParser
             $fs->mkdir($targetDirectory, 0777);
         }
 
-        $redis = (new RedisFactory())->initializeConnection();
-
         if ($file->getType() === FileType::Video)
             $targetFilePath = $targetDirectory.$ds.$file->getName().'.'.$file->getExtension();
         else
@@ -148,6 +145,23 @@ class AbstractParser
 
         $file->setTargetFilePath($targetFilePath);
         $file->setTempFilePath($this->previewTempDir.$file->getName().'.'.$file->getExtension());
+
+        return $file;
+    }
+
+    /**
+     * Generates CURL request for file download and defines file locations (temporary and target);
+     *
+     * @param File $file
+     * @return File
+     */
+    public function generateFileCurlRequest(File &$file): File
+    {
+        $this->prepareFileTargetDirectories($file);
+
+        $curlService = new CurlRequest();
+        $redis = (new RedisFactory())->initializeConnection();
+
         $file->setCurlRequest(
             $curlService->prepareCurlRequest(
                 $file->getFileUrl() ?? $file->getUrl(),

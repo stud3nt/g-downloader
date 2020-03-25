@@ -50,6 +50,15 @@ export class ModalService {
 		return this;
 	}
 
+	public setTitle(title: string = ''): ModalService {
+		let modal = this.getCurrentModal();
+
+		if (modal)
+			modal.setTitle(title);
+
+		return this;
+	}
+
 	public hideLoader(): ModalService {
 		const modal = this.getCurrentModal();
 

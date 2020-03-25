@@ -34,4 +34,14 @@ export class NodeFileService {
 			map((response: Response) => new ParsedFile(response))
 		);
 	}
+
+	public downloadFilePreview(file: ParsedFile) {
+		let httpParams = HttpHelper.convert(file);
+
+		return this.http.post(
+			this.router.generateUrl('api_file_download_preview'), httpParams
+		).pipe(
+			map((response: Response) => new ParsedFile(response))
+		);
+	}
 }

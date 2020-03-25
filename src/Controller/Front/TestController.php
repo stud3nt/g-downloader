@@ -153,10 +153,11 @@ class TestController extends \App\Controller\Api\Base\Controller
      * @throws \ReflectionException
      * @throws \Doctrine\ORM\ORMException
      * @throws \Doctrine\ORM\OptimisticLockException
+     * @throws \Exception
      */
     public function downloadTest(Request $request, DownloadService $downloadService, FileManager $fileManager)
     {
-        $filesForDownload = $this->get(FileManager::class)->getQueuedFiles(6);
+        $filesForDownload = $fileManager->getQueuedFiles(6);
 
         if ($filesForDownload) {
             $downloadedFiles = $downloadService->downloadQueuedParserFiles($filesForDownload);
@@ -164,6 +165,21 @@ class TestController extends \App\Controller\Api\Base\Controller
 
             var_dump(['success' => count($downloadedFiles)]);
         }
+
+        return new \Symfony\Component\HttpFoundation\Response('TEST_DONE.');
+    }
+
+    /**
+     * @Route("/tester/app/download_file/{fileId}", name="app_test_api_download_files", methods={"GET"})
+     * @throws \ReflectionException
+     * @throws \Doctrine\ORM\ORMException
+     * @throws \Doctrine\ORM\OptimisticLockException
+     * @throws \Exception
+     */
+    public function downloadSingleFileTest(Request $request, DownloadService $downloadService, FileManager $fileManager)
+    {
+        $file = $fileManager->get($request->get('fileId'));
+        $downloadService->downloadFileByEntity($file, $this->getUser());
 
         return new \Symfony\Component\HttpFoundation\Response('TEST_DONE.');
     }

@@ -6,6 +6,8 @@ use App\Annotation\ModelVariable;
 use App\Entity\Parser\File;
 use App\Enum\ParserType;
 use App\Model\AbstractModel;
+use App\Model\ParsedFile;
+use App\Utils\FilesHelper;
 use App\Utils\StringHelper;
 use Gregwar\Image\Image;
 use Symfony\Component\Filesystem\Filesystem;
@@ -57,14 +59,14 @@ class DownloadedFile extends AbstractModel
         if (!$this->resource)
             throw new \Exception('File resource is empty.');
 
-        if (!file_exists($this->tempFilePath)) {
+        if (!file_exists($this->tempFilePath)) { // error in file download
             $this->fileEntity->setCorrupted(true);
         } else {
             $tempPathinfo = pathinfo($this->tempFilePath);
 
             $this->tempFileDir = $tempPathinfo['dirname'];
             $this->operationalFileDir = $this->tempFileDir;
-            $this->operationalFilePath = $this->operationalFileDir.DIRECTORY_SEPARATOR.$tempPathinfo['basename']
+            $this->operationalFilePath = $this->operationalFileDir.DIRECTORY_SEPARATOR.$tempPathinfo['filename']
                 .StringHelper::randomStr(12).'.'.$tempPathinfo['extension'];
 
             if (!$this->fs->exists($this->tempFileDir))
@@ -110,19 +112,32 @@ class DownloadedFile extends AbstractModel
         return $this;
     }
 
+    /**
+     * @return float
+     * @throws \Exception
+     */
     public function detectExpectedCompressionRatio(): float
     {
         Image::open($this->tempFilePath)
             ->grayscale()
-            ->saveJpeg($this->operationalFilePath, 80);
+            ->save($this->operationalFilePath, 'jpg', 80);
 
         $tempFilesize = filesize($this->tempFilePath);
-        $operationalFilesize = filesize($this->tempFilePath);
+        $operationalFilesize = filesize($this->operationalFilePath);
 
-        if (($operationalFilesize * 1.2) < $tempFilesize)
-            return 4.3; // color image (big size loss after grayscaling);
+        if (($operationalFilesize * 1.4) < $tempFilesize)
+            $ratio = 4.0; // color image (big size loss after grayscaling);
         else
-            return 5.2; // grayscale;
+            $ratio = 5.2; // grayscale;
+
+        $pixels = ($this->width * $this->height);
+
+        if ($pixels > 500000) {
+            $pixelsRatio = 1 + (($pixels - 500000) / 3000000);
+            $ratio = round(($ratio / $pixelsRatio), 2);
+        }
+
+        return $ratio;
     }
 
     /**
@@ -174,7 +189,7 @@ class DownloadedFile extends AbstractModel
 
         Image::open($this->tempFilePath)
             ->scaleResize($this->width, $this->height)
-            ->saveJpeg($this->operationalFilePath, 80);
+            ->saveJpeg($this->operationalFilePath, 100);
     }
 
     /**
@@ -189,17 +204,17 @@ class DownloadedFile extends AbstractModel
 
         if ($compressionRatio < $minCompressionRatio || $fileSize > $maxFileSize) {
             for ($i = 1; $i <= 8; $i++) {
-                $testWidth = round($this->width / (1 + (0.3 * $i)));
-                $testHeight = round($this->height / (1 + (0.3 * $i)));
+                $testWidth = round($this->width / (1 + (0.1 * $i)));
+                $testHeight = round($this->height / (1 + (0.1 * $i)));
 
                 Image::open($this->tempFilePath)
                     ->scaleResize($testWidth, $testHeight)
-                    ->save($this->operationalFilePath, 'jpg', (100 - (4*$i)));
+                    ->save($this->operationalFilePath, 'jpg', (90 - (2*$i)));
 
                 $controlFilesize = filesize($this->operationalFilePath);
                 $controlCompressionRatio = (($testWidth * $testHeight) / $controlFilesize);
 
-                if ($controlCompressionRatio > $minCompressionRatio && $controlFilesize < $maxFileSize) {
+                if (($controlCompressionRatio > $minCompressionRatio && $controlFilesize < $maxFileSize) || $i === 8) {
                     copy($this->operationalFilePath, $this->tempFilePath);
                     unlink($this->operationalFilePath);
                     break;

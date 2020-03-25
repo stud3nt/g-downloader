@@ -92,14 +92,21 @@ class FileManager extends EntityManager
 
     /**
      * @param ParsedFile $parsedFile
+     * @param boolean $createIfNotExists - if true, entity will be created (if not exists);
      * @return File|null
+     * @throws \ReflectionException
      */
-    public function getQueueFileByParsedFile(ParsedFile $parsedFile): ?File
+    public function getFileEntityByParsedFile(ParsedFile $parsedFile, bool $createIfNotExists = false): ?File
     {
         $file = $this->repository->findOneBy([
             'identifier' => $parsedFile->identifier,
             'parser' => $parsedFile->parser
         ]);
+
+        if (!$file && $createIfNotExists) {
+            $file = new File();
+            $this->entityConverter->setData($parsedFile, $file);
+        }
 
         /** @var File $file */
         return $file;

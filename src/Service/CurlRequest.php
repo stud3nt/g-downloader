@@ -83,9 +83,12 @@ class CurlRequest
      * @param array $options
      * @return bool|string
      */
-    public function executeSingleRequest(string $url, array $options = [])
+    public function executeSingleRequest($resource, array $options = [])
     {
-        $curlRequest = $this->prepareCurlRequest($url);
+        if (is_string($resource))
+            $curlRequest = $this->prepareCurlRequest($resource);
+        else
+            $curlRequest = $resource;
 
         $data = curl_exec($curlRequest);
 

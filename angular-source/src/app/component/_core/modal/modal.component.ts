@@ -150,6 +150,10 @@ export class ModalComponent implements OnInit {
 		this.modalLoaderText = text;
 	}
 
+	public setTitle(text: string = ''): void {
+		this.modalTitle = text;
+	}
+
 	public hideLoader(): void {
 		this._loaderVisible = false;
 	}

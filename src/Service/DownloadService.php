@@ -44,22 +44,34 @@ class DownloadService
             foreach ($response as $fileKey => $fileResource) {
                 $fileEntity = $filesList[$fileKey];
 
-                $result = (new DownloadedFile())
-                    ->setFileEntity($fileEntity)
-                    ->setResource($fileResource)
-                    ->prepareTempFiles();
-
-                if ($fileEntity->getType() === FileType::Image)
-                    $result->optimize();
-
-                $result->saveTargetFile();
-
-                if ($result)
+                if ($this->downloadFile($fileEntity, $fileResource))
                     $downloadedFiles[] = $filesList[$fileKey];
             }
         }
 
         return $downloadedFiles;
+    }
+
+    /**
+     * @param File $file
+     * @param User $user
+     * @throws \Exception
+     * @return bool
+     */
+    public function downloadFileByEntity(File &$file, User $user): bool
+    {
+        $parser = $this->parserService->loadParser($file->getParser(), $user);
+        $parser->prepareFileTargetDirectories($file);
+
+        if (!file_exists($file->getTempFilePath()) || ((filesize($file->getTempFilePath()) * 0.8) < $file->getSize())) {
+            $fileResource = (new CurlRequest())->executeSingleRequest(
+                $parser->generateFileCurlRequest($file)->getCurlRequest()
+            );
+        } else {
+            $fileResource = file_get_contents($file->getTempFilePath());
+        }
+
+        return $this->downloadFile($file, $fileResource);
     }
 
     /**
@@ -73,11 +85,29 @@ class DownloadService
         /** @var File $file */
         foreach ($filesList as $file) {
             if (!array_key_exists($file->getParser(), $this->parsers)) {
-                $this->parsers[$file->getParser()] = $this->parserService->loadParser(
-                    $file->getParser(),
-                    $user
-                );
+                $this->parsers[$file->getParser()] = $this->parserService->loadParser($file->getParser(), $user);
             }
         }
+
+        return;
+    }
+
+    /**
+     * @param File $file
+     * @param $fileResource
+     * @return bool
+     * @throws \Exception
+     */
+    protected function downloadFile(File $file, $fileResource): bool
+    {
+        $result = (new DownloadedFile())
+            ->setFileEntity($file)
+            ->setResource($fileResource)
+            ->prepareTempFiles();
+
+        if ($file->getType() === FileType::Image)
+            $result->optimize();
+
+        return $result->saveTargetFile();
     }
 }
