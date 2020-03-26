@@ -139,8 +139,8 @@ class CurlRequest
         curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
         curl_setopt($ch, CURLOPT_COOKIEJAR, $this->cookieFile);
         curl_setopt($ch, CURLOPT_COOKIEFILE, $this->cookieFile);
-        curl_setopt($ch, CURLOPT_MAXFILESIZE, (512 * 1000 * 1024)); // 512MB
-        curl_setopt($ch, CURLOPT_TIMEOUT, 60);
+        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 0);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 400); //timeout in seconds
 
         if ($returnFunction) {
             curl_setopt($ch, CURLOPT_NOPROGRESS, false);

@@ -18,10 +18,9 @@
                 <li class="file-row" *ngFor="let file of dropdownFilesQueue">
                     <i class="fa fa-video-camera" *ngIf="file.type === FileType.Video"></i>
                     <i class="fa fa-image" *ngIf="file.type === FileType.Image"></i>
+                    &nbsp;
                     <span [innerHTML]="(file.name | truncateString: 20) +'.'+ file.extension + ' ' + file.textSize"></span>
-
                     &nbsp;&nbsp;
-
                     <span>
                         <b *ngIf="file.status.progress < 100">{{ file.status.progress }}%</b>
                         <i class="fa fa-check-circle" *ngIf="file.status.progress === 100"></i>

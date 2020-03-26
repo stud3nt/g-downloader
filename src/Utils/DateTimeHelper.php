@@ -13,32 +13,32 @@ class DateTimeHelper
         $differenceText = '';
 
         if ($difference->y > 0)
-            $differenceText .= $difference->y.' year'.(($difference->y > 1) ? 's' : '');
+            $differenceText .= (empty($text) ? '' : ' ').$difference->y.' year'.(($difference->y > 1) ? 's' : '');
 
         if ($difference->m > 0) {
-            $differenceText .= $difference->m.' month'.(($difference->m > 1) ? 's' : '');
+            $differenceText .= (empty($text) ? '' : ' ').$difference->m.' month'.(($difference->m > 1) ? 's' : '');
             return $differenceText;
         }
 
         if ($difference->d > 0) {
-            $differenceText .= $difference->d.' day'.(($difference->d > 1) ? 's' : '');
+            $differenceText .= (empty($text) ? '' : ' ').$difference->d.' day'.(($difference->d > 1) ? 's' : '');
             return $differenceText;
         }
 
         if ($difference->h > 0) {
-            $differenceText .= $difference->h.' hour'.(($difference->h > 1) ? 's' : '');
+            $differenceText .= (empty($text) ? '' : ' ').$difference->h.' hour'.(($difference->h > 1) ? 's' : '');
             return $differenceText;
         }
 
         if ($difference->m > 0) {
-            $differenceText .= $difference->m.' minute'.(($difference->m > 1) ? 's' : '');
+            $differenceText .= (empty($text) ? '' : ' ').$difference->m.' minute'.(($difference->m > 1) ? 's' : '');
 
             if ($difference->m > 2)
                 return $differenceText;
         }
 
         if ($difference->s > 0)
-            $differenceText .= $difference->s.' second'.(($difference->s > 1) ? 's' : '');
+            $differenceText .= (empty($text) ? '' : ' ').$difference->s.' second'.(($difference->s > 1) ? 's' : '');
 
         return $differenceText;
     }

@@ -53,6 +53,8 @@ class DownloadService
     }
 
     /**
+     * Downloaded single file based on his entity;
+     *
      * @param File $file
      * @param User $user
      * @throws \Exception
@@ -63,7 +65,16 @@ class DownloadService
         $parser = $this->parserService->loadParser($file->getParser(), $user);
         $parser->prepareFileTargetDirectories($file);
 
-        if (!file_exists($file->getTempFilePath()) || ((filesize($file->getTempFilePath()) * 0.8) < $file->getSize())) {
+        if (!file_exists($file->getTempFilePath()) || // if file does not exists
+            (
+                file_exists($file->getTempFilePath()) && // or if file exists AND:
+                (
+                    (filesize($file->getTempFilePath()) < (20 * 1024)) // error file saving (smaller than 20KB)
+                        ||
+                    ($file->getSize() && (filesize($file->getTempFilePath()) * 1.2) < $file->getSize()) // OR optimized (must be downloaded again)
+                )
+            )
+        ) {
             $fileResource = (new CurlRequest())->executeSingleRequest(
                 $parser->generateFileCurlRequest($file)->getCurlRequest()
             );

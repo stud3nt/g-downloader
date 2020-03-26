@@ -22,8 +22,8 @@
                     <i class="fa fa-spinner fa-spin fa-fw"></i>
                 </div>
                 <span>
-                    <p *ngIf="file.title" [innerHTML]="file.title | truncateString: 20"></p>
-                    <p *ngIf="!file.title" [innerHTML]="(file.name | truncateString: 15) + '.' + file.extension"></p>
+                    <p *ngIf="file.title" [innerHTML]="file.title | truncateString: 30" [title]="file.title"></p>
+                    <p *ngIf="!file.title" [innerHTML]="(file.name | truncateString: 225) + '.' + file.extension" [title]="file.title + '.' + file.extension"></p>
                 </span>
             </div>
             <div class="tile-image">
@@ -53,6 +53,7 @@
                         </tr>
                     </tbody>
                 </table>
+
                 <span class="data-label bg-info" *ngIf="file.hasStatus(FileStatus.Queued)">
                     <i class="fa fa-database"></i> &nbsp; Queued
                 </span>

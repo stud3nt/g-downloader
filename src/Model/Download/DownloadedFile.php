@@ -43,8 +43,11 @@ class DownloadedFile extends AbstractModel
 
     public function __destruct()
     {
-        //if (file_exists($this->tempFilePath))
-            //unlink($this->tempFilePath);
+        if (file_exists($this->tempFilePath))
+            unlink($this->tempFilePath);
+
+        if (file_exists($this->operationalFilePath))
+            unlink($this->operationalFilePath);
     }
 
     /**
@@ -89,6 +92,10 @@ class DownloadedFile extends AbstractModel
     {
         if (!$this->tempFilePath)
             throw new \Exception('Target file path must be specified before saving.');
+        elseif (filesize($this->tempFilePath) < (20 * 1024)) {
+            $this->fileEntity->setCorrupted(true);
+            return $this;
+        }
 
         $this->convertToJpg();
 
@@ -155,6 +162,11 @@ class DownloadedFile extends AbstractModel
         }
     }
 
+    /**
+     * @param int $expectedWidth
+     * @param int $expectedHeight
+     * @throws \Exception
+     */
     public function changeImageDimensions(int $expectedWidth, int $expectedHeight): void
     {
         $imageWidth = $this->fileEntity->getWidth();
@@ -189,7 +201,7 @@ class DownloadedFile extends AbstractModel
 
         Image::open($this->tempFilePath)
             ->scaleResize($this->width, $this->height)
-            ->saveJpeg($this->operationalFilePath, 100);
+            ->save($this->tempFilePath, 'jpg', 90);
     }
 
     /**
@@ -234,7 +246,9 @@ class DownloadedFile extends AbstractModel
         else if (!file_exists($this->tempFilePath))
             throw new \Exception('Temp file not exists');
 
-        return copy($this->tempFilePath, $this->targetFilePath);
+        return ($this->fileEntity->isCorrupted())
+            ? true
+            : copy($this->tempFilePath, $this->targetFilePath);
     }
 
     /**

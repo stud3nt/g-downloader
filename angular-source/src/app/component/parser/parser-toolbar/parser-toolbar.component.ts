@@ -189,7 +189,7 @@ export class ParserToolbarComponent implements OnInit {
 		} else {
 			this._tagSearchTimeout = setTimeout(() => {
 				for (let tagIndex in this._parserRequest.tags) {
-					if (this._inputTagName.length < 3 || this._foundTags.length >= 10)
+					if (!this._inputTagName || this._inputTagName.length < 3 || this._foundTags.length >= 10)
 						break;
 
 					let processedTag = this._parserRequest.tags[tagIndex];

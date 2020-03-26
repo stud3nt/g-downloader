@@ -69,7 +69,7 @@ export class FilesListComponent implements OnInit {
 	 * @param file
 	 */
 	public toggleFileQueue(file: ParsedFile) : void {
-		if (this.lockTiles || file.hasStatus(FileStatus.Waiting))
+		if (this.lockTiles || file.hasStatus(FileStatus.Waiting) || file.hasStatus(FileStatus.Downloaded))
 			return;
 
 		file.parentNode = this.parserRequest.currentNode;
@@ -139,7 +139,7 @@ export class FilesListComponent implements OnInit {
 
 	public toggleFilePreviewMode(): void {
 		if (this._previewClass === 'files-preview')
-			this._previewClass += ' enlargement-content';
+			this._previewClass = 'files-preview enlargement-content';
 		else
 			this._previewClass = 'files-preview';
 	}
@@ -150,6 +150,9 @@ export class FilesListComponent implements OnInit {
 	}
 
 	public savePreviewedFile(): void {
+		if (this._previewFile.parentNode === null)
+			this._previewFile.parentNode = this.parserRequest.currentNode;
+
 		this.nodeFileService.downloadFilePreview(this._previewFile).subscribe((parsedFile: ParsedFile) => {
 			this.parserRequest.updateFile(parsedFile);
 		}, (error) => {

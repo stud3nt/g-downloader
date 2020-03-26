@@ -223,7 +223,7 @@ class AbstractParser
         $targetFile = fopen($targetUrl, 'w+');
 
         curl_setopt($ch, CURLOPT_FILE, $targetFile);
-        curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 300);
         curl_setopt($ch, CURLOPT_URL, $sourceUrl);
 
         if ($returnFunction) {
