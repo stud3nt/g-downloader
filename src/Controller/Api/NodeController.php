@@ -5,6 +5,8 @@ namespace App\Controller\Api;
 use App\Controller\Api\Base\Controller;
 use App\Factory\ParsedNodeFactory;
 use App\Factory\ParserRequestFactory;
+use App\Manager\CategoryManager;
+use App\Manager\TagManager;
 use App\Parser\Base\AbstractParser;
 use App\Service\ParserService;
 use Doctrine\ORM\ORMException;
@@ -29,22 +31,25 @@ class NodeController extends Controller
      * @throws \ReflectionException
      * @throws ORMException
      */
-    public function updateNode(Request $request, ParserService $parserService) : JsonResponse
+    public function updateNode(Request $request, ParserService $parserService, CategoryManager $categoryManager, TagManager $tagManager) : JsonResponse
     {
         $parserRequest = (new ParserRequestFactory())->buildFromRequestData(
             $request->request->all()
         );
 
-        $nodeModel = $parserRequest->getCurrentNode();
-
-        $this->nodeManager->updateNodeInDatabase(
-            $this->modelConverter->convert($nodeModel)
+        $parserRequest->setCurrentNode(
+            $this->nodeManager->updateNodeInDatabase(
+                $parserRequest->getCurrentNode()
+            )
         );
+
+        $categoryManager->completeCategoriesList($parserRequest); // complete categories list from db;
+        $tagManager->completeTagsList($parserRequest); // complete tags list from DB
 
         $parserService->clearParserRequestCache($parserRequest, $this->getUser());
 
         return $this->json(
-            $this->modelConverter->convert($nodeModel)
+            $this->modelConverter->convert($parserRequest)
         );
     }
 }

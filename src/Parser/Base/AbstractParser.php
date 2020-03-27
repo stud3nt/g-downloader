@@ -169,7 +169,7 @@ class AbstractParser
                 function($resource, $downloadSize, $downloaded, $uploadSize, $uploaded) use ($file, $redis) {
                     if ($downloadSize > 0) {
                         $redis->set($file->getRedisDownloadKey(), round(($downloaded / $downloadSize) * 100));
-                        $redis->expire($file->getRedisDownloadKey(), 20);
+                        $redis->expire($file->getRedisDownloadKey(), 500);
                     }
                 }
             )

@@ -71,7 +71,7 @@ class DownloadService
                 (
                     (filesize($file->getTempFilePath()) < (20 * 1024)) // error file saving (smaller than 20KB)
                         ||
-                    ($file->getSize() && (filesize($file->getTempFilePath()) * 1.2) < $file->getSize()) // OR optimized (must be downloaded again)
+                    ($file->getSize() > 0 && (filesize($file->getTempFilePath()) * 1.2) < $file->getSize()) // OR optimized (must be downloaded again)
                 )
             )
         ) {

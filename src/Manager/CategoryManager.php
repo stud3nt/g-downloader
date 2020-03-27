@@ -56,15 +56,14 @@ class CategoryManager extends EntityManager
      */
     public function completeCategoriesList(ParserRequest &$parserRequest): ParserRequest
     {
-        if (!$parserRequest->getCategories()) {
-            $categories = $this->getCategoriesList();
+        $parserRequest->setCategories([]);
+        $categories = $this->getCategoriesList();
 
-            if ($categories) {
-                foreach ($categories as $categoryEntity) {
-                    $parserRequest->addCategory(
-                        (new \App\Model\Category())->setFromEntity($categoryEntity)
-                    );
-                }
+        if ($categories) {
+            foreach ($categories as $categoryEntity) {
+                $parserRequest->addCategory(
+                    (new \App\Model\Category())->setFromEntity($categoryEntity)
+                );
             }
         }
 

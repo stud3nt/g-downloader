@@ -182,7 +182,7 @@ class FilesHelper
             foreach ($names as $name) {
                 if (strtoupper($sizeSign) == strtoupper($name)) {
                     if (($sizeKey) > 0) {
-                        return (pow(1024, $sizeKey) * (int)$sizeValue);
+                        return (pow(1024, $sizeKey) * (float)$sizeValue);
                     }
 
                     break;

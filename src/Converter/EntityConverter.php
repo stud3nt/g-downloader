@@ -10,7 +10,6 @@ use App\Model\AbstractModel;
 use App\Utils\StringHelper;
 use Doctrine\Common\Annotations\AnnotationReader;
 use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Util\Debug;
 use Doctrine\ORM\PersistentCollection;
 use Doctrine\Persistence\ObjectManager;
 use Symfony\Component\Intl\Exception\MethodNotImplementedException;
@@ -72,7 +71,7 @@ class EntityConverter extends BaseConverter
      */
     public function convert(&$entity, string $modelConvertName = null)
     {
-        if (is_array($entity) || $entity instanceof \Doctrine\Common\Collections\ArrayCollection) {
+        if (is_array($entity) || $entity instanceof \Doctrine\Common\Collections\ArrayCollection || $entity instanceof \Doctrine\ORM\PersistentCollection) {
             $arrayEntity = [];
 
             foreach ($entity as $key => $e) {
@@ -246,9 +245,7 @@ class EntityConverter extends BaseConverter
             if (method_exists($variableConverter, 'setEntityManager'))
                 $variableConverter->setEntityManager($this->em);
 
-            if ($value instanceof AbstractEntity) {
-                $value = $variableConverter->convertFromEntityValue($value);
-            } else {
+            if (is_array($value)) {
                 $newValue = [];
 
                 foreach ($value as $v) {
@@ -256,6 +253,8 @@ class EntityConverter extends BaseConverter
                 }
 
                 $value = $newValue;
+            } else {
+                $value = $variableConverter->convertFromEntityValue($value);
             }
         }
 
@@ -387,15 +386,22 @@ class EntityConverter extends BaseConverter
     public function convertFromEntityValue($value)
     {
         if (property_exists($this->converterOptions, 'class')) {
-            if (is_array($value) || $value instanceof AbstractEntity) {
+            if (($value instanceof PersistentCollection && $value->isEmpty()) || ($value instanceof ArrayCollection && $value->isEmpty()) || empty($value)) {
+                return $value;
+            } else {
                 $entityConverter = new EntityConverter();
                 $entityConverter->setEntityManager($this->em);
 
-                return $entityConverter->convert($value);
-            } elseif ($value instanceof PersistentCollection && $value->isEmpty()) {
-                return $value;
-            } elseif (empty($value)) {
-                return $value;
+                if (is_array($value) || $value instanceof PersistentCollection || $value instanceof ArrayCollection) {
+                    $newValue = [];
+
+                    foreach ($value as $key => $v)
+                        $newValue[$key] = $entityConverter->convert($v);
+
+                    return $newValue;
+                } elseif ($value instanceof AbstractEntity) {
+                    return $entityConverter->convert($value);
+                }
             }
         }
 

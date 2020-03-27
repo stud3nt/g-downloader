@@ -22,7 +22,7 @@ class DateTimeConverter extends BaseConverter
      */
     public function convertToEntityValue($value) : ?\DateTime
     {
-        if (is_numeric($value)) { // timestamp integer
+        if (is_numeric($value) || is_int($value)) { // timestamp integer
             $date = new \DateTime();
             $date->setTimestamp($value);
         } elseif ($value === 'null' || $value === null) {

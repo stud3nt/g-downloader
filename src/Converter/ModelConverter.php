@@ -4,9 +4,12 @@ namespace App\Converter;
 
 use App\Annotation\ModelVariable;
 use App\Entity\Base\AbstractEntity;
+use App\Entity\Parser\Node;
 use App\Model\AbstractModel;
 use App\Utils\StringHelper;
 use Doctrine\Common\Annotations\AnnotationReader;
+use Doctrine\Common\Util\Debug;
+use Doctrine\Persistence\ObjectManager;
 use Symfony\Component\Intl\Exception\MethodNotImplementedException;
 
 class ModelConverter
@@ -19,15 +22,22 @@ class ModelConverter
 
     private $model;
 
+    /** @var ObjectManager */
+    private $em;
+
     public function __construct()
     {
         $this->annotationReader = new AnnotationReader();
         $this->entityConverter = new EntityConverter();
     }
 
-    protected function loadModel(AbstractModel $model)
+    /**
+     * @param ObjectManager $em
+     * @return ModelConverter
+     */
+    public function setEntityManager(ObjectManager $em): self
     {
-        $this->model = $model;
+        $this->em = $em;
 
         return $this;
     }
@@ -54,7 +64,8 @@ class ModelConverter
 
     /**
      * @param $data
-     * @param string $modelClass
+     * @param $model
+     * @param bool $skipEmptyFields
      * @return mixed
      * @throws \ReflectionException
      */
@@ -65,6 +76,7 @@ class ModelConverter
 
             if ($data instanceof AbstractEntity) {
                 $entityConverter = new EntityConverter();
+                $entityConverter->setEntityManager($this->em);
                 $modelData = $entityConverter->convert($data);
             } elseif ($data instanceof \stdClass) {
                 $modelData = json_decode(json_encode($data), true);
@@ -81,9 +93,8 @@ class ModelConverter
                     $variableValue = array_key_exists($variableName, $modelData) ? $modelData[$variableName] : null;
 
                     if (!$variableValue) {
-                        if ($skipEmptyFields) {
+                        if ($skipEmptyFields)
                             continue;
-                        }
 
                         switch ($variableConfig->type) {
                             case 'array':
@@ -267,5 +278,12 @@ class ModelConverter
             $this->model->$setter($value);
         else
             $this->model->$variableName = $value;
+    }
+
+    protected function loadModel(AbstractModel $model)
+    {
+        $this->model = $model;
+
+        return $this;
     }
 }

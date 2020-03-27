@@ -347,7 +347,7 @@ class RedditParser extends AbstractParser implements ParserInterface
 
         $parsedFile->setLocalUrl($previewWebPath);
 
-        if (!file_exists($previewFilePath) || (file_exists($previewFilePath))) {
+        if (!file_exists($previewFilePath)) {
             $this->downloadFile($parsedFile->getFileUrl() ?? $parsedFile->getUrl(), $previewFilePath, function($resource, $downloadSize, $downloaded, $uploadSize, $uploaded) use ($parsedFile) {
                 if ($downloadSize > 0) {
                     $redis = (new RedisFactory())->initializeConnection();

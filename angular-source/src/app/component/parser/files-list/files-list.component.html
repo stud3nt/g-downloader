@@ -22,8 +22,8 @@
                     <i class="fa fa-spinner fa-spin fa-fw"></i>
                 </div>
                 <span>
-                    <p *ngIf="file.title" [innerHTML]="file.title | truncateString: 30" [title]="file.title"></p>
-                    <p *ngIf="!file.title" [innerHTML]="(file.name | truncateString: 225) + '.' + file.extension" [title]="file.title + '.' + file.extension"></p>
+                    <p *ngIf="file.title" [innerHTML]="file.title | truncateString: (file.hasStatus(FileStatus.Waiting) ? 20 : 30)" [title]="file.title"></p>
+                    <p *ngIf="!file.title" [innerHTML]="(file.name | truncateString: (file.hasStatus(FileStatus.Waiting) ? 15 : 25)) + '.' + file.extension" [title]="file.title + '.' + file.extension"></p>
                 </span>
             </div>
             <div class="tile-image">

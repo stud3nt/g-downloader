@@ -1,6 +1,6 @@
 <div *ngIf="parserRequest.parsedNodes.length > 0">
     <div class="grid-container grid-200">
-        <a [target]="(node.level === NodeLevel.Gallery && !lockTiles) ? '_blank' : '_self'" [routerLink]="lockTiles ? currentUrl : routerService.generateNodeUrl(node)" id="{{ node.identifier }}" [ngClass]="getNodeClass(node)" *ngFor="let node of parserRequest.parsedNodes">
+        <a [routerLink]="lockTiles ? currentUrl : routerService.generateNodeUrl(node)" id="{{ node.identifier }}" [ngClass]="getNodeClass(node)" *ngFor="let node of parserRequest.parsedNodes">
             <div class="tile-header-image">
                 <div class="tile-header-icon bg-default" *ngIf="node.hasStatus(NodeStatus.Waiting)">
                     <i class="fa fa-spinner fa-spin fa-fw"></i>

@@ -7,6 +7,7 @@ use App\Enum\DownloaderStatus;
 use App\Manager\DownloadManager;
 use App\Manager\Object\FileManager;
 use App\Service\DownloadService;
+use Doctrine\Common\Util\Debug;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Annotation\Route;

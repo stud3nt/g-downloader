@@ -41,7 +41,9 @@ export class ParserService {
 	public updateNode(parserRequest: ParserRequest) {
 		let formData = HttpHelper.convert(parserRequest);
 
-		return this.http.post(this.router.generateUrl('api_node_update'), formData);
+		return this.http.post(this.router.generateUrl('api_node_update'), formData).pipe(
+			map((response:Response) => new ParserRequest(response))
+		);
 	}
 
 }

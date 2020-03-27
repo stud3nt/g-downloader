@@ -22,6 +22,8 @@ import { JsonResponse } from "../../model/json-response";
 import { WebSocketService } from "../../service/web-socket.service";
 import { WebsocketOperation } from "../../enum/websocket-operation";
 import { Subscription } from "rxjs";
+import {ParserRequestOperation} from "../../model/parser-request-operation";
+import {ParserRequestAction} from "../../enum/parser-request-action";
 
 @Component({
 	selector: 'app-parser',
@@ -64,9 +66,6 @@ export class ParserComponent implements OnInit {
 
 	public runningAction: boolean = false;
 	public parserRequestAction: boolean = false;
-
-	public NodeLevel = NodeLevel;
-	public NodeStatus = NodeStatus;
 
 	public parserBreadcrumbs = [];
 
@@ -159,12 +158,33 @@ export class ParserComponent implements OnInit {
 	public updateNode(node: ParserNode): void {
 		this.parserRequest.currentNode = node;
 
-		this.parserService.updateNode(this.parserRequest).subscribe((response) => {
+		this.parserService.updateNode(this.parserRequest).subscribe((parserRequest: ParserRequest) => {
+			this.parserRequest = parserRequest;
 			this.parserRequest.currentNode.removeStatus(NodeStatus.Waiting);
 		}, (error) => {
 			this.parserRequest.currentNode.removeStatus(NodeStatus.Waiting);
 		});
 	};
+
+	public parserRequestChangeAction(operation: ParserRequestOperation): void {
+		switch (operation.action) {
+			case ParserRequestAction.CurrentNodeUpdate:
+				this.updateNode(operation.parserRequest.currentNode);
+				break;
+
+			case ParserRequestAction.HardReload:
+				this.reopenCurrentNode(true);
+				break;
+
+			case ParserRequestAction.Pagination:
+				this.changeNodePage(operation.parserRequest.pagination);
+				break;
+
+			case ParserRequestAction.ParserRequestUpdate:
+				this.parserRequest = operation.parserRequest;
+				break;
+		}
+	}
 
 	/**
 	 * Determines classes for current node;

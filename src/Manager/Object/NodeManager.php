@@ -45,6 +45,7 @@ class NodeManager extends EntityManager
         $this->entityConverter = $entityConverter;
         $this->entityConverter->setEntityManager($em);
         $this->modelConverter = new ModelConverter();
+        $this->modelConverter->setEntityManager($em);
 
         $this->tagManager = $tagManager;
         $this->categoryManager = $categoryManager;
@@ -236,24 +237,27 @@ class NodeManager extends EntityManager
      * Updates node in database. If node does'nt exists - creates them;
      *
      * @param array $nodeData
-     * @return bool
+     * @return ParsedNode
      * @throws \ReflectionException
      */
-    public function updateNodeInDatabase(array $nodeData): void
+    public function updateNodeInDatabase(ParsedNode $parsedNode, bool $updateNodeData = true): ParsedNode
     {
-        // TODO: switch node data from array to ParsedNode model;
         $dbNode = $this->repository->findOneBy([
-            'identifier' => $nodeData['identifier'],
-            'parser' => $nodeData['parser'],
-            'level' => $nodeData['level']
+            'identifier' => $parsedNode->getIdentifier(),
+            'parser' => $parsedNode->getParser(),
+            'level' => $parsedNode->getLevel()
         ]);
 
-        if (!$dbNode) {
+        if (!$dbNode)
             $dbNode = new Node();
-        }
 
-        $this->entityConverter->setData($nodeData, $dbNode);
+        $this->entityConverter->setData($parsedNode, $dbNode);
 
         $this->save($dbNode);
+
+        if ($updateNodeData)
+            $this->modelConverter->setData($dbNode, $parsedNode, true);
+
+        return $parsedNode;
     }
 }

@@ -6,6 +6,9 @@ import {PaginationMode} from "../../../enum/pagination-mode";
 import {ParserNode} from "../../../model/parser-node";
 import {Tag} from "../../../model/tag";
 import {ParserToolbarAction} from "../../../enum/parser-toolbar-action";
+import {CookieService} from "ngx-cookie-service";
+import {ParserRequestOperation} from "../../../model/parser-request-operation";
+import {ParserRequestAction} from "../../../enum/parser-request-action";
 
 @Component({
 	selector: 'app-parser-toolbar',
@@ -38,6 +41,9 @@ export class ParserToolbarComponent implements OnInit {
 	public _displayMode: string = 'standard';
 	public _containerHeight: number = 0;
 
+	public _toolbarActionVisible: boolean = false;
+	public _toolbarActionVisibleCookie: string = '_toolbarActionVisible';
+
 	// pages packages list
 	public _packages: any[] = [];
 	// currently active package
@@ -59,7 +65,13 @@ export class ParserToolbarComponent implements OnInit {
 
 	private _alphabet = Array.from(Array(26), (e, i) => String.fromCharCode(i + 97));
 
-	constructor() { }
+	constructor(
+		private cookies: CookieService
+	) {
+		this._toolbarActionVisible = (
+			this.cookies.get(this._toolbarActionVisibleCookie) === '1'
+		);
+	}
 
 	@Input() set parserRequest(parserRequest: ParserRequest) {
 		let countString = '';
@@ -92,14 +104,13 @@ export class ParserToolbarComponent implements OnInit {
 		}
 	}
 
-	@Output() onNodeUpdate = new EventEmitter<ParserNode>();
-	@Output() onNodePaginating = new EventEmitter<Pagination>();
+	@Output() onRequestChange = new EventEmitter<ParserRequestOperation>();
 
 	ngOnInit() {}
 
 	public nodeMarking(selectedStatus: string): void {
 		this._parserRequest.currentNode.toggleStatus(selectedStatus);
-		this.updateCurrentNode();
+		this.updateCurrentRequest(ParserRequestAction.CurrentNodeUpdate);
 	}
 
 	public nodePaginating(reset: boolean = false): void {
@@ -116,7 +127,12 @@ export class ParserToolbarComponent implements OnInit {
 				break;
 		}
 
-		this.onNodePaginating.next(this._pagination);
+		this._parserRequest.pagination = this._pagination;
+		this.updateCurrentRequest(ParserRequestAction.Pagination);
+	}
+
+	public reloadNode(): void {
+		this.updateCurrentRequest(ParserRequestAction.HardReload);
 	}
 
 	public changePage(value: number = 1): void {
@@ -130,7 +146,7 @@ export class ParserToolbarComponent implements OnInit {
 				}
 			}
 
-			this.nodePaginating();
+			this.updateCurrentRequest(ParserRequestAction.Pagination);
 		}
 	}
 
@@ -148,7 +164,7 @@ export class ParserToolbarComponent implements OnInit {
 			}
 		}
 
-		this.updateCurrentNode();
+		this.updateCurrentRequest(ParserRequestAction.CurrentNodeUpdate);
 	}
 
 	public openTagInput(): void {
@@ -175,6 +191,7 @@ export class ParserToolbarComponent implements OnInit {
 
 			if (!tag) {
 				tag = new Tag();
+				tag.id = null;
 				tag.name = tagName;
 
 				this._parserRequest.tags.push(tag);
@@ -185,7 +202,7 @@ export class ParserToolbarComponent implements OnInit {
 			this._tagInputVisible = false;
 			this._foundTags = [];
 
-			this.updateCurrentNode();
+			this.updateCurrentRequest(ParserRequestAction.CurrentNodeUpdate);
 		} else {
 			this._tagSearchTimeout = setTimeout(() => {
 				for (let tagIndex in this._parserRequest.tags) {
@@ -205,13 +222,13 @@ export class ParserToolbarComponent implements OnInit {
 		this._parserRequest.currentNode.addTag(tag);
 		this._tagInputVisible = false;
 		this._foundTags = [];
-		this.updateCurrentNode();
+		this.updateCurrentRequest(ParserRequestAction.CurrentNodeUpdate);
 	}
 
 	public removeTag(tag: Tag): void {
 		this._parserRequest.currentNode.removeTag(tag);
 		this._inputTagName = null;
-		this.updateCurrentNode();
+		this.updateCurrentRequest(ParserRequestAction.CurrentNodeUpdate);
 	}
 
 	public clearRatingForm(): void {
@@ -220,8 +237,10 @@ export class ParserToolbarComponent implements OnInit {
 		this._toolbarAction = null;
 	}
 
-	public updateCurrentNode(): void {
-		this.onNodeUpdate.next(this._parserRequest.currentNode);
+	public updateCurrentRequest(action: string): void {
+		this.onRequestChange.next(
+			(new ParserRequestOperation(action, this._parserRequest))
+		);
 	}
 
 	public setActiveSelector(selector: string): void {
@@ -238,6 +257,11 @@ export class ParserToolbarComponent implements OnInit {
 			this._pagination.setActiveSelectorByValue(this._activeSelectorValue);
 			this.nodePaginating(true);
 		}
+	}
+
+	public toggleActionBarVisibility(): void {
+		this._toolbarActionVisible = !this._toolbarActionVisible;
+		this.cookies.set(this._toolbarActionVisibleCookie, (this._toolbarActionVisible ? '1' : '0'));
 	}
 
 	public nodeStatusButtonClass(checkedStatus: string): string {

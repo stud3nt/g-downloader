@@ -8,9 +8,9 @@ export class Tag extends BaseModel {
 		Object.assign(this, obj);
 	}
 
-	private _id: number;
+	private _id: number = null;
 
-	private _name: string;
+	private _name: string = '';
 
 	get id(): number {
 		return this._id;

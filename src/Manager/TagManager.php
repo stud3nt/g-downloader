@@ -52,15 +52,14 @@ class TagManager extends EntityManager
      */
     public function completeTagsList(ParserRequest &$parserRequest): ParserRequest
     {
-        if (!$parserRequest->getTags()) {
-            $tags = $this->getTagsList();
+        $parserRequest->setTags([]);
+        $tags = $this->getTagsList();
 
-            if ($tags) {
-                foreach ($tags as $tag) {
-                    $parserRequest->addTag(
-                        (new \App\Model\Tag())->setFromEntity($tag)
-                    );
-                }
+        if ($tags) {
+            foreach ($tags as $tag) {
+                $parserRequest->addTag(
+                    (new \App\Model\Tag())->setFromEntity($tag)
+                );
             }
         }
 
