@@ -163,17 +163,6 @@
                 </a>
             </div>
         </div>
-
-        <div class="toolbar__row__buttonbox" *ngIf="_parserRequest.files !== null && _parserRequest.files.length > 0">
-            <div class="buttonbox_label">
-                PACKAGE VIEW
-            </div>
-            <div class="buttonbox_buttons">
-                <a [ngClass]="'button button-small'+((_toolbarAction === ToolbarAction.Rating) ? ' active' : '')" class="" title="Create tag" (click)="toggleToolbarAction(ToolbarAction.Rating)">
-                    <i class="fa fa-star"></i> &nbsp; RATE/COMMENT
-                </a>
-            </div>
-        </div>
     </div>
 
     <div class="toolbar__row" id="parser-toolbar-action-area" *ngIf="_toolbarActionVisible && _toolbarAction !== null">

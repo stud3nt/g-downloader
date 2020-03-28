@@ -32,6 +32,7 @@ class ModelConverter
     }
 
     /**
+     * @required
      * @param ObjectManager $em
      * @return ModelConverter
      */
@@ -76,7 +77,10 @@ class ModelConverter
 
             if ($data instanceof AbstractEntity) {
                 $entityConverter = new EntityConverter();
-                $entityConverter->setEntityManager($this->em);
+
+                if ($this->em)
+                    $entityConverter->setEntityManager($this->em);
+
                 $modelData = $entityConverter->convert($data);
             } elseif ($data instanceof \stdClass) {
                 $modelData = json_decode(json_encode($data), true);

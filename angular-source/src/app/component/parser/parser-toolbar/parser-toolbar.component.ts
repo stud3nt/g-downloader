@@ -25,6 +25,8 @@ export class ParserToolbarComponent implements OnInit {
 	public _currentNode: ParserNode = null;
 	public _pagination: Pagination = null;
 
+	public _viewMode;
+
 	public _nodeCategory: string = null;
 	public _inputTagName: string = null;
 	public _tagInputVisible: boolean = false;
@@ -237,10 +239,18 @@ export class ParserToolbarComponent implements OnInit {
 		this._toolbarAction = null;
 	}
 
+	public updateCurrentNode(): void {
+		this.updateCurrentRequest(ParserRequestAction.CurrentNodeUpdate);
+	}
+
 	public updateCurrentRequest(action: string): void {
 		this.onRequestChange.next(
 			(new ParserRequestOperation(action, this._parserRequest))
 		);
+	}
+
+	public changeViewMode(mode: string) : void {
+		this.updateCurrentRequest(ParserRequestAction.ViewModeChange);
 	}
 
 	public setActiveSelector(selector: string): void {

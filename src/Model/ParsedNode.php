@@ -4,6 +4,7 @@ namespace App\Model;
 
 use App\Annotation\ModelVariable;
 use App\Enum\NodeStatus;
+use App\Utils\DateTimeHelper;
 use Doctrine\Common\Collections\ArrayCollection;
 
 class ParsedNode extends AbstractModel
@@ -665,22 +666,10 @@ class ParsedNode extends AbstractModel
      */
     public function setLastViewedAt($lastViewedAt): self
     {
-        if ($lastViewedAt instanceof \DateTime) {
-            $now = new \DateTime('now');
-            $difference = $now->diff($lastViewedAt);
-
-            if ($difference->d < 1) {
-                if ($difference->h < 1) {
-                    $this->lastViewedAt = $difference->i.' minute'.(($difference->i > 1) ? 's' : '');
-                } else {
-                    $this->lastViewedAt = $difference->h.' hour'.(($difference->h > 1) ? 's' : '');
-                }
-            } else {
-                $this->lastViewedAt = $difference->d.' day'.(($difference->d > 1) ? 's' : '');
-            }
-        } else {
-            $this->lastViewedAt = ($lastViewedAt !== '') ? $lastViewedAt : null;
-        }
+        if ($lastViewedAt instanceof \DateTime)
+            $this->lastViewedAt = DateTimeHelper::dateDifference($lastViewedAt);
+        else
+            $this->lastViewedAt = $lastViewedAt;
 
         return $this;
     }

@@ -1,4 +1,4 @@
-import {Component, HostListener, OnInit} from '@angular/core';
+import { Component, HostListener, OnInit } from '@angular/core';
 import { ActivatedRoute, NavigationEnd, Router } from "@angular/router";
 import { ContentHeaderDataService } from "../../service/data/content-header-data.service";
 import { ParserService } from "../../service/parser.service";
@@ -7,7 +7,6 @@ import { ParserNode } from "../../model/parser-node";
 import { ParserRequest } from "../../model/parser-request";
 import { ParsedFile } from "../../model/parsed-file";
 import { ConfigService } from "../../service/config.service";
-import { NodeLevel } from "../../enum/node-level";
 import { PageLoaderDataService } from "../../service/data/page-loader-data.service";
 import { Pagination } from "../../model/pagination";
 import { NodesListComponent } from "./nodes-list/nodes-list.component";
@@ -22,8 +21,8 @@ import { JsonResponse } from "../../model/json-response";
 import { WebSocketService } from "../../service/web-socket.service";
 import { WebsocketOperation } from "../../enum/websocket-operation";
 import { Subscription } from "rxjs";
-import {ParserRequestOperation} from "../../model/parser-request-operation";
-import {ParserRequestAction} from "../../enum/parser-request-action";
+import { ParserRequestOperation } from "../../model/parser-request-operation";
+import { ParserRequestAction } from "../../enum/parser-request-action";
 
 @Component({
 	selector: 'app-parser',
@@ -112,9 +111,8 @@ export class ParserComponent implements OnInit {
 	}
 
 	public run(): void {
-		if (this.runningAction === true) {
+		if (this.runningAction === true)
 			return;
-		}
 
 		window.addEventListener('scroll', this.scrollEvent, true);
 

@@ -20,6 +20,8 @@ export class PageLoaderComponent implements OnInit {
 	) {}
 
 	ngOnInit() {
+		let title = document.title;
+
 		// loader data listener service - PreloaderData object
 		this.pageLoaderDataService.loaderData.subscribe((preloaderData: PreloaderData) => { // listening for loader data changes
 			this.preloaderData = preloaderData;
@@ -28,6 +30,9 @@ export class PageLoaderComponent implements OnInit {
 		// progress listener service - number
 		this.pageLoaderDataService.loaderProgress.subscribe((progress: number) => {
 			this.preloaderData.progress = progress;
+
+			if (progress > 0)
+				document.title = '['+progress+'%] '+title;
 		});
 
 		// description listener service - string
@@ -44,6 +49,7 @@ export class PageLoaderComponent implements OnInit {
 					case 'hide':
 						this.preloaderData.visible = false;
 						this.preloaderData.reset();
+						document.title = title;
 						break;
 
 					case 'show':

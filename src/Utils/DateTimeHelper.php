@@ -30,10 +30,10 @@ class DateTimeHelper
             return $differenceText;
         }
 
-        if ($difference->m > 0) {
-            $differenceText .= (empty($text) ? '' : ' ').$difference->m.' minute'.(($difference->m > 1) ? 's' : '');
+        if ($difference->i > 0) {
+            $differenceText .= (empty($text) ? '' : ' ').$difference->i.' minute'.(($difference->i > 1) ? 's' : '');
 
-            if ($difference->m > 2)
+            if ($difference->i > 2)
                 return $differenceText;
         }
 
