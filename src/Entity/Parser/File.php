@@ -92,10 +92,16 @@ class File extends AbstractEntity
     protected $length = 0;
 
     /**
-     * @ORM\Column(type="integer", nullable=false, length=11, options={"unsigned"=true, "default":0})
+     * @ORM\Column(name="size", type="integer", nullable=false, length=11, options={"unsigned"=true, "default":0})
      * @EntityVariable(convertable=true, writable=true, readable=true)
      */
     protected $size = 0;
+
+    /**
+     * @ORM\Column(name="dimension_ratio", type="decimal", precision=5, scale=2, options={"default":0})
+     * @EntityVariable(convertable=true, writable=true, readable=true)
+     */
+    protected $dimensionRatio = 0;
 
     /**
      * @var \DateTime
@@ -468,6 +474,25 @@ class File extends AbstractEntity
     public function setCorrupted(bool $corrupted): self
     {
         $this->corrupted = $corrupted;
+
+        return $this;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getDimensionRatio()
+    {
+        return $this->dimensionRatio;
+    }
+
+    /**
+     * @param mixed $dimensionRatio
+     * @return File
+     */
+    public function setDimensionRatio($dimensionRatio): self
+    {
+        $this->dimensionRatio = $dimensionRatio;
 
         return $this;
     }

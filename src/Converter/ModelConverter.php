@@ -264,6 +264,10 @@ class ModelConverter
                     $value = (int)trim($value);
                     break;
 
+                case 'float':
+                    $value = (float)trim($value);
+                    break;
+
                 case 'stdClass':
                     if (is_array($value))
                         $value = json_decode(json_encode($value), false);

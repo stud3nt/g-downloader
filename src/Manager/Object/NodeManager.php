@@ -161,6 +161,13 @@ class NodeManager extends EntityManager
                             $category = $savedNode->getCategory();
                             $tags = $savedNode->getTags();
 
+                            $parsedNode->setPersonalDescription(
+                                $savedNode->getPersonalDescription()
+                            );
+                            $parsedNode->setPersonalRating(
+                                $savedNode->getPersonalRating()
+                            );
+
                             if ($category) {
                                 $parsedNode->setCategory(
                                     $categoriesModels[$category->getId()]
@@ -211,7 +218,7 @@ class NodeManager extends EntityManager
     {
         if ($savedNode->getImagesNo() !== $parsedNode->getImagesNo()) {
             $savedNode->setImagesNo($parsedNode->getImagesNo());
-            $savedNode->setRatio($parsedNode->getRatio());
+            $savedNode->setRating($parsedNode->getRating());
             $savedNode->setCommentsNo($parsedNode->getCommentsNo());
 
             // more images? Adding 'new content' info;

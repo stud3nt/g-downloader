@@ -220,9 +220,7 @@ class AbstractParser
     {
         $ch = curl_init();
 
-        $targetFile = fopen($targetUrl, 'w+');
-
-        curl_setopt($ch, CURLOPT_FILE, $targetFile);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_TIMEOUT, 300);
         curl_setopt($ch, CURLOPT_URL, $sourceUrl);
 
@@ -231,8 +229,12 @@ class AbstractParser
             curl_setOpt($ch, CURLOPT_PROGRESSFUNCTION, $returnFunction);
         }
 
-        curl_exec($ch);
-        fclose($targetFile);
+        $resource = curl_exec($ch);
+
+        if (strlen($resource) < 10)
+            $resource = file_get_contents($sourceUrl);
+
+        file_put_contents($targetUrl, $resource);
 
         if (curl_error($ch)) {
             curl_close($ch);

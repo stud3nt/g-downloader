@@ -4,6 +4,8 @@ export class ParserToolbarAction {
 
 	static Filtering: string = 'filtering';
 
+	static NodeOptions: string = 'node_options';
+
 	static NodesList: string = 'nodes_list';
 
 }

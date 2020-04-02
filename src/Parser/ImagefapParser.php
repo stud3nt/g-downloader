@@ -91,7 +91,7 @@ class ImagefapParser extends AbstractParser implements ParserInterface
                         ->setName($username)
                         ->setIdentifier($userId)
                         ->setUrl($this->mainBoardUrl.substr($anchor->getAttribute('href'), 1))
-                        ->setRatio($ratio)
+                        ->setRating($ratio)
                         ->addThumbnail($image->getAttribute('src'))
                     ;
 

@@ -49,7 +49,7 @@ class ParsedNode extends AbstractModel
      * @var string
      * @ModelVariable(type="string")
      */
-    public $customDescription;
+    public $personalDescription = null;
 
     /**
      * @var string
@@ -61,13 +61,13 @@ class ParsedNode extends AbstractModel
      * @var integer
      * @ModelVariable(type="integer")
      */
-    public $ratio = 0;
+    public $rating = 0;
 
     /**
      * @var integer
      * @ModelVariable(type="integer")
      */
-    public $rating = 0;
+    public $personalRating = 0;
 
     /**
      * @var integer
@@ -362,25 +362,6 @@ class ParsedNode extends AbstractModel
     public function setUrl(string $url = null, bool $skipIfNotNull = false): self
     {
         $this->url = ($skipIfNotNull && $this->url) ? $this->url : $url;
-
-        return $this;
-    }
-
-    /**
-     * @return int
-     */
-    public function getRatio(): int
-    {
-        return $this->ratio;
-    }
-
-    /**
-     * @param int $ratio
-     * @return $this;
-     */
-    public function setRatio(int $ratio = 0): self
-    {
-        $this->ratio = $ratio;
 
         return $this;
     }
@@ -694,7 +675,7 @@ class ParsedNode extends AbstractModel
     }
 
     /**
-     * @return \App\Entity\Tag[]|null
+     * @return Tag[]|null
      */
     public function getTags()
     {
@@ -785,25 +766,6 @@ class ParsedNode extends AbstractModel
     }
 
     /**
-     * @return string
-     */
-    public function getCustomDescription(): string
-    {
-        return $this->customDescription;
-    }
-
-    /**
-     * @param string $customDescription
-     * @return $this
-     */
-    public function setCustomDescription(string $customDescription = null): self
-    {
-        $this->customDescription = $customDescription;
-
-        return $this;
-    }
-
-    /**
      * @return int
      */
     public function getRating(): int
@@ -818,6 +780,44 @@ class ParsedNode extends AbstractModel
     public function setRating(int $rating): self
     {
         $this->rating = $rating;
+
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getPersonalDescription(): ?string
+    {
+        return $this->personalDescription;
+    }
+
+    /**
+     * @param string $personalDescription
+     * @return $this
+     */
+    public function setPersonalDescription(string $personalDescription = null): self
+    {
+        $this->personalDescription = $personalDescription;
+
+        return $this;
+    }
+
+    /**
+     * @return int
+     */
+    public function getPersonalRating(): int
+    {
+        return $this->personalRating;
+    }
+
+    /**
+     * @param int $personalRating
+     * @return $this
+     */
+    public function setPersonalRating(int $personalRating): self
+    {
+        $this->personalRating = $personalRating;
 
         return $this;
     }

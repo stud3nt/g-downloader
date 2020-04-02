@@ -273,7 +273,7 @@ class Boards4chanParser extends AbstractParser implements ParserInterface
 
                             $localThumbnailUrl = $this->thumbnailTempDir.FilesHelper::getFileName($thumbnailUrl, true);
 
-                            if (!file_exists($localThumbnailUrl)) {
+                            if (!file_exists($localThumbnailUrl) || $parserRequest->isIgnoreCache()) {
                                 if (!$this->downloadFile($thumbnailUrl, $localThumbnailUrl)) {
                                     throw new Exception("ERROR IN THUMBNAIL DOWNLOADING");
                                 }

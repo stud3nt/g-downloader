@@ -268,7 +268,7 @@ class RedditParser extends AbstractParser implements ParserInterface
                 ->setMimeType($mimeType)
                 ->setSize(0)
                 ->setUploadedAt($createdAt)
-                ->setRatio($child->ups)
+                ->setRating($child->ups)
             ;
 
             if ($child->domain === 'gfycat.com') {

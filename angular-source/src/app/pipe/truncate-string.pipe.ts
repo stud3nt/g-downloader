@@ -19,6 +19,9 @@ export class TruncateStringPipe implements PipeTransform {
 	 * @param useWordBoundary
 	 */
 	protected truncate(string: string = '', maxLength: number = 20, useWordBoundary: boolean = true): string {
+		if (!string || string.length === 0)
+			return '';
+
 		if (string.length > maxLength) {
 			let substring = string.substr(0, maxLength - 1);
 

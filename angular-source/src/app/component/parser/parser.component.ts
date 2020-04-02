@@ -221,10 +221,6 @@ export class ParserComponent implements OnInit {
 		this.parserRequest.pagination = pagination;
 	 	this.parserRequest.clearParsedData();
 		this.sendParserRequest();
-
-		setTimeout(() => {
-			this.sendWebsocketRequest();
-		}, 500);
 	};
 
 	/**
@@ -274,6 +270,10 @@ export class ParserComponent implements OnInit {
 			this.parserRequest.files = this._filesTemp;
 		}, 20);
 
+		setTimeout(() => {
+			this.sendWebsocketRequest();
+		}, 200);
+
 		this.parserService.sendParserActionRequest(parserRequestCopy).subscribe((response : ParserRequest) => {
 			if (typeof response.currentNode !== 'undefined') {
 				this.parserRequest = response;
@@ -290,7 +290,6 @@ export class ParserComponent implements OnInit {
 					successFunction();
 			}
 		}, (error) => {
-			console.log(error);
 			this.pageLoaderDataService.hide();
 			this.parserRequestAction = false;
 
@@ -340,7 +339,14 @@ export class ParserComponent implements OnInit {
 								}
 							}
 						} else {
-							this.pageLoaderDataService.hide();
+							switch (response) {
+								case 'CONNECTION OPEN':
+									break;
+
+								default:
+									console.log(response);
+									this.pageLoaderDataService.hide();
+							}
 						}
 
 						if (recursive && this.parserRequestAction)

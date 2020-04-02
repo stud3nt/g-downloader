@@ -72,7 +72,7 @@ class ParsedFile extends AbstractModel implements StatusInterface
     /**
      * @ModelVariable(type="integer")
      */
-    public $ratio = -1;
+    public $rating = -1;
 
     /**
      * @ModelVariable()
@@ -93,6 +93,11 @@ class ParsedFile extends AbstractModel implements StatusInterface
      * @ModelVariable(type="integer")
      */
     public $size = 0;
+
+    /**
+     * @ModelVariable(type="float")
+     */
+    public $dimensionRatio;
 
     /**
      * @ModelVariable(type="integer")
@@ -718,18 +723,37 @@ class ParsedFile extends AbstractModel implements StatusInterface
     /**
      * @return mixed
      */
-    public function getRatio()
+    public function getRating()
     {
-        return $this->ratio;
+        return $this->rating;
     }
 
     /**
-     * @param mixed $ratio
-     * @return $this
+     * @param mixed $rating
+     * @return $this;
      */
-    public function setRatio($ratio): self
+    public function setRating($rating): self
     {
-        $this->ratio = $ratio;
+        $this->rating = $rating;
+
+        return $this;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getDimensionRatio()
+    {
+        return $this->dimensionRatio;
+    }
+
+    /**
+     * @param mixed $dimensionRatio
+     * @return $this;
+     */
+    public function setDimensionRatio($dimensionRatio): self
+    {
+        $this->dimensionRatio = $dimensionRatio;
 
         return $this;
     }

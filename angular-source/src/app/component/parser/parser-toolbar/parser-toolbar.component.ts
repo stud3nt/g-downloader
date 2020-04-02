@@ -25,8 +25,6 @@ export class ParserToolbarComponent implements OnInit {
 	public _currentNode: ParserNode = null;
 	public _pagination: Pagination = null;
 
-	public _viewMode;
-
 	public _nodeCategory: string = null;
 	public _inputTagName: string = null;
 	public _tagInputVisible: boolean = false;
@@ -234,8 +232,8 @@ export class ParserToolbarComponent implements OnInit {
 	}
 
 	public clearRatingForm(): void {
-		this._parserRequest.currentNode.description = this._currentNode.description;
-		this._parserRequest.currentNode.rating = this._currentNode.rating;
+		this._parserRequest.currentNode.personalDescription = this._currentNode.personalDescription;
+		this._parserRequest.currentNode.personalRating = this._currentNode.personalRating;
 		this._toolbarAction = null;
 	}
 

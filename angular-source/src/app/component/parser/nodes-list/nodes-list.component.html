@@ -1,56 +1,88 @@
 <div *ngIf="parserRequest.parsedNodes.length > 0">
     <div class="grid-container grid-200">
         <a [routerLink]="lockTiles ? currentUrl : routerService.generateNodeUrl(node)" id="{{ node.identifier }}" [ngClass]="getNodeClass(node)" *ngFor="let node of parserRequest.parsedNodes">
-            <div class="tile-header-image">
-                <div class="tile-header-icon bg-default" *ngIf="node.hasStatus(NodeStatus.Waiting)">
-                    <i class="fa fa-spinner fa-spin fa-fw"></i>
-                </div>
-                <div class="tile-header-icon bg-info" *ngIf="node.hasStatus(NodeStatus.Saved)">
-                    <i class="fa fa-save"></i>
-                </div>
-                <div class="tile-header-icon bg-success" *ngIf="node.hasStatus(NodeStatus.Finished)">
-                    <i class="fa fa-check-circle"></i>
+            <div class="tile-header">
+                <div class="tile-header-icon-container">
+                    <div class="tile-header-icon btn-info" *ngIf="node.hasStatus(NodeStatus.Saved)">
+                        <i class="fa fa-save"></i> &nbsp; SAVED
+                    </div>
+                    <div class="tile-header-icon bg-primary" *ngIf="node.hasStatus(NodeStatus.Favorited)">
+                        <i class="fa fa-star"></i> &nbsp; FAVORITED
+                    </div>
+                    <div class="tile-header-icon bg-warning" *ngIf="node.hasStatus(NodeStatus.Blocked)">
+                        <i class="fa fa-lock"></i> &nbsp; BLOCKED
+                    </div>
+                    <div class="tile-header-icon bg-success" *ngIf="node.hasStatus(NodeStatus.Finished)">
+                        <i class="fa fa-check-circle"></i> &nbsp; FINISHED
+                    </div>
+                    <div class="tile-header-icon bg-default" *ngIf="node.hasStatus(NodeStatus.Waiting)">
+                        <i class="fa fa-spinner fa-spin fa-fw"></i> &nbsp; WAITING...
+                    </div>
                 </div>
 
-                <span>
-                    <p [innerHTML]="node.name | truncateString : 35"></p>
-                </span>
-            </div>
-            <div class="tile-image" *ngIf="node.thumbnails.length > 0 || node.localThumbnails.length > 0">
-                <div *ngIf="node.thumbnails && node.thumbnails.length > 0">
-                    <img *ngFor="let thumbnail of node.thumbnails" [src]="thumbnail" />
+                <div class="tile-header-image" *ngIf="node.thumbnails.length !== 0 || node.localThumbnails.length !== 0">
+                    <div *ngIf="node.thumbnails && node.thumbnails.length > 0">
+                        <div *ngFor="let thumbnail of node.thumbnails" [style.backgroundImage]="'url('+thumbnail+')'"></div>
+                    </div>
+                    <div *ngIf="node.localThumbnails && node.localThumbnails.length > 0">
+                        <div *ngFor="let localThumbnail of node.localThumbnails" [style.backgroundImage]="'url('+localThumbnail+')'"></div>
+                    </div>
                 </div>
-                <div *ngIf="node.localThumbnails && node.localThumbnails.length > 0">
-                    <img *ngFor="let localThumbnail of node.localThumbnails" [src]="localThumbnail" />
-                </div>
-                <div *ngIf="!node.thumbnails && !node.localThumbnails">
-                    <img src="/app/assets/img/no-image.png" />
+
+                <div class="tile-header-placeholder" *ngIf="node.thumbnails.length === 0 && node.localThumbnails.length === 0">
+                    <div class="placeholder-content" [innerHTML]="node.name | truncateString : 60"></div>
                 </div>
             </div>
-            <div class="tile-data-empty">
+
+            <div class="tile-data">
                 <table class="table table-hover">
                     <tbody>
+                        <tr *ngIf="node.thumbnails.length > 0 || node.localThumbnails.length > 0" >
+                            <th class="text-center" colspan="2" [innerHTML]="node.name | truncateString : 60"></th>
+                        </tr>
                         <tr>
                             <th>Last viewed at</th>
-                            <td [innerText]="(node.lastViewedAt !== null) ? (node.lastViewedAt + ' ago') : '---'"></td>
+                            <td>
+                                <span *ngIf="node.lastViewedAt">
+                                    {{ node.lastViewedAt }} ago
+                                </span>
+                                <span *ngIf="!node.lastViewedAt">
+                                    ...
+                                </span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>My rating</th>
+                            <td>
+                                <i *ngFor="let i of _ratingStars" [ngClass]="i ? ('fa fa-star'+((i > node.personalRating) ? '-o ' : '')) : ''"></i>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>My comment</th>
+                            <td
+                                [innerHTML]="node.personalDescription | truncateString: 20"
+                                (click)="showPersonalDescription(node)"
+                                (mouseenter)="lockTiles = true"
+                                (mouseleave)="lockTiles = false"
+                            ></td>
                         </tr>
                         <tr *ngIf="node.imagesNo && node.imagesNo > 0">
-                            <th>Files</th>
+                            <th>Files no</th>
                             <td [innerText]="node.imagesNo"></td>
                         </tr>
-                        <tr *ngIf="!node.imagesNo && node.ratio">
-                            <th>Ratio</th>
-                            <td [innerText]="node.ratio"></td>
+                        <tr *ngIf="!node.imagesNo && node.rating">
+                            <th>Rating</th>
+                            <td [innerText]="node.rating"></td>
                         </tr>
                         <tr *ngIf="node.commentsNo">
-                            <th>Comments</th>
+                            <th>Comments no</th>
                             <td [innerText]="node.commentsNo ? node.commentsNo : '----'"></td>
                         </tr>
-                        <tr *ngIf="node.category !== null">
+                        <tr>
                             <th>Category</th>
-                            <td [innerText]="(node.category && node.category.label) ? node.category.label : node.category.name"></td>
+                            <td [innerText]="(node.category !== null) ? (node.category && node.category.label) ? node.category.label : node.category.name : '---'"></td>
                         </tr>
-                        <tr *ngIf="node.tags !== null && node.tags.length > 0">
+                        <tr>
                             <td colspan="12">
                                 <div class="tags_container">
                                     <div class="tag" *ngFor="let tag of node.tags" [innerText]="tag.name"></div>
@@ -60,20 +92,20 @@
                     </tbody>
                 </table>
             </div>
-            <div class="tile-footer">
-                <button type="button" (mouseenter)="lockTiles=true" (mouseleave)="lockTiles=false" (click)="markNode(node, NodeStatus.Saved)" [ngClass]="getNodeButtonClass(node, NodeStatus.Saved, 'small')">
+            <div class="tile-footer" (mouseenter)="lockTiles=true" (mouseleave)="lockTiles=false">
+                <button type="button" (click)="markNode(node, NodeStatus.Saved)" [ngClass]="getNodeButtonClass(node, NodeStatus.Saved, 'small')">
                     <i class="fa fa-save" *ngIf="node.hasStatus(NodeStatus.Saved)"></i>
                     <i class="fa fa-save" *ngIf="!node.hasStatus(NodeStatus.Saved)"></i>
                 </button>
-                <button type="button" (mouseenter)="lockTiles=true" (mouseleave)="lockTiles=false" (click)="markNode(node, NodeStatus.Favorited)" [ngClass]="getNodeButtonClass(node, NodeStatus.Favorited, 'small')">
+                <button type="button" (click)="markNode(node, NodeStatus.Favorited)" [ngClass]="getNodeButtonClass(node, NodeStatus.Favorited, 'small')">
                     <i class="fa fa-star-o" *ngIf="node.hasStatus(NodeStatus.Favorited)"></i>
                     <i class="fa fa-star" *ngIf="!node.hasStatus(NodeStatus.Favorited)"></i>
                 </button>
-                <button type="button" (mouseenter)="lockTiles=true" (mouseleave)="lockTiles=false" (click)="markNode(node, NodeStatus.Blocked)" [ngClass]="getNodeButtonClass(node, NodeStatus.Blocked, 'small')">
+                <button type="button" (click)="markNode(node, NodeStatus.Blocked)" [ngClass]="getNodeButtonClass(node, NodeStatus.Blocked, 'small')">
                     <i class="fa fa-unlock" *ngIf="node.hasStatus(NodeStatus.Blocked)"></i>
                     <i class="fa fa-lock" *ngIf="!node.hasStatus(NodeStatus.Blocked)"></i>
                 </button>
-                <button type="button" (mouseenter)="lockTiles=true" (mouseleave)="lockTiles=false" (click)="markNode(node, NodeStatus.Finished)" [ngClass]="getNodeButtonClass(node, NodeStatus.Finished, 'small')">
+                <button type="button" (click)="markNode(node, NodeStatus.Finished)" [ngClass]="getNodeButtonClass(node, NodeStatus.Finished, 'small')">
                     <i class="fa fa-check-circle" *ngIf="node.hasStatus(NodeStatus.Finished)"></i>
                     <i class="fa fa-check-circle-o" *ngIf="!node.hasStatus(NodeStatus.Finished)"></i>
                 </button>

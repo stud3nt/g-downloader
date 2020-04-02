@@ -39,7 +39,7 @@ class Node extends AbstractEntity
      * @ORM\Column(name="personal_rating", type="integer", length=6, options={"unsigned"=true, "default":0})
      * @EntityVariable(convertable=true, writable=true, readable=true)
      */
-    protected $rating = 0;
+    protected $personalRating = 0;
 
     /**
      * @ORM\Column(name="description", type="string", length=4096, nullable=true)
@@ -48,16 +48,16 @@ class Node extends AbstractEntity
     protected $description;
 
     /**
-     * @ORM\Column(name="custom_description", type="text", nullable=true)
+     * @ORM\Column(name="personal_description", type="text", nullable=true)
      * @EntityVariable(convertable=true, writable=true, readable=true)
      */
-    protected $customDescription;
+    protected $personalDescription;
 
     /**
-     * @ORM\Column(name="ratio", type="integer", length=6, options={"unsigned"=true, "default":0})
+     * @ORM\Column(name="rating", type="integer", length=6, options={"unsigned"=true, "default":0})
      * @EntityVariable(convertable=true, writable=true, readable=true)
      */
-    protected $ratio = 0;
+    protected $rating = 0;
 
     /**
      * @ORM\Column(name="images_no", type="integer", options={"unsigned"=true, "default":0}, length=6)
@@ -181,18 +181,6 @@ class Node extends AbstractEntity
     public function setDescription(?string $description): self
     {
         $this->description = $description;
-
-        return $this;
-    }
-
-    public function getRatio(): ?int
-    {
-        return $this->ratio;
-    }
-
-    public function setRatio(int $ratio): self
-    {
-        $this->ratio = $ratio;
 
         return $this;
     }
@@ -469,20 +457,39 @@ class Node extends AbstractEntity
     }
 
     /**
-     * @return string|null
+     * @return mixed
      */
-    public function getCustomDescription(): ?string
+    public function getPersonalRating()
     {
-        return $this->customDescription;
+        return $this->personalRating;
     }
 
     /**
-     * @param string|null $customDescription
+     * @param mixed $personalRating
      * @return Node
      */
-    public function setCustomDescription(?string $customDescription): self
+    public function setPersonalRating($personalRating): self
     {
-        $this->customDescription = $customDescription;
+        $this->personalRating = $personalRating;
+
+        return $this;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getPersonalDescription()
+    {
+        return $this->personalDescription;
+    }
+
+    /**
+     * @param mixed $personalDescription
+     * @return Node
+     */
+    public function setPersonalDescription($personalDescription): self
+    {
+        $this->personalDescription = $personalDescription;
 
         return $this;
     }

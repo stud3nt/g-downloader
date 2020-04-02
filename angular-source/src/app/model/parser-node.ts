@@ -18,11 +18,17 @@ export class ParserNode extends BaseModel {
 
 	private _label: string;
 
+	// public (parsed) rating scrapped from page
 	private _rating: number = 0;
 
+	// personal rating (writen by user)
+	private _personalRating: number = 0;
+
+	// public (parsed) description
 	private _description: string = null;
 
-	private _customDescription: string = null;
+	// personal description writed by user
+	private _personalDescription: string = null;
 
 	private _level: string = null;
 
@@ -33,8 +39,6 @@ export class ParserNode extends BaseModel {
 	private _identifier: string = null;
 
 	private _url: string = null;
-
-	private _ratio: number = 0;
 
 	private _noImage: boolean = false;
 
@@ -100,6 +104,14 @@ export class ParserNode extends BaseModel {
 		this._rating = value;
 	}
 
+	get personalRating(): number {
+		return this._personalRating;
+	}
+
+	set personalRating(value: number) {
+		this._personalRating = value;
+	}
+
 	get description(): string {
 		return this._description;
 	}
@@ -146,14 +158,6 @@ export class ParserNode extends BaseModel {
 
 	set url(value: string) {
 		this._url = value;
-	}
-
-	get ratio(): number {
-		return this._ratio;
-	}
-
-	set ratio(value: number) {
-		this._ratio = value;
 	}
 
 	get noImage(): boolean {
@@ -425,11 +429,11 @@ export class ParserNode extends BaseModel {
 		this._allowCategory = value;
 	}
 
-	get customDescription(): string {
-		return this._customDescription;
+	get personalDescription(): string {
+		return this._personalDescription;
 	}
 
-	set customDescription(value: string) {
-		this._customDescription = value;
+	set personalDescription(value: string) {
+		this._personalDescription = value;
 	}
 }

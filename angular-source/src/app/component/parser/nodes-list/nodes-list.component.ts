@@ -22,6 +22,8 @@ export class NodesListComponent implements OnInit {
 
 	public currentUrl: string = '';
 
+	public _ratingStars = [];
+
 	constructor(
 		private parserService: ParserService,
 		public routerService: RouterService
@@ -29,6 +31,10 @@ export class NodesListComponent implements OnInit {
 
 	ngOnInit(): void {
 		this.currentUrl = document.location.pathname;
+		this._ratingStars = [];
+
+		for (let x = 1; x <= 10; x++)
+			this._ratingStars[x] = x;
 	}
 
 	/**
@@ -58,6 +64,11 @@ export class NodesListComponent implements OnInit {
 		}, (error) => {
 			node.removeStatus(NodeStatus.Waiting);
 		});
+	}
+
+	public showPersonalDescription(node: ParserNode): void {
+		if (!node.personalDescription)
+			return;
 	}
 
 	/**

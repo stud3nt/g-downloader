@@ -11,64 +11,103 @@
 <div *ngIf="parserRequest.files !== null && parserRequest.files.length > 0">
     <div class="grid-container grid-200">
         <article id="{{ file.identifier }}" [ngClass]="determineFileClass(file)" *ngFor="let file of parserRequest.files" (click)="toggleFileQueue(file)">
-            <div class="tile-header-image">
-                <div class="tile-header-icon bg-primary" *ngIf="file.type === FileType.Video">
-                    <i class="fa fa-video-camera"></i>
+            <div class="tile-header">
+                <div class="tile-header-icon-container">
+                    <div class="tile-header-icon bg-primary icon-big" *ngIf="file.type === FileType.Video">
+                        <i class="fa fa-video-camera"></i>
+                    </div>
+                    <div class="tile-header-icon bg-success icon-big" *ngIf="file.type === FileType.Image">
+                        <i class="fa fa-image"></i>
+                    </div>
+                    <div class="tile-header-icon bg-primary" *ngIf="file.hasStatus(FileStatus.Queued)">
+                        <i class="fa fa-check-circle-o"></i> &nbsp; QUEUED
+                    </div>
+                    <div class="tile-header-icon bg-success" *ngIf="file.hasStatus(FileStatus.Downloaded)">
+                        <i class="fa fa-save"></i> &nbsp; DOWNLOADED
+                    </div>
+                    <div class="tile-header-icon bg-default" *ngIf="file.hasStatus(FileStatus.Waiting)">
+                        <i class="fa fa-spinner fa-spin fa-fw"></i> &nbsp; WAITING...
+                    </div>
                 </div>
-                <div class="tile-header-icon bg-success" *ngIf="file.type === FileType.Image">
-                    <i class="fa fa-image"></i>
-                </div>
-                <div class="tile-header-icon bg-default" *ngIf="file.hasStatus(FileStatus.Waiting)">
-                    <i class="fa fa-spinner fa-spin fa-fw"></i>
-                </div>
-                <span>
-                    <p *ngIf="file.title" [innerHTML]="file.title | truncateString: (file.hasStatus(FileStatus.Waiting) ? 20 : 30)" [title]="file.title"></p>
-                    <p *ngIf="!file.title" [innerHTML]="(file.name | truncateString: (file.hasStatus(FileStatus.Waiting) ? 15 : 25)) + '.' + file.extension" [title]="file.title + '.' + file.extension"></p>
-                </span>
-            </div>
-            <div class="tile-image">
-                <img [alt]="file.name" *ngIf="file.thumbnail !== null && file.thumbnail !== 'null'" [src]="file.thumbnail" />
-                <img [alt]="file.name" *ngIf="file.localThumbnail !== null && file.localThumbnail !== 'null'" [src]="file.localThumbnail" />
-                <img [alt]="file.name" *ngIf="file.thumbnail === null && !file.localThumbnail === null" src="/app/assets/img/no-image.png" />
 
-                <div class="tile-image-icon">
-                    <i class="fa fa-check-circle-o" *ngIf="file.hasStatus(FileStatus.Queued) && !file.hasStatus(FileStatus.Downloaded)"></i>
-                    <i class="fa fa-save" *ngIf="file.hasStatus(FileStatus.Downloaded)"></i>
+                <div class="tile-header-image">
+                    <div *ngIf="file.thumbnail !== null && file.thumbnail !== 'null'">
+                        <div [style.backgroundImage]="'url('+file.thumbnail+')'"></div>
+                    </div>
+                    <div *ngIf="file.localThumbnail !== null && file.localThumbnail !== 'null'">
+                        <div [style.backgroundImage]="'url('+file.localThumbnail+')'"></div>
+                    </div>
+                    <div *ngIf="file.thumbnail === null && !file.localThumbnail === null">
+                        <div [style.backgroundImage]="'url(/app/assets/img/no-image.png)'"></div>
+                    </div>
                 </div>
             </div>
+
             <div class="tile-data">
                 <table class="table table-hover">
                     <tbody>
+                        <tr>
+                            <th class="text-center" colspan="2">
+                                <span *ngIf="file.title" [innerHTML]="file.title | truncateString: 40" [title]="file.title"></span>
+                                <span *ngIf="!file.title" [innerHTML]="(file.name | truncateString: 40) + '.' + file.extension" [title]="file.title + '.' + file.extension"></span>
+                            </th>
+                        </tr>
                         <tr *ngIf="file.uploadedAt !== null && file.uploadedAt.length > 0">
                             <th width="20%">Created:</th>
                             <td>
                                 {{ (file.uploadedAt !== null) ? (file.uploadedAt) : '---' }}
                             </td>
                         </tr>
-                        <tr *ngIf="file.ratio >= 0">
-                            <th>Ratio:</th>
+                        <tr *ngIf="file.rating >= 0">
+                            <th>Rating:</th>
                             <td>
-                                {{ file.ratio }}
+                                {{ file.rating }}
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Dimensions:</th>
+                            <td>{{ file.width }}x{{ file.height }} px</td>
+                        </tr>
+                        <tr *ngIf="(file.size || file.textSize) && (file.size !== 0 && file.textSize !== '0 bytes')">
+                            <th>Size:</th>
+                            <td>{{ file.textSize ? file.textSize : file.size + ' bytes' }}</td>
+                        </tr>
+                        <tr *ngIf="file.length > 0">
+                            <th>Length:</th>
+                            <td>{{ file.length | movieLength }}</td>
+                        </tr>
+                        <tr>
+                            <th>Queued:</th>
+                            <td>
+                                <span *ngIf="file.hasStatus(FileStatus.Queued)">
+                                    <span class="label label-success">
+                                        <i class="fa fa-check"></i> &nbsp; YES
+                                    </span>
+                                </span>
+                                <span *ngIf="!file.hasStatus(FileStatus.Queued)">
+                                    <span class="label label-default">
+                                        <i class="fa fa-ban"></i> &nbsp; NOT YET
+                                    </span>
+                                </span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Downloaded:</th>
+                            <td>
+                                <span *ngIf="file.hasStatus(FileStatus.Downloaded)">
+                                    <span class="label label-success">
+                                        <i class="fa fa-check"></i> &nbsp; YES
+                                    </span>
+                                </span>
+                                <span *ngIf="!file.hasStatus(FileStatus.Downloaded)">
+                                    <span class="label label-default">
+                                        <i class="fa fa-ban"></i> &nbsp; NOT YET
+                                    </span>
+                                </span>
                             </td>
                         </tr>
                     </tbody>
                 </table>
-
-                <span class="data-label bg-info" *ngIf="file.hasStatus(FileStatus.Queued)">
-                    <i class="fa fa-database"></i> &nbsp; Queued
-                </span>
-                <span class="data-label bg-primary" *ngIf="file.hasStatus(FileStatus.Downloaded)">
-                    <i class="fa fa-save"></i> &nbsp; Downloaded
-                </span>
-                <span class="data-label" *ngIf="file.width && file.height">
-                    <i class="fa fa-arrows-alt"></i> &nbsp; {{ file.width }}x{{ file.height }}px
-                </span>
-                <span class="data-label" *ngIf="file.length > 0">
-                    <i class="fa fa-play-circle-o"></i> &nbsp; {{ file.length | movieLength }}
-                </span>
-                <span class="data-label" *ngIf="file.size || file.textSize">
-                    <i class="fa fa-database"></i> &nbsp; {{ file.textSize ? file.textSize : file.size + ' bytes' }}
-                </span>
             </div>
             <div class="tile-footer">
                 <button type="button" (mouseenter)="lockTiles=true" (mouseleave)="lockTiles=false" (click)="openFilePreview(file)" class="btn btn-sm btn-default">

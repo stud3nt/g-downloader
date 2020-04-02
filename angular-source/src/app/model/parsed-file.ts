@@ -50,7 +50,7 @@ export class ParsedFile extends BaseModel {
 
 	private _uploadedAt: string;
 
-	private _ratio: number = -1;
+	private _rating: number = -1;
 
 	private _htmlPreview: string = null;
 
@@ -301,11 +301,11 @@ export class ParsedFile extends BaseModel {
 		this._status = value;
 	}
 
-	get ratio(): number {
-		return this._ratio;
+	get rating(): number {
+		return this._rating;
 	}
 
-	set ratio(value: number) {
-		this._ratio = value;
+	set rating(value: number) {
+		this._rating = value;
 	}
 }
