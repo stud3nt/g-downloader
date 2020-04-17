@@ -111,8 +111,17 @@
     "guzzlehttp/psr7": {
         "version": "1.5.2"
     },
+    "intervention/image": {
+        "version": "2.5.1"
+    },
+    "james-heinrich/getid3": {
+        "version": "v1.9.19"
+    },
     "jdorn/sql-formatter": {
         "version": "v1.2.17"
+    },
+    "jenssegers/imagehash": {
+        "version": "v0.6.0"
     },
     "monolog/monolog": {
         "version": "1.24.0"
@@ -140,6 +149,9 @@
     },
     "phpdocumentor/type-resolver": {
         "version": "0.4.0"
+    },
+    "phpseclib/phpseclib": {
+        "version": "2.0.27"
     },
     "predis/predis": {
         "version": "v1.1.1"

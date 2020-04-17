@@ -4,12 +4,14 @@ namespace App\Model\Download;
 
 use App\Annotation\ModelVariable;
 use App\Entity\Parser\File;
+use App\Enum\FileType;
 use App\Enum\ParserType;
 use App\Model\AbstractModel;
-use App\Model\ParsedFile;
-use App\Utils\FilesHelper;
 use App\Utils\StringHelper;
 use Gregwar\Image\Image;
+use Jenssegers\ImageHash\Hash;
+use Jenssegers\ImageHash\ImageHash;
+use Jenssegers\ImageHash\Implementations\DifferenceHash;
 use Symfony\Component\Filesystem\Filesystem;
 
 class DownloadedFile extends AbstractModel
@@ -36,9 +38,18 @@ class DownloadedFile extends AbstractModel
     /** @var Filesystem */
     protected $fs;
 
+    /** @var ImageHash */
+    protected $imageHasher;
+
+    protected $id3;
+
     public function __construct()
     {
         $this->fs = new Filesystem();
+        $this->id3 = new \getID3();
+        $this->imageHasher = new ImageHash(
+            new DifferenceHash()
+        );
     }
 
     public function __destruct()
@@ -84,16 +95,77 @@ class DownloadedFile extends AbstractModel
         return $this;
     }
 
+    public function analyseTempFiles(): self
+    {
+        if ($this->fileEntity->getType() === FileType::Image) {
+            $hash = $this->imageHasher->hash($this->tempFilePath);
+
+            $this->getFileEntity()
+                ->setBinHash($hash->toBits())
+                ->setHexHash($hash->toHex());
+        } elseif ($this->fileEntity->getType() === FileType::Video) {
+            $data = $this->id3->analyze($this->tempFilePath);
+            $this->getFileEntity()->setLength($data['playtime_seconds']);
+        }
+
+        $this->getFileEntity()->setDimensionRatio(
+            round(($this->getFileEntity()->getWidth() / $this->getFileEntity()->getHeight()), 2)
+        );
+
+        return $this;
+    }
+
+    /**
+     * @param File[] $potentialDuplicates
+     * @return $this
+     */
+    public function analysePotentialDuplicates(array $potentialDuplicates = []): self
+    {
+        $bestHashDistance = 1000;
+        $currentImageHash = Hash::fromHex($this->fileEntity->getHexHash());
+
+        if ($potentialDuplicates) {
+            foreach ($potentialDuplicates as $potentialDuplicate) {
+                if ($this->fileEntity->getType() === FileType::Image) {
+                    $compareHash = Hash::fromHex($potentialDuplicate->getHexHash());
+                    $distance = $currentImageHash->distance($compareHash);
+
+                    if ($distance < 10 && $distance < $bestHashDistance) {
+                        $bestHashDistance = $distance;
+                        $this->getFileEntity()->setDuplicateOf($potentialDuplicate);
+
+                        if ($distance < 4)
+                            break;
+                    }
+                } elseif ($this->fileEntity->getType() === FileType::Video) {
+                    if ($potentialDuplicate->getLength() === $this->getFileEntity()->getLength()) {
+                        if ($potentialDuplicate->getSize() === $this->getFileEntity()->getSize() ||
+                            $potentialDuplicate->getName() === $this->getFileEntity()->getName() ||
+                            $potentialDuplicate->getThumbnail() == $this->getFileEntity()->getThumbnail()
+                        ) {
+                            $this->getFileEntity()->setDuplicateOf($potentialDuplicate);
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        return $this;
+    }
+
     /**
      * @return DownloadedFile
      * @throws \Exception
      */
-    public function optimize(): self
+    public function optimizeImage(): self
     {
         if (!$this->tempFilePath)
             throw new \Exception('Target file path must be specified before saving.');
-        elseif (filesize($this->tempFilePath) < (20 * 1024)) {
+        elseif (filesize($this->tempFilePath) < (10 * 1024)) { // file smaller than 10kB - corrupted :(
             $this->fileEntity->setCorrupted(true);
+            return $this;
+        } elseif ($this->fileEntity->getDuplicateOf()) { // duplicate - don't waste CPU time;
             return $this;
         }
 
@@ -113,8 +185,8 @@ class DownloadedFile extends AbstractModel
 
         $this->adjustCompression(
             $this->detectExpectedCompressionRatio(),
-            (820*1024)
-        ); // max image size: 820KB
+            (700*1024)
+        ); // max image size: 700KB
 
         return $this;
     }
@@ -246,7 +318,8 @@ class DownloadedFile extends AbstractModel
         else if (!file_exists($this->tempFilePath))
             throw new \Exception('Temp file not exists');
 
-        return ($this->fileEntity->isCorrupted())
+        // if file is corrupted OR is duplicate of existing file:
+        return ($this->fileEntity->isCorrupted() || $this->fileEntity->getDuplicateOf())
             ? true
             : copy($this->tempFilePath, $this->targetFilePath);
     }

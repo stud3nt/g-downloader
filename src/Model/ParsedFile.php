@@ -385,6 +385,9 @@ class ParsedFile extends AbstractModel implements StatusInterface
     {
         $this->width = (int)$width;
 
+        if ($this->width > 0 && $this->height > 0)
+            $this->dimensionRatio = round(($this->width / $this->height), 2);
+
         return $this;
     }
 
@@ -403,6 +406,9 @@ class ParsedFile extends AbstractModel implements StatusInterface
     public function setHeight($height): self
     {
         $this->height = (int)$height;
+
+        if ($this->width > 0 && $this->height > 0)
+            $this->dimensionRatio = round(($this->width / $this->height), 2);
 
         return $this;
     }

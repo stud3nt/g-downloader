@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\Parser\File;
+use App\Enum\FileType;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\AbstractQuery;
 use Doctrine\ORM\QueryBuilder;
@@ -22,9 +23,70 @@ class FileRepository extends ServiceEntityRepository
             ->from(File::class, 'f');
     }
 
-    public function findByFileData(array $fileData = [])
+    public function getStoredFilesArray(string $parserName, array $filesIdentifiers): array
     {
+        return $this->getQb()->where('f.parser = :parserName')
+            ->andWhere('f.identifier IN (:filesIdentifiers)')
+            ->setParameter('parserName', $parserName)
+            ->setParameter('filesIdentifiers', $filesIdentifiers)
+            ->getQuery()->getArrayResult();
+    }
 
+    public function getFilesCountData(string $type = 'queued'): array
+    {
+        $filters = [
+            'select' => 'COUNT(f.id) as totalCount, SUM(f.size) as totalSize',
+            'type' => $type
+        ];
+
+        return $this->getFilesQb($filters)
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult(AbstractQuery::HYDRATE_ARRAY);
+    }
+
+    public function getQueuedFiles(int $limit = 10, bool $asArray = true): array
+    {
+        return $this->getFilesQb(['type' => 'queued', 'limit' => $limit])
+            ->getQuery()
+            ->getResult(($asArray) ? AbstractQuery::HYDRATE_ARRAY : AbstractQuery::HYDRATE_OBJECT);
+    }
+
+    public function getSimilarFiles(File $file): array
+    {
+        $qb = $this->_em->createQueryBuilder()
+            ->select('f')
+            ->from('App:Parser\File', 'f')
+            ->where('f.downloadedAt IS NOT NULL');
+
+        $minDimensionRatio = round(($file->getDimensionRatio() * 0.98), 2);
+        $maxDimensionRatio = round(($file->getDimensionRatio() * 1.02), 2);
+
+        if ($file->getType() === FileType::Image) {
+            $qb->andWhere('(f.hexHash IS NOT NULL)')
+                ->andWhere('(f.width = :imageWidth AND f.height = :imageHeight)
+                OR (f.dimensionRatio > :minDimensionRatio AND f.dimensionRatio < :maxDimensionRatio)            
+            ')->setParameters([
+                'minDimensionRatio' => $minDimensionRatio,
+                'maxDimensionRatio' => $maxDimensionRatio,
+                'imageWidth' => $file->getWidth(),
+                'imageHeight' => $file->getHeight()
+            ]);
+        } elseif ($file->getType() === FileType::Video) {
+            if ($file->getWidth())
+                $qb->andWhere('(f.width IS NULL OR f.width = :videoWidth)')
+                    ->setParameter('videoWidth', $file->getWidth());
+
+            if ($file->getHeight())
+                $qb->andWhere('(f.height IS NULL OR f.height = :videoHeight)')
+                    ->setParameter('videoHeight', $file->getHeight());
+
+            if ($file->getLength())
+                $qb->andWhere('f.length = :videoLength')
+                    ->setParameter('videoLength', $file->getLength());
+        }
+
+        return $qb->getQuery()->getResult();
     }
 
     /**
@@ -81,11 +143,11 @@ class FileRepository extends ServiceEntityRepository
         if ($filters['type']) {
             switch ($filters['type']) {
                 case 'queued':
-                    $qb->where('f.downloadedAt IS NULL');
+                    $qb->where('f.downloadedAt IS NULL AND f.duplicateOf IS NULL');
                     break;
 
                 case 'downloaded':
-                    $qb->where('f.downloadedAt IS NOT NULL');
+                    $qb->where('f.downloadedAt IS NOT NULL AND f.duplicateOf IS NULL');
                     break;
             }
         }

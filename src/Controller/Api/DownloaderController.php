@@ -42,16 +42,13 @@ class DownloaderController extends Controller
                 $filesForDownload, $this->getUser()
             );
 
-            if ($downloadedFiles) {
-                $fileManager->updateDownloadedFiles($downloadedFiles);
-                $downloadManager->createStatusData(
-                    $this->getUser(), DownloaderStatus::Idle, []
-                );
+            $downloadManager->createStatusData(
+                $this->getUser(), DownloaderStatus::Idle, []
+            );
 
-                return $this->jsonSuccess([
-                    'filesCount' => count($downloadedFiles)
-                ]);
-            }
+            return $this->jsonSuccess([
+                'filesCount' => $downloadedFiles
+            ]);
         } else {
             $downloadManager->createStatusData(
                 $this->getUser(), DownloaderStatus::Idle, []

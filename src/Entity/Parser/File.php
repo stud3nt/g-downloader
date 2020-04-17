@@ -38,6 +38,18 @@ class File extends AbstractEntity
     protected $description;
 
     /**
+     * @ORM\Column(name="bin_hash", type="string", length=64, nullable=true)
+     * @EntityVariable(convertable=false, writable=false, readable=false)
+     */
+    protected $binHash;
+
+    /**
+     * @ORM\Column(name="hex_hash", type="string", length=255, nullable=true)
+     * @EntityVariable(convertable=false, writable=false, readable=false)
+     */
+    protected $hexHash;
+
+    /**
      * @ORM\Column(name="extension", type="string", length=8, nullable=false)
      * @EntityVariable(convertable=true, writable=true, readable=true)
      */
@@ -112,11 +124,6 @@ class File extends AbstractEntity
     protected $downloadedAt;
 
     /**
-     * @ORM\Column(name="color_hash", type="string", length=64, nullable=true)
-     */
-    protected $colorHash;
-
-    /**
      * @EntityVariable(convertable=true, writable=false, readable=true)
      */
     protected $imageUrl;
@@ -130,6 +137,13 @@ class File extends AbstractEntity
      * @EntityVariable(convertable=true, writable=false, readable=true)
      */
     protected $textSize = '0 bytes';
+
+    /**
+     * @ORM\ManyToOne(targetEntity="App\Entity\Parser\File")
+     * @ORM\JoinColumn(name="duplicate_of_id", referencedColumnName="id")
+     * @EntityVariable(convertable=false, writable=false, readable=false)
+     */
+    protected $duplicateOf;
 
     /**
      * @ORM\ManyToOne(targetEntity="App\Entity\Parser\Node", inversedBy="files")
@@ -227,6 +241,9 @@ class File extends AbstractEntity
     {
         $this->width = $width;
 
+        if ($this->width > 0 && $this->height > 0)
+            $this->dimensionRatio = round(($this->width / $this->height), 2);
+
         return $this;
     }
 
@@ -238,6 +255,9 @@ class File extends AbstractEntity
     public function setHeight(?int $height): self
     {
         $this->height = $height;
+
+        if ($this->width > 0 && $this->height > 0)
+            $this->dimensionRatio = round(($this->width / $this->height), 2);
 
         return $this;
     }
@@ -262,18 +282,6 @@ class File extends AbstractEntity
     public function setDownloadedAt(?\DateTimeInterface $downloadedAt): self
     {
         $this->downloadedAt = $downloadedAt;
-
-        return $this;
-    }
-
-    public function getColorHash(): ?string
-    {
-        return $this->colorHash;
-    }
-
-    public function setColorHash(?string $colorHash): self
-    {
-        $this->colorHash = $colorHash;
 
         return $this;
     }
@@ -493,6 +501,63 @@ class File extends AbstractEntity
     public function setDimensionRatio($dimensionRatio): self
     {
         $this->dimensionRatio = $dimensionRatio;
+
+        return $this;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getBinHash()
+    {
+        return $this->binHash;
+    }
+
+    /**
+     * @param mixed $binHash
+     * @return $this
+     */
+    public function setBinHash($binHash): self
+    {
+        $this->binHash = $binHash;
+
+        return $this;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getHexHash()
+    {
+        return $this->hexHash;
+    }
+
+    /**
+     * @param mixed $hexHash
+     * @return $this
+     */
+    public function setHexHash($hexHash): self
+    {
+        $this->hexHash = $hexHash;
+
+        return $this;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getDuplicateOf()
+    {
+        return $this->duplicateOf;
+    }
+
+    /**
+     * @param mixed $duplicateOf
+     * @return $this
+     */
+    public function setDuplicateOf($duplicateOf): self
+    {
+        $this->duplicateOf = $duplicateOf;
 
         return $this;
     }

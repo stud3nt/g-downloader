@@ -179,7 +179,9 @@ class TestController extends \App\Controller\Api\Base\Controller
     public function downloadSingleFileTest(Request $request, DownloadService $downloadService, FileManager $fileManager)
     {
         $file = $fileManager->get($request->get('fileId'));
-        $downloadService->downloadFileByEntity($file, $this->getUser());
+        $file = $downloadService->downloadFileByEntity($file, $this->getUser());
+
+        Debug::dump($file);
 
         return new \Symfony\Component\HttpFoundation\Response('TEST_DONE.');
     }

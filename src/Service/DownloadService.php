@@ -5,6 +5,7 @@ namespace App\Service;
 use App\Entity\Parser\File;
 use App\Entity\User;
 use App\Enum\FileType;
+use App\Manager\Object\FileManager;
 use App\Model\Download\DownloadedFile;
 
 class DownloadService
@@ -12,11 +13,15 @@ class DownloadService
     /** @var ParserService */
     protected $parserService;
 
+    /** @var FileManager */
+    protected $fileManager;
+
     private $parsers = [];
 
-    public function __construct(ParserService $parserService)
+    public function __construct(ParserService $parserService, FileManager $fileManager)
     {
         $this->parserService = $parserService;
+        $this->fileManager = $fileManager;
     }
 
     /**
@@ -25,9 +30,9 @@ class DownloadService
      * @return array
      * @throws \Exception
      */
-    public function downloadQueuedParserFiles(array $filesList = [], User $user = null): array
+    public function downloadQueuedParserFiles(array $filesList = [], User $user = null): int
     {
-        $downloadedFiles = [];
+        $downloadFileCount = 0;
 
         if ($filesList && $user) {
             $this->prepareParsersForFiles($filesList, $user);
@@ -42,14 +47,25 @@ class DownloadService
             $response = $curlService->executeRequests(); // executing download curls;
 
             foreach ($response as $fileKey => $fileResource) {
-                $fileEntity = $filesList[$fileKey];
+                $downloadedFile = $this->downloadFile($filesList[$fileKey], $fileResource);
 
-                if ($this->downloadFile($fileEntity, $fileResource))
-                    $downloadedFiles[] = $filesList[$fileKey];
+                if ($downloadedFile) {
+                    $downloadFileCount++;
+
+                    if ($downloadedFile->isCorrupted()) {
+                        $this->fileManager->remove($downloadedFile);
+                    } else {
+                        if (!$downloadedFile->getDuplicateOf()) {
+                            $downloadedFile->setDownloadedAt(new \DateTime('now'));
+                        }
+
+                        $this->fileManager->save($downloadedFile);
+                    }
+                }
             }
         }
 
-        return $downloadedFiles;
+        return $downloadFileCount;
     }
 
     /**
@@ -60,7 +76,7 @@ class DownloadService
      * @throws \Exception
      * @return bool
      */
-    public function downloadFileByEntity(File &$file, User $user): bool
+    public function downloadFileByEntity(File &$file, User $user): ?File
     {
         $parser = $this->parserService->loadParser($file->getParser(), $user);
         $parser->prepareFileTargetDirectories($file);
@@ -109,16 +125,26 @@ class DownloadService
      * @return bool
      * @throws \Exception
      */
-    protected function downloadFile(File $file, $fileResource): bool
+    protected function downloadFile(File $file, $fileResource): ?File
     {
-        $result = (new DownloadedFile())
+        $downloadedFile = (new DownloadedFile())
             ->setFileEntity($file)
             ->setResource($fileResource)
-            ->prepareTempFiles();
+            ->prepareTempFiles()
+            ->analyseTempFiles();
+
+        $downloadedFile->analysePotentialDuplicates(
+            $this->fileManager->getPotentialDuplicates(
+                $downloadedFile->getFileEntity()
+            )
+        );
 
         if ($file->getType() === FileType::Image)
-            $result->optimize();
+            $downloadedFile->optimizeImage();
 
-        return $result->saveTargetFile();
+        if ($downloadedFile->saveTargetFile())
+            return $downloadedFile->getFileEntity();
+
+        return null;
     }
 }

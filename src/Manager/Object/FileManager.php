@@ -8,6 +8,7 @@ use App\Entity\Parser\File;
 use App\Entity\Parser\Node;
 use App\Entity\User;
 use App\Enum\FileStatus;
+use App\Enum\FileType;
 use App\Factory\RedisFactory;
 use App\Manager\Base\EntityManager;
 use App\Manager\SettingsManager;
@@ -63,12 +64,8 @@ class FileManager extends EntityManager
                 $filesIdentifiers[] = $file->getIdentifier();
             }
 
-            $storedFilesArray = $this->repository->getQb()
-                ->where('f.parser = :parserName')
-                ->andWhere('f.identifier IN (:filesIdentifiers)')
-                ->setParameter('parserName', $parserRequest->currentNode->parser)
-                ->setParameter('filesIdentifiers', $filesIdentifiers)
-                ->getQuery()->getArrayResult();
+            $parserName = $parserRequest->currentNode->getParser();
+            $storedFilesArray = $this->repository->getStoredFilesArray($parserName, $filesIdentifiers);
 
             if ($storedFilesArray) {
                 foreach ($parserRequest->files as $fileIndex => $file) {
@@ -149,10 +146,7 @@ class FileManager extends EntityManager
      */
     public function getQueuedFilesData(): \stdClass
     {
-        $queuedData = $this->repository->getFilesQb([
-            'select' => 'COUNT(f.id) as totalCount, SUM(f.size) as totalSize',
-            'type' => 'queued'
-        ])->setMaxResults(1)->getQuery()->getOneOrNullResult(AbstractQuery::HYDRATE_ARRAY);
+        $queuedData = $this->repository->getFilesCountData('queued');
 
         $queuedObject = new \stdClass();
         $queuedObject->count = $queuedData['totalCount'];
@@ -169,10 +163,7 @@ class FileManager extends EntityManager
      */
     public function getDownloadedFilesData(): \stdClass
     {
-        $downloadedData = $this->repository->getFilesQb([
-            'type' => 'downloaded',
-            'select' => 'COUNT(f.id) as totalCount, SUM(f.size) as totalSize'
-        ])->setMaxResults(1)->getQuery()->getOneOrNullResult(AbstractQuery::HYDRATE_ARRAY);
+        $downloadedData = $this->repository->getFilesCountData('downloaded');
 
         $downloadedObject = new \stdClass();
         $downloadedObject->count = $downloadedData['totalCount'];
@@ -205,16 +196,12 @@ class FileManager extends EntityManager
      * Gets queued files (waiting for download);
      *
      * @param int $limit
+     * @param bool $asArray
      * @return array
      */
     public function getQueuedFiles(int $limit = 10, bool $asArray = false) : array
     {
-        $queuedFiles = $this->repository->getFilesQb([
-            'type' => 'queued',
-            'limit' => $limit
-        ])->getQuery()->getResult(
-            ($asArray) ? AbstractQuery::HYDRATE_ARRAY : AbstractQuery::HYDRATE_OBJECT
-        );
+        $queuedFiles = $this->repository->getQueuedFiles($limit, $asArray);
 
         if ($queuedFiles) {
             foreach ($queuedFiles as $key => $queuedFile) {
@@ -228,25 +215,23 @@ class FileManager extends EntityManager
         return $queuedFiles;
     }
 
+    public function getPotentialDuplicates(File $file): array
+    {
+        return $this->repository->getSimilarFiles($file);
+    }
+
     /**
      * @param User $user
      * @return array
      * @throws NonUniqueResultException
      * @throws \ReflectionException
      */
-    public function setStatusData(User $user): array
+    public function setStatusData(User $user): arraytes
     {
         $redisKey = 'downloader_data_'.$user->getApiToken();
 
-        $queuedCounts = $this->repository->getFilesQb([
-            'select' => 'COUNT(f.id) as totalCount, SUM(f.size) as totalSize',
-            'type' => 'queued'
-        ])->setMaxResults(1)->getQuery()->getOneOrNullResult(AbstractQuery::HYDRATE_ARRAY);
-
-        $downloadedCounts = $this->repository->getFilesQb([
-            'type' => 'downloaded',
-            'select' => 'COUNT(f.id) as totalCount, SUM(f.size) as totalSize'
-        ])->setMaxResults(1)->getQuery()->getOneOrNullResult(AbstractQuery::HYDRATE_ARRAY);
+        $queuedCounts = $this->repository->getFilesCountData('queued');
+        $downloadedCounts = $this->repository->getFilesCountData('downloaded');
 
         $downloadStatus = (new DownloadStatus())
             ->setQueuedFilesCount($queuedCounts['totalCount'])
@@ -260,29 +245,5 @@ class FileManager extends EntityManager
         $this->redis->set($redisKey, json_encode($data));
 
         return $data;
-    }
-
-    /**
-     * Updates downloaded file as saved;
-     *
-     * @param array $downloadedFiles
-     * @throws \Doctrine\ORM\ORMException
-     * @throws \Doctrine\ORM\OptimisticLockException
-     */
-    public function updateDownloadedFiles(array $downloadedFiles = []): void
-    {
-        if ($downloadedFiles) {
-            /** @var File $downloadedFile */
-            foreach ($downloadedFiles as $downloadedFile) {
-                $downloadedFile->setDownloadedAt(new \DateTime('now'));
-
-                if ($downloadedFile->isCorrupted())
-                    $this->em->remove($downloadedFile);
-                else
-                    $this->em->persist($downloadedFile);
-            }
-
-            $this->em->flush();
-        }
     }
 }
