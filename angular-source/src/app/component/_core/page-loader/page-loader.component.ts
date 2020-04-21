@@ -46,8 +46,6 @@ export class PageLoaderComponent implements OnInit {
 
 		// loader status - show/hide listener service
 		this.pageLoaderDataService.loaderStatus.subscribe((status: any) => { // listen forced loader status
-			console.log("LOADER_STATUS: ");
-			console.log(status);
 			clearTimeout(this.statusTimeout);
 
 			this.statusTimeout = setTimeout(() => {

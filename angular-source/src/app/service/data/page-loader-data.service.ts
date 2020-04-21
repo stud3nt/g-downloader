@@ -34,16 +34,16 @@ export class PageLoaderDataService {
 		return this;
 	}
 
-	public show() : PageLoaderDataService {
+	public show(initial: boolean = false) : PageLoaderDataService {
 		this.loaderStatusSource.next({
-			status: 'show', timeout: 0
+			status: 'show', initial: initial, timeout: 0
 		});
   		return this;
 	}
 
 	public hide(timeout: number = 0) : PageLoaderDataService {
   		this.loaderStatusSource.next({
-			status: 'hide', timeout: timeout
+			status: 'hide', initial: false, timeout: timeout
 		});
   		return this;
 	}
