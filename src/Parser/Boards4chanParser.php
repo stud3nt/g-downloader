@@ -53,7 +53,15 @@ class Boards4chanParser extends AbstractParser implements ParserInterface
     {
         $parserRequest->clearParsedData();
 
-        if (!$this->getParserCache($parserRequest)) {
+        $cachedRequest = $this->getParserCache($parserRequest);
+
+        if ($cachedRequest) {
+            $parserRequest->setParsedNodes($cachedRequest->getParsedNodes())
+                ->setPagination($cachedRequest->getPagination())
+                ->getStatus()
+                ->updateProgress(50, "READING FROM CACHE...")
+                ->send();
+        } else {
             $parserRequest->getStatus()
                 ->updateProgress(30)
                 ->send();
@@ -90,10 +98,6 @@ class Boards4chanParser extends AbstractParser implements ParserInterface
             }
 
             $this->setParserCache($parserRequest, 0);
-        } else {
-            $parserRequest->getStatus()
-                ->updateProgress(50, "READING FROM CACHE...")
-                ->send();
         }
 
         return $parserRequest;
@@ -112,7 +116,15 @@ class Boards4chanParser extends AbstractParser implements ParserInterface
 
         $this->updateUrlsFromBoardUrls($parserRequest->getCurrentNode()->getUrl());
 
-        if (!$this->getParserCache($parserRequest)) {
+        $cachedRequest = $this->getParserCache($parserRequest);
+
+        if ($cachedRequest) {
+            $parserRequest->setParsedNodes($cachedRequest->getParsedNodes())
+                ->setPagination($cachedRequest->getPagination())
+                ->getStatus()
+                ->updateProgress(50, "READING FROM CACHE...")
+                ->send();
+        } else {
             $html = $this->loadHtmlFromUrl($parserRequest->getCurrentNode()->getUrl());
 
             $parserRequest->getStatus()
@@ -181,10 +193,6 @@ class Boards4chanParser extends AbstractParser implements ParserInterface
             }
 
             $this->setParserCache($parserRequest, 180);
-        } else {
-            $parserRequest->getStatus()
-                ->updateProgress(50, "READING FROM CACHE...")
-                ->send();
         }
 
         $parserRequest->getCurrentNode()
@@ -222,9 +230,19 @@ class Boards4chanParser extends AbstractParser implements ParserInterface
     public function getGalleryData(ParserRequest &$parserRequest) : ParserRequest
     {
         $parserRequest->clearParsedNodes()
-            ->getCurrentNode()->setAllowCategory(true)->setAllowTags(true);;
+            ->getCurrentNode()
+            ->setAllowCategory(true)
+            ->setAllowTags(true);
 
-        if (!$this->getParserCache($parserRequest)) {
+        $cachedRequest = $this->getParserCache($parserRequest);
+
+        if ($cachedRequest) {
+            $parserRequest->setFiles($cachedRequest->getFiles())
+                ->setPagination($cachedRequest->getPagination())
+                ->getStatus()
+                ->updateProgress(50, "READING FROM CACHE...")
+                ->send();
+        } else {
             $parserRequest->pagination->disable();
 
             /** @var HtmlNode $anchor */
@@ -291,10 +309,6 @@ class Boards4chanParser extends AbstractParser implements ParserInterface
             }
 
             $this->setParserCache($parserRequest, 300);
-        } else {
-            $parserRequest->getStatus()
-                ->updateProgress(50, "READING FROM CACHE...")
-                ->send();
         }
 
         return $parserRequest;

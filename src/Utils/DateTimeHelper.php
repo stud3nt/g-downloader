@@ -42,4 +42,9 @@ class DateTimeHelper
 
         return $differenceText;
     }
+
+    public static function isDateStringValid(string $dateString = null): bool
+    {
+        return (bool)strtotime($dateString);
+    }
 }

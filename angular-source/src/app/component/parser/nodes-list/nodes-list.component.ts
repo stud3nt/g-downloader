@@ -5,6 +5,7 @@ import { ParserService } from "../../../service/parser.service";
 import { ParserNode } from "../../../model/parser-node";
 import { RouterService } from "../../../service/router.service";
 import { NodeLevel } from "../../../enum/node-level";
+import {ToastrDataService} from "../../../service/data/toastr-data.service";
 
 @Component({
   selector: 'app-nodes-list',
@@ -17,6 +18,9 @@ export class NodesListComponent implements OnInit {
 	public NodeStatus = NodeStatus;
 	public NodeLevel = NodeLevel;
 
+	public hoverRatingNode: ParserNode = null;
+	public hoverRatingValue: number = 0;
+
 	// controller - if true, all tiles are locked (non-clickable);
 	public lockTiles = false;
 
@@ -26,6 +30,7 @@ export class NodesListComponent implements OnInit {
 
 	constructor(
 		private parserService: ParserService,
+		private toastrService: ToastrDataService,
 		public routerService: RouterService
 	) { }
 
@@ -49,22 +54,33 @@ export class NodesListComponent implements OnInit {
 		else
 			node.addStatus(NodeStatus.Waiting);
 
+		let nodeHasStatus = node.hasStatus(status);
+
 		node.toggleStatus(status);
 
-		this.parserRequest.currentNode = node;
-
-		let request = this.parserService.updateNode(this.parserRequest);
-
-		if (!request)
-			return;
-
-		request.subscribe((response) => {
-			this.parserRequest.currentNode = node; // re-assign current node object
-			node.removeStatus(NodeStatus.Waiting);
+        this.parserService.updateNode(node).subscribe((response) => {
+            this.toastrService.addSuccess('SUCCESS', ('Node '+((nodeHasStatus) ? 'umarked.' : 'marked.')), 5);
+            node.removeStatus(NodeStatus.Waiting);
 		}, (error) => {
 			node.removeStatus(NodeStatus.Waiting);
+      this.toastrService.addError('ERROR', error);
 		});
 	}
+
+	public rateNode(node: ParserNode, rating: number) {
+	  if (node.hasStatus(NodeStatus.Waiting))
+	    return;
+
+	  node.personalRating = rating;
+
+    this.parserService.updateNode(node).subscribe((response) => {
+      this.toastrService.addSuccess('SUCCESS', 'Node rated.', 8);
+      node.removeStatus(NodeStatus.Waiting);
+    }, (error) => {
+      node.removeStatus(NodeStatus.Waiting);
+      this.toastrService.addError('ERROR', error);
+    });
+  }
 
 	public showPersonalDescription(node: ParserNode): void {
 		if (!node.personalDescription)

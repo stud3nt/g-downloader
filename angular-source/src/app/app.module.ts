@@ -33,6 +33,7 @@ import { DownloaderComponent } from './component/tools/downloader/downloader.com
 import { ParserToolbarComponent } from "./component/parser/parser-toolbar/parser-toolbar.component";
 import { TagsComponent } from './component/lists/tags/tags.component';
 import { CategoriesComponent } from './component/lists/categories/categories.component';
+import {NodeSettingsComponent} from "./component/parser/parser-toolbar/node-settings/node-settings.component";
 
 @NgModule({
 	declarations: [
@@ -55,6 +56,7 @@ import { CategoriesComponent } from './component/lists/categories/categories.com
 		FilesListComponent,
 		SavedNodesComponent,
 		ModalComponent,
+        NodeSettingsComponent,
 
 		// pipes
 		MovieLengthPipe,

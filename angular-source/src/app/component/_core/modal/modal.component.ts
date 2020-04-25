@@ -142,8 +142,11 @@ export class ModalComponent implements OnInit {
 		this.onClose.emit(Math.random());
 	}
 
-	public showLoader(): void {
+	public showLoader(reset: boolean = false): void {
 		this._loaderVisible = true;
+
+		if (reset)
+		    this.modalLoaderText = '';
 	}
 
 	public setLoaderText(text: string = ''): void {

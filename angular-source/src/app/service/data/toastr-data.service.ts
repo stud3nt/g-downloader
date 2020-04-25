@@ -28,10 +28,10 @@ export class ToastrDataService {
   	public add(type: string, title: string, message: string = null, autoClose: number = 0): this {
   		let newToastr = new CustomToastr();
 
-		newToastr.title = title;
-		newToastr.message = message;
-		newToastr.type = type;
-		newToastr.autoClose = autoClose;
+      newToastr.title = title;
+      newToastr.message = message;
+      newToastr.type = type;
+      newToastr.autoClose = autoClose;
 
   		this.addToastrSource.next(newToastr);
 

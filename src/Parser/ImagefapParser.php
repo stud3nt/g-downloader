@@ -37,7 +37,15 @@ class ImagefapParser extends AbstractParser implements ParserInterface
      */
     public function getOwnersList(ParserRequest &$parserRequest) : ParserRequest
     {
-        if (!$this->getParserCache($parserRequest)) {
+        $cachedRequest = $this->getParserCache($parserRequest);
+
+        if ($cachedRequest) {
+            $parserRequest->setParsedNodes($cachedRequest->getParsedNodes())
+                ->setPagination($cachedRequest->getPagination())
+                ->getStatus()
+                ->updateProgress(50, 'Loading from cache...')
+                ->send();
+        } else {
             $pagination = $parserRequest->pagination;
             $urlParams = array_merge($parserRequest->sorting, [
                 'page' => ($pagination->currentPage + $pagination->pageShift)
@@ -124,7 +132,15 @@ class ImagefapParser extends AbstractParser implements ParserInterface
     {
         $parserRequest->getCurrentNode()->setAllowCategory(true)->setAllowTags(true);
 
-        if (!$this->getParserCache($parserRequest)) {
+        $cachedRequest = $this->getParserCache($parserRequest);
+
+        if ($cachedRequest) {
+            $parserRequest->setParsedNodes($cachedRequest->getParsedNodes())
+                ->setPagination($cachedRequest->getPagination())
+                ->getStatus()
+                ->updateProgress(50, 'Loading from cache...')
+                ->send();
+        } else {
             $currentName = $parserRequest->currentNode->getName();
 
             if (empty($currentName)) {
@@ -139,8 +155,7 @@ class ImagefapParser extends AbstractParser implements ParserInterface
             $parserRequest->pagination->reset();
             $parserRequest->currentNode
                 ->setName($currentName, true)
-                ->setLabel($currentName)
-            ;
+                ->setLabel($currentName);
 
             $htmlArray = [
                 'GALLERY' => $this->loadHtmlFromUrl($galleriesUrl),
@@ -210,7 +225,16 @@ class ImagefapParser extends AbstractParser implements ParserInterface
     {
         $parserRequest->getCurrentNode()->setAllowCategory(true)->setAllowTags(true);
 
-        if (!$this->getParserCache($parserRequest)) {
+        $cachedRequest = $this->getParserCache($parserRequest);
+
+        if ($cachedRequest) {
+            $parserRequest->setParsedNodes($cachedRequest->getParsedNodes())
+                ->setFiles($cachedRequest->getFiles())
+                ->setPagination($cachedRequest->getPagination())
+                ->getStatus()
+                ->updateProgress(50, 'Loading from cache...')
+                ->send();
+        } else {
             $boardUrl = $parserRequest->currentNode->getUrl();
             $pagination = $parserRequest->pagination;
 
@@ -364,7 +388,15 @@ class ImagefapParser extends AbstractParser implements ParserInterface
      */
     public function getGalleryData(ParserRequest &$parserRequest) : ParserRequest
     {
-        if (!$this->getParserCache($parserRequest)) {
+        $cachedRequest = $this->getParserCache($parserRequest);
+
+        if ($cachedRequest) {
+            $parserRequest->setFiles($cachedRequest->getFiles())
+                ->setPagination($cachedRequest->getPagination())
+                ->getStatus()
+                ->updateProgress(50, 'Loading from cache...')
+                ->send();
+        } else {
             $parserRequest->files = [];
             $parserRequest->pagination->disable();
 

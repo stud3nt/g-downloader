@@ -1,7 +1,7 @@
 <div class="toastr-container">
     <div *ngFor="let toastr of toastrArray" [ngClass]="toastrClass(toastr)">
         <button type="button" class="close" (click)="toastr.open = false">×</button>
-        <h4>
+        <h4 *ngIf="toastr.autoClose === 0">
             <i class="icon fa fa-ban" (click)="toastr.open = false"></i> {{ toastr.title }}
         </h4>
 

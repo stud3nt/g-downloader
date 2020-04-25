@@ -1,6 +1,7 @@
 import { BaseModel } from "./base/base-model";
 import { Category } from "./category";
 import { Tag } from "./tag";
+import {ParserNodeSettings} from "./parser-node-settings";
 
 export class ParserNode extends BaseModel {
 
@@ -8,8 +9,12 @@ export class ParserNode extends BaseModel {
 		super();
 
 		this._statuses = [];
+        this._settings = new ParserNodeSettings();
 
 		Object.assign(this, obj);
+
+		if (obj && typeof obj.settings !== 'undefined' && obj.settings)
+		    Object.assign(this._settings, obj.settings);
 	}
 
 	private _id: number;
@@ -54,7 +59,7 @@ export class ParserNode extends BaseModel {
 
 	private _statuses: Array<any> = [];
 
-	private _settings: object = {};
+	private _settings: ParserNodeSettings = null;
 
 	private _lastViewedAt: string = '---';
 
@@ -216,15 +221,15 @@ export class ParserNode extends BaseModel {
 		this._statuses = value;
 	}
 
-	get settings(): object {
-		return this._settings;
-	}
+    get settings(): ParserNodeSettings {
+        return this._settings;
+    }
 
-	set settings(value: object) {
-		this._settings = value;
-	}
+    set settings(value: ParserNodeSettings) {
+        this._settings = value;
+    }
 
-	get queued(): boolean {
+    get queued(): boolean {
 		return this._queued;
 	}
 

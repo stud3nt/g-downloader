@@ -11,11 +11,12 @@ use App\Manager\CategoryManager;
 use App\Manager\TagManager;
 use App\Model\AbstractModel;
 use App\Model\ParsedNode;
+use App\Model\ParsedNodeSettings;
 use App\Model\ParserRequest;
 use App\Repository\NodeRepository;
 use App\Utils\StringHelper;
+use Doctrine\Common\Util\Debug;
 use Doctrine\Persistence\ObjectManager;
-use Symfony\Component\Debug\Debug;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use ReflectionException;
 
@@ -73,6 +74,10 @@ class NodeManager extends EntityManager
             if ($savedNode) {
                 $nodeArray = $this->entityConverter->convert($savedNode);
                 $this->modelConverter->setData($nodeArray, $node);
+
+                if (!$node->getSettings())
+                    $node->setSettings(new ParsedNodeSettings());
+
                 $parserRequest->currentNode = $node;
             }
         }
@@ -255,10 +260,16 @@ class NodeManager extends EntityManager
             'level' => $parsedNode->getLevel()
         ]);
 
-        if (!$dbNode)
+        if (!$dbNode) {
             $dbNode = new Node();
+            $lastViewedAt = null;
+        } else {
+            $lastViewedAt = $dbNode->getLastViewedAt();
+        }
 
         $this->entityConverter->setData($parsedNode, $dbNode);
+
+        $dbNode->setLastViewedAt($lastViewedAt);
 
         $this->save($dbNode);
 

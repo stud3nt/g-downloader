@@ -299,7 +299,7 @@ class AbstractParser
      * @return ParserRequest
      * @throws \Exception
      */
-    protected function getParserCache(ParserRequest &$parserRequest) : ?ParserRequest
+    protected function getParserCache(ParserRequest $parserRequest) : ?ParserRequest
     {
         if (!$parserRequest->ignoreCache) {
             $cacheKey = $this->determineCacheKey($parserRequest);
@@ -308,9 +308,11 @@ class AbstractParser
                 $cacheData = $this->cache->get($cacheKey);
 
                 if (!empty($cacheData)) {
-                    $this->modelConverter->setData($cacheData, $parserRequest, true);
+                    $cachedParserRequest = new ParserRequest();
 
-                    return $parserRequest;
+                    $this->modelConverter->setData($cacheData, $cachedParserRequest, true);
+
+                    return $cachedParserRequest;
                 }
             }
         }

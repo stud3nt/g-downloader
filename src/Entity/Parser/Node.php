@@ -115,6 +115,14 @@ class Node extends AbstractEntity
     protected $finished = false;
 
     /**
+     * @ORM\OneToOne(targetEntity="App\Entity\Parser\NodeSettings", mappedBy="node", cascade={"persist"})
+     * @EntityVariable(convertable=true, writable=true, readable=true, converter="Entity", converterOptions={
+     *     "class":"App\Entity\Parser\NodeSettings"
+     * })
+     */
+    protected $settings;
+
+    /**
      * @ORM\OneToMany(targetEntity="App\Entity\Parser\File", mappedBy="parentNode")
      */
     protected $files;
@@ -490,6 +498,21 @@ class Node extends AbstractEntity
     public function setPersonalDescription($personalDescription): self
     {
         $this->personalDescription = $personalDescription;
+
+        return $this;
+    }
+
+    public function getSettings(): ?NodeSettings
+    {
+        return $this->settings;
+    }
+
+    public function setSettings(?NodeSettings $settings): self
+    {
+        if ($settings)
+            $settings->setNode($this);
+
+        $this->settings = $settings;
 
         return $this;
     }

@@ -110,8 +110,12 @@
 
             &__actionbox {
                 display: inline-block;
-                padding: 10px;
+                padding: 10px 20px;
                 width: 100%;
+
+                hr {
+                    margin-top: 0;
+                }
             }
 
             &__buttonbox {
@@ -227,6 +231,25 @@
                                     border: #0D3349;
                                     color: #dedede;
                                 }
+                            }
+                        }
+
+                        .star-button {
+                            cursor: pointer;
+                            color: #0a0a0a;
+                            text-decoration: none;
+                            line-height: 24px;
+                        }
+
+                        a.node-description {
+                            display: inline-block;
+                            color: #0b3e6f;
+                            text-decoration: none;
+                            line-height: 24px;
+
+                            &:hover {
+                                cursor: pointer;
+                                text-decoration: underline;
                             }
                         }
                     }

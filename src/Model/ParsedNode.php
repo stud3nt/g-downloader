@@ -5,7 +5,6 @@ namespace App\Model;
 use App\Annotation\ModelVariable;
 use App\Enum\NodeStatus;
 use App\Utils\DateTimeHelper;
-use Doctrine\Common\Collections\ArrayCollection;
 
 class ParsedNode extends AbstractModel
 {
@@ -163,6 +162,12 @@ class ParsedNode extends AbstractModel
      * @ModelVariable(converter="Model", converterOptions={"class":"App\Model\Tag"}, type="array")
      */
     public $tags = [];
+
+    /**
+     * @var ParsedNodeSettings
+     * @ModelVariable(converter="Model", converterOptions={"class":"App\Model\ParsedNodeSettings"})
+     */
+    public $settings = null;
 
     private $statusesNames = [
         NodeStatus::Queued,
@@ -818,6 +823,25 @@ class ParsedNode extends AbstractModel
     public function setPersonalRating(int $personalRating): self
     {
         $this->personalRating = $personalRating;
+
+        return $this;
+    }
+
+    /**
+     * @return ParsedNodeSettings|null
+     */
+    public function getSettings(): ?ParsedNodeSettings
+    {
+        return $this->settings;
+    }
+
+    /**
+     * @param ParsedNodeSettings $settings
+     * @return $this
+     */
+    public function setSettings(ParsedNodeSettings $settings = null): self
+    {
+        $this->settings = $settings;
 
         return $this;
     }

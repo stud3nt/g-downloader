@@ -1,6 +1,5 @@
 import {BaseModel} from "./base/base-model";
 import {ParserRequest} from "./parser-request";
-import {ParserRequestAction} from "../enum/parser-request-action";
 
 export class ParserRequestOperation extends BaseModel {
 

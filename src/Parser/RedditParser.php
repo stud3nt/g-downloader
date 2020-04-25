@@ -8,7 +8,6 @@ use App\Enum\FileType;
 use App\Enum\NodeLevel;
 use App\Enum\ParserType;
 use App\Factory\RedisFactory;
-use App\Model\Pagination;
 use App\Model\PaginationSelector;
 use App\Model\ParsedFile;
 use App\Model\ParsedNode;
@@ -20,7 +19,6 @@ use App\Parser\FileService\GfycatParser;
 use App\Service\Reddit\RedditApi;
 use App\Traits\CurrentUrlTrait;
 use App\Utils\FilesHelper;
-use PHPHtmlParser\Dom\HtmlNode;
 
 class RedditParser extends AbstractParser implements ParserInterface
 {
@@ -114,7 +112,15 @@ class RedditParser extends AbstractParser implements ParserInterface
     {
         $parserRequest->clearParsedData();
 
-        if (!$this->getParserCache($parserRequest)) {
+        $cachedRequest = $this->getParserCache($parserRequest);
+
+        if ($cachedRequest) {
+            $parserRequest->setParsedNodes($cachedRequest->getParsedNodes())
+                ->setPagination($cachedRequest->getPagination())
+                ->getStatus()
+                ->updateProgress(50)
+                ->send();
+        } else {
             $after = null;
             $nextPage = true;
 

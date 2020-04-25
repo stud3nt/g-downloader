@@ -9,6 +9,10 @@ import {ParserToolbarAction} from "../../../enum/parser-toolbar-action";
 import {CookieService} from "ngx-cookie-service";
 import {ParserRequestOperation} from "../../../model/parser-request-operation";
 import {ParserRequestAction} from "../../../enum/parser-request-action";
+import {ModalType} from "../../../enum/modal-type";
+import {ModalSize} from "../../../enum/modal-size";
+import {ModalService} from "../../../service/modal.service";
+import {ParserNodeSettings} from "../../../model/parser-node-settings";
 
 @Component({
 	selector: 'app-parser-toolbar',
@@ -21,9 +25,14 @@ export class ParserToolbarComponent implements OnInit {
 	public PaginationMode = PaginationMode;
 	public ToolbarAction = ParserToolbarAction;
 
+    public ModalType = ModalType;
+    public ModalSize = ModalSize;
+
 	public _parserRequest: ParserRequest = null;
 	public _currentNode: ParserNode = null;
 	public _pagination: Pagination = null;
+
+	public _personalDescriptionModalId: string = 'node-personal-description';
 
 	public _nodeCategory: string = null;
 	public _inputTagName: string = null;
@@ -31,7 +40,8 @@ export class ParserToolbarComponent implements OnInit {
 
 	public _toolbarAction: string = null;
 
-	public _assesments = [];
+	public _ratingStars = [];
+	public _hoverRatingStarValue = 0;
 
 	// tag search timeout variable;
 	private _tagSearchTimeout = null;
@@ -66,7 +76,8 @@ export class ParserToolbarComponent implements OnInit {
 	private _alphabet = Array.from(Array(26), (e, i) => String.fromCharCode(i + 97));
 
 	constructor(
-		private cookies: CookieService
+		private cookies: CookieService,
+        private modalService: ModalService
 	) {
 		this._toolbarActionVisible = (
 			this.cookies.get(this._toolbarActionVisibleCookie) === '1'
@@ -106,7 +117,9 @@ export class ParserToolbarComponent implements OnInit {
 
 	@Output() onRequestChange = new EventEmitter<ParserRequestOperation>();
 
-	ngOnInit() {}
+	ngOnInit() {
+	    this.modalService.selectModal(this._personalDescriptionModalId);
+    }
 
 	public nodeMarking(selectedStatus: string): void {
 		this._parserRequest.currentNode.toggleStatus(selectedStatus);
@@ -134,6 +147,11 @@ export class ParserToolbarComponent implements OnInit {
 	public reloadNode(): void {
 		this.updateCurrentRequest(ParserRequestAction.HardReload);
 	}
+
+	public updateSettings(settings: ParserNodeSettings): void {
+	    this._parserRequest.currentNode.settings = settings;
+	    this.updateCurrentRequest(ParserRequestAction.CurrentNodeUpdate);
+    }
 
 	public changePage(value: number = 1): void {
 		if (this._pages) {
@@ -174,6 +192,10 @@ export class ParserToolbarComponent implements OnInit {
 			document.getElementById('toolbar-tag-input').focus();
 		}, 10);
 	}
+
+	public togglePersonalDescription(): void {
+        this.modalService.selectModal(this._personalDescriptionModalId).open();
+    }
 
 	public toggleToolbarAction(action: string = null): void {
 		this._toolbarAction = ((this._toolbarAction === null) ? action : null);
@@ -237,6 +259,11 @@ export class ParserToolbarComponent implements OnInit {
 		this._toolbarAction = null;
 	}
 
+	public rateCurrentNode(rating: number): void {
+        this._parserRequest.currentNode.personalRating = rating;
+        this.updateCurrentRequest(ParserRequestAction.CurrentNodeUpdate);
+    }
+
 	public updateCurrentNode(): void {
 		this.updateCurrentRequest(ParserRequestAction.CurrentNodeUpdate);
 	}
@@ -284,7 +311,7 @@ export class ParserToolbarComponent implements OnInit {
 	private createPaginationData(): void {
 		this._pages = [];
 		this._packages = [];
-		this._assesments = [];
+		this._ratingStars = [];
 
 		switch (this._pagination.mode) {
 			case PaginationMode.Letters:
@@ -331,6 +358,6 @@ export class ParserToolbarComponent implements OnInit {
 			}
 
 		for (let x = 1; x <= 10; x++)
-			this._assesments.push(x);
+			this._ratingStars.push(x);
 	}
 }

@@ -94,10 +94,10 @@ export class FilesListComponent implements OnInit {
 		let modalTitle = ((file.title && file.title !== 'null') ? file.title : (file.name+'.'+file.extension));
 
 		this._previewFile = file;
-		this.modalService
-			.open()
+		this.modalService.open()
 			.setTitle(modalTitle)
-			.showLoader();
+			.showLoader(true);
+
 
 		this.nodeFileService.toggleFilePreview(file).subscribe((result: ParsedFile) => {
 			this._previewModalContent = result.htmlPreview;

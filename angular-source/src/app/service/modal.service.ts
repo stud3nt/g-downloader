@@ -32,11 +32,11 @@ export class ModalService {
 		return this;
 	}
 
-	public showLoader(): ModalService {
+	public showLoader(reset: boolean = false): ModalService {
 		let modal = this.getCurrentModal();
 
 		if (modal)
-			modal.showLoader();
+			modal.showLoader(reset);
 
 		return this;
 	}

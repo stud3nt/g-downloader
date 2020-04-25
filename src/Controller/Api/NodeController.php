@@ -4,11 +4,7 @@ namespace App\Controller\Api;
 
 use App\Controller\Api\Base\Controller;
 use App\Factory\ParsedNodeFactory;
-use App\Factory\ParserRequestFactory;
-use App\Manager\CategoryManager;
-use App\Manager\TagManager;
-use App\Parser\Base\AbstractParser;
-use App\Service\ParserService;
+use App\Manager\Object\NodeManager;
 use Doctrine\ORM\ORMException;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -31,25 +27,14 @@ class NodeController extends Controller
      * @throws \ReflectionException
      * @throws ORMException
      */
-    public function updateNode(Request $request, ParserService $parserService, CategoryManager $categoryManager, TagManager $tagManager) : JsonResponse
+    public function updateNode(Request $request, NodeManager $nodeManager) : JsonResponse
     {
-        $parserRequest = (new ParserRequestFactory())->buildFromRequestData(
-            $request->request->all()
-        );
-
-        $parserRequest->setCurrentNode(
-            $this->nodeManager->updateNodeInDatabase(
-                $parserRequest->getCurrentNode()
-            )
-        );
-
-        $categoryManager->completeCategoriesList($parserRequest); // complete categories list from db;
-        $tagManager->completeTagsList($parserRequest); // complete tags list from DB
-
-        $parserService->clearParserRequestCache($parserRequest, $this->getUser());
+        $requestData = $request->request->all();
+        $parserNode = (new ParsedNodeFactory())->buildFromRequestData($requestData);
+        $nodeManager->updateNodeInDatabase($parserNode);
 
         return $this->json(
-            $this->modelConverter->convert($parserRequest)
+            $this->modelConverter->convert($parserNode)
         );
     }
 }

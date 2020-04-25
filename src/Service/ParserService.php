@@ -43,6 +43,8 @@ class ParserService
         );
 
         if ($parser) { // parser found
+            $parserRequest->clearParsedData();
+
             switch ($parserRequest->getCurrentNode()->getLevel()) { // execute parser action - load nodes or files;
                 case NodeLevel::Owner:
                     $parser->getOwnersList($parserRequest);
@@ -68,16 +70,6 @@ class ParserService
             );
 
         return $parserRequest;
-    }
-
-    /**
-     * @param ParserRequest $parserRequest
-     * @param User $user
-     */
-    public function clearParserRequestCache(ParserRequest $parserRequest, User $user)
-    {
-        $parser = $parserRequest->getCurrentNode()->getParser();
-        $this->loadParser($parser, $user)->clearParserCache($parserRequest);
     }
 
     /**

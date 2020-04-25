@@ -19,7 +19,6 @@ use App\Model\ParserRequest;
 use App\Model\Status;
 use App\Repository\FileRepository;
 use App\Utils\FilesHelper;
-use Doctrine\ORM\AbstractQuery;
 use Doctrine\ORM\NonUniqueResultException;
 
 class FileManager extends EntityManager

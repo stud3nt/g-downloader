@@ -1,7 +1,7 @@
 @import "../../../../variables";
 
 .toastr-container {
-    position: absolute;
+    position: fixed;
     background: transparent;
     z-index: 999999;
     top: 12px;

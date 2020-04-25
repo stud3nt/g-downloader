@@ -24,14 +24,11 @@ export class PageLoaderComponent implements OnInit {
 
 		// loader data listener service - PreloaderData object
 		this.pageLoaderDataService.loaderData.subscribe((preloaderData: PreloaderData) => { // listening for loader data changes
-			console.log("PRELOADER DATA:");
-			console.log(preloaderData);
 			this.preloaderData = preloaderData;
 		});
 
 		// progress listener service - number
 		this.pageLoaderDataService.loaderProgress.subscribe((progress: number) => {
-			console.log("LOADER_PROGRESS: "+progress);
 			this.preloaderData.progress = progress;
 
 			if (progress > 0)
@@ -40,7 +37,6 @@ export class PageLoaderComponent implements OnInit {
 
 		// description listener service - string
 		this.pageLoaderDataService.loaderDescription.subscribe((description: string) => {
-			console.log("LOADER_DESCRIPTION: "+description);
 			this.preloaderData.description = description;
 		});
 

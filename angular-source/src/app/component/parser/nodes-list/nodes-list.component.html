@@ -1,6 +1,11 @@
 <div *ngIf="parserRequest.parsedNodes.length > 0">
     <div class="grid-container grid-200">
-        <a [routerLink]="lockTiles ? currentUrl : routerService.generateNodeUrl(node)" id="{{ node.identifier }}" [ngClass]="getNodeClass(node)" *ngFor="let node of parserRequest.parsedNodes">
+        <a
+          id="{{ node.identifier }}"
+          [routerLink]="lockTiles ? currentUrl : routerService.generateNodeUrl(node)"
+          [ngClass]="getNodeClass(node)"
+          *ngFor="let node of parserRequest.parsedNodes"
+        >
             <div class="tile-header">
                 <div class="tile-header-icon-container">
                     <div class="tile-header-icon btn-info" *ngIf="node.hasStatus(NodeStatus.Saved)">
@@ -54,7 +59,13 @@
                         <tr>
                             <th>My rating</th>
                             <td>
-                                <i *ngFor="let i of _ratingStars" [ngClass]="i ? ('fa fa-star'+((i > node.personalRating) ? '-o ' : '')) : ''"></i>
+                                <i
+                                  *ngFor="let i of _ratingStars"
+                                  (mouseenter)="hoverRatingValue = i; lockTiles = true; hoverRatingNode = node;"
+                                  (mouseleave)="hoverRatingValue = 0; lockTiles = false; hoverRatingNode = null;"
+                                  (click)="rateNode(node, i)"
+                                  [ngClass]="(i > 0) ? 'fa fa-star'+(((hoverRatingValue > 0 && hoverRatingNode === node && i <= hoverRatingValue) || (hoverRatingNode !== node && i <= node.personalRating)) ? '' : '-o') : ''"
+                                ></i>
                             </td>
                         </tr>
                         <tr>

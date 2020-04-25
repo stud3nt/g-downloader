@@ -149,18 +149,17 @@ export class ParserComponent implements OnInit {
 	};
 
 	/**
-	 * Adds/removes status in current node
+	 * Update node state
 	 *
 	 * @param node: ParserNode
 	 */
 	public updateNode(node: ParserNode): void {
 		this.parserRequest.currentNode = node;
 
-		this.parserService.updateNode(this.parserRequest).subscribe((parserRequest: ParserRequest) => {
-			this.parserRequest = parserRequest;
-			this.parserRequest.currentNode.removeStatus(NodeStatus.Waiting);
+		this.parserService.updateNode(node).subscribe((node: ParserNode) => {
+            node.removeStatus(NodeStatus.Waiting);
 		}, (error) => {
-			this.parserRequest.currentNode.removeStatus(NodeStatus.Waiting);
+            node.removeStatus(NodeStatus.Waiting);
 		});
 	};
 
@@ -190,7 +189,7 @@ export class ParserComponent implements OnInit {
 	 * @param status
 	 */
 	public getCurrentNodeButtonClass(status: string): string {
-		this.nodesListComponent = new NodesListComponent(this.parserService, this.routerService);
+		this.nodesListComponent = new NodesListComponent(this.parserService, this.toastrService, this.routerService);
 
 		return this.nodesListComponent.getNodeButtonClass(
 			this.parserRequest.currentNode, status
@@ -254,6 +253,11 @@ export class ParserComponent implements OnInit {
 		return node;
 	};
 
+	private sendWebsocketRequestTimeout = null;
+	private disconnectWebsockedTimeout = null;
+	private createWebsocketListenerTimeout = null;
+	private websockedRequestRecursiveTimeout = null;
+
 	/**
 	 * Sends data to parser API
 	 */
@@ -270,7 +274,9 @@ export class ParserComponent implements OnInit {
 			this.parserRequest.files = this._filesTemp;
 		}, 20);
 
-		setTimeout(() => {
+		clearTimeout(this.sendWebsocketRequestTimeout);
+
+		this.sendWebsocketRequestTimeout = setTimeout(() => {
 			this.sendWebsocketRequest();
 		}, 200);
 
@@ -303,10 +309,14 @@ export class ParserComponent implements OnInit {
 				completeFunction();
 		});
 
-		setTimeout(() => {
+		clearTimeout(this.disconnectWebsockedTimeout);
+
+		this.disconnectWebsockedTimeout = setTimeout(() => {
 			this.webSocketService.disconnect(this._websocketName);
 
-			setTimeout(() => {
+			clearTimeout(this.createWebsocketListenerTimeout);
+
+			this.createWebsocketListenerTimeout = setTimeout(() => {
 				this.webSocketService.createListener(
 					this._websocketName,(response) => {
 						let recursive = true;
@@ -319,8 +329,11 @@ export class ParserComponent implements OnInit {
 
 								switch (status.code) {
 									case StatusCode.NoEffect:
+									    this.parserRequestAction = true;
+									    break;
+
 									case StatusCode.OperationStarted:
-										this.pageLoaderDataService.show().setProgress(status.progress);
+										this.pageLoaderDataService.show(true).setProgress(status.progress);
 										this.parserRequestAction = true;
 										break;
 
@@ -349,8 +362,14 @@ export class ParserComponent implements OnInit {
 							}
 						}
 
-						if (recursive && this.parserRequestAction)
-							setTimeout(() => this.sendWebsocketRequest(), 400);
+						if (recursive && this.parserRequestAction) {
+						    clearTimeout(this.websockedRequestRecursiveTimeout);
+
+                            this.websockedRequestRecursiveTimeout = setTimeout(() => {
+                                this.sendWebsocketRequest()
+                            }, 400);
+                        }
+
 					},
 					(error) => {
 						this.toastrService.addError('WEBSOCKET ERROR', error.message);

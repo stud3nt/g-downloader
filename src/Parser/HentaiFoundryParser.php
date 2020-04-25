@@ -58,7 +58,15 @@ class HentaiFoundryParser extends AbstractParser implements ParserInterface
      */
     public function getBoardData(ParserRequest &$parserRequest) : ParserRequest
     {
-        if (!$this->getParserCache($parserRequest)) {
+        $cachedRequest = $this->getParserCache($parserRequest);
+
+        if ($cachedRequest) {
+            $parserRequest->setParsedNodes($cachedRequest->getParsedNodes())
+                ->setPagination($cachedRequest->getPagination())
+                ->getStatus()
+                ->updateProgress(50, 'Loading from cache...')
+                ->send();
+        } else {
             $this->login($parserRequest);
 
             $page = 1;
@@ -160,7 +168,16 @@ class HentaiFoundryParser extends AbstractParser implements ParserInterface
      */
     public function getGalleryData(ParserRequest &$parserRequest) : ParserRequest
     {
-        if (!$this->getParserCache($parserRequest)) {
+        $cachedRequest = $this->getParserCache($parserRequest);
+
+        if ($cachedRequest) {
+            $parserRequest->setParsedNodes(null)
+                ->setPagination($cachedRequest->getPagination())
+                ->setFiles($cachedRequest->getFiles())
+                ->getStatus()
+                ->updateProgress(50, 'Loading from cache...')
+                ->send();
+        } else {
             $parserRequest->files = [];
             $parserRequest->pagination->disable();
 

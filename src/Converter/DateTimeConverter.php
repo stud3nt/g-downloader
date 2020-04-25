@@ -2,6 +2,8 @@
 
 namespace App\Converter;
 
+use App\Utils\DateTimeHelper;
+
 class DateTimeConverter extends BaseConverter
 {
     /**
@@ -28,7 +30,10 @@ class DateTimeConverter extends BaseConverter
         } elseif ($value === 'null' || $value === null) {
             $date = null;
         } else {
-            $date = new \DateTime($value);
+            if (DateTimeHelper::isDateStringValid($value))
+                $date = new \DateTime($value);
+            else
+                $date = null;
         }
 
         return $date;

@@ -36,13 +36,13 @@ export class ParserService {
 	/**
 	 * Update and save existing node data
 	 *
-	 * @param parserRequest
+	 * @param node: ParserNode
 	 */
-	public updateNode(parserRequest: ParserRequest) {
-		let formData = HttpHelper.convert(parserRequest);
+	public updateNode(node: ParserNode) {
+		let formData = HttpHelper.convert(node);
 
 		return this.http.post(this.router.generateUrl('api_node_update'), formData).pipe(
-			map((response:Response) => new ParserRequest(response))
+			map((response:Response) => new ParserNode(response))
 		);
 	}
 

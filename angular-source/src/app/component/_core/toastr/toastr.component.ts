@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
-import {ToastrDataService} from "../../../service/data/toastr-data.service";
-import {CustomToastr} from "../../../model/custom-toastr";
+import { ToastrDataService } from "../../../service/data/toastr-data.service";
+import { CustomToastr } from "../../../model/custom-toastr";
 import {ToastrType} from "../../../enum/toastr-type";
 
 @Component({
@@ -17,8 +17,17 @@ export class ToastrComponent implements OnInit {
 	) { }
 
 	ngOnInit() {
-		this.toastrDataService.addToastr.subscribe((toastr: CustomToastr) => {
+		this.toastrDataService.addToastr.subscribe((toastr: CustomToastr = null) => {
+		  if (!toastr)
+		    return;
+
 			this.toastrArray.push(toastr);
+
+			if (toastr.autoClose) {
+			  setTimeout(() => {
+			    toastr.open = false;
+        }, (toastr.autoClose * 1000));
+      }
 		});
 
 		this.toastrDataService.clearToastr.subscribe((data) => {

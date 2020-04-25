@@ -1,3 +1,15 @@
+<universal-modal
+    [id]="_personalDescriptionModalId"
+    [modalTitle]="'Node description'"
+    [modalType]="ModalType.Editor"
+    [modalSize]="ModalSize.Small"
+    (onSave)="updateCurrentNode()"
+>
+    <div class="col-md-12">
+        <textarea class="form-control " rows="3" [(ngModel)]="_currentNode.personalDescription"></textarea>
+    </div>
+</universal-modal>
+
 <div [ngClass]="_toolbarMaskClasses" id="parser-toolbar-mask" [ngStyle]="{'height':(_containerHeight+'px')}"></div>
 
 <div [ngClass]="_toolbarContainerClasses" id="parser-toolbar-container">
@@ -19,10 +31,10 @@
                 <a class="button button-small" title="Saved nodes">
                     <i class="fa fa-list-alt"></i> &nbsp; SAVED NODES
                 </a>
-                <a class="button button-small" title="Filtering">
+                <a class="button button-small {{ _toolbarAction === ToolbarAction.Filtering ? 'active' : '' }}" title="Filtering">
                     <i class="fa fa-building-o"></i> &nbsp; FILTERING
                 </a>
-                <a class="button button-small" title="Settings">
+                <a class="button button-small {{ _toolbarAction === ToolbarAction.NodeSettings ? 'active' : '' }}" title="Settings" (click)="toggleToolbarAction(ToolbarAction.NodeSettings)">
                     <i class="fa fa-cogs"></i> &nbsp; SETTINGS
                 </a>
             </div>
@@ -158,44 +170,36 @@
                 NODE RATING
             </div>
             <div class="buttonbox_buttons">
-                <a [ngClass]="'button button-small'+((_toolbarAction === ToolbarAction.Rating) ? ' active' : '')" class="" title="Create tag" (click)="toggleToolbarAction(ToolbarAction.Rating)">
-                    <i class="fa fa-star"></i> &nbsp; RATE/COMMENT
+                <a
+                    class="star-button"
+                    *ngFor="let star of _ratingStars"
+                    (click)="rateCurrentNode(star)"
+                    [id]="'rating-star-'+star"
+                    (mouseover)="_hoverRatingStarValue = star"
+                    (mouseleave)="_hoverRatingStarValue = 0"
+                >
+                    <i [ngClass]="'fa fa-star'+((_currentNode.personalRating >= star || (_hoverRatingStarValue > 0 && _hoverRatingStarValue >= star)) ? '' : '-o')"></i>
                 </a>
+            </div>
+        </div>
+
+        <div class="toolbar__row__buttonbox">
+            <div class="buttonbox_label">
+                COMMENT
+            </div>
+            <div class="buttonbox_buttons">
+                <a
+                    class="node-description"
+                    (click)="togglePersonalDescription()"
+                    [innerHTML]="(_currentNode.personalDescription && _currentNode.personalDescription.length > 0) ? (_currentNode.personalDescription | truncateString : 20) : 'ADD DESCRIPTION'"
+                ></a>
             </div>
         </div>
     </div>
 
     <div class="toolbar__row" id="parser-toolbar-action-area" *ngIf="_toolbarActionVisible && _toolbarAction !== null">
-        <div class="toolbar__row__actionbox" id="toolbar-rating-area" *ngIf="_toolbarAction === ToolbarAction.Rating">
-            <form role="form">
-                <div class="form-group">
-                    <label>
-                        Rating &nbsp;
-                    </label>
-                    <div class="btn-group">
-                        <button type="button" [className]="'btn btn-sm '+(_parserRequest.currentNode.personalRating >= f ? 'btn-primary' : 'btn-default')" *ngFor="let f of _assesments" (click)="_parserRequest.currentNode.personalRating = f">
-                            <i class="fa fa-star"></i>
-                        </button>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label for="toolbar-description-textarea">
-                        Comment
-                    </label>
-                    <textarea id="toolbar-description-textarea" class="form-control" rows="3" placeholder="" [(ngModel)]="_parserRequest.currentNode.personalDescription" name="custom-description"></textarea>
-                </div>
-                <div class="form-group">
-                    <button type="button" class="btn btn-sm btn-primary" (click)="updateCurrentNode()">
-                        <i class="fa fa-save"></i> &nbsp; SAVE
-                    </button>
-                    <button type="button" class="btn btn-sm btn-default" (click)="clearRatingForm()">
-                        <i class="fa fa-remove"></i> &nbsp; CANCEL
-                    </button>
-                </div>
-            </form>
-        </div>
-        <div class="toolbar__row__actionbox" id="toolbar-node-options-area" *ngIf="_toolbarAction === ToolbarAction.NodeOptions">
-
+        <div class="toolbar__row__actionbox" id="toolbar-node-settings-area" *ngIf="_toolbarAction === ToolbarAction.NodeSettings">
+            <node-settings [nodeSettings]="_currentNode.settings" (onSettingsChange)="updateSettings($event)"></node-settings>
         </div>
         <div class="toolbar__row__actionbox" id="toolbar-filtration-area" *ngIf="_toolbarAction === ToolbarAction.Filtering">
 
