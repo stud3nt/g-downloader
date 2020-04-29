@@ -10,13 +10,21 @@ export class ParserNodeSettings extends BaseModel {
 
 	private _id: number;
 
+	private _prefixType: string = null;
+
 	private _prefix: string = null;
 
+	private _sufixType: string = null;
+
 	private _sufix: string = null;
+
+	private _folderType: string = null;
 
 	private _folder: string = null;
 
 	private _maxSize: number = 0;
+
+	private _sizeUnit: string = null;
 
 	private _maxWidth: number = 0;
 
@@ -76,5 +84,37 @@ export class ParserNodeSettings extends BaseModel {
 
     set maxHeight(value: number) {
         this._maxHeight = value;
+    }
+
+    get prefixType(): string {
+        return this._prefixType;
+    }
+
+    set prefixType(value: string) {
+        this._prefixType = value;
+    }
+
+    get sufixType(): string {
+        return this._sufixType;
+    }
+
+    set sufixType(value: string) {
+        this._sufixType = value;
+    }
+
+    get folderType(): string {
+        return this._folderType;
+    }
+
+    set folderType(value: string) {
+        this._folderType = value;
+    }
+
+    get sizeUnit(): string {
+        return this._sizeUnit;
+    }
+
+    set sizeUnit(value: string) {
+        this._sizeUnit = value;
     }
 }

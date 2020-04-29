@@ -4,9 +4,11 @@ namespace App\Model\Download;
 
 use App\Annotation\ModelVariable;
 use App\Entity\Parser\File;
+use App\Entity\Parser\NodeSettings;
 use App\Enum\FileType;
 use App\Enum\ParserType;
 use App\Model\AbstractModel;
+use App\Utils\FilesHelper;
 use App\Utils\StringHelper;
 use Gregwar\Image\Image;
 use Jenssegers\ImageHash\Hash;
@@ -34,6 +36,9 @@ class DownloadedFile extends AbstractModel
 
     /** @var File */
     protected $fileEntity;
+
+    /** @var NodeSettings */
+    protected $settings;
 
     /** @var Filesystem */
     protected $fs;
@@ -173,20 +178,23 @@ class DownloadedFile extends AbstractModel
 
         switch ($this->fileEntity->getParser()) {
             case ParserType::HentaiFoundry:
-                $this->changeImageDimensions(1920, 1200);
+                $expectedWidth = $this->settings->getMaxWidth() ?? 1920;
+                $expectedHeight = $this->settings->getMaxHeight() ?? 1200;
                 break;
 
-            case ParserType::Boards4chan:
-            case ParserType::Reddit:
-            case ParserType::Imagefap:
-                $this->changeImageDimensions(2000, 1600);
+            default:
+                $expectedWidth = $this->settings->getMaxWidth() ?? 2000;
+                $expectedHeight = $this->settings->getMaxHeight() ?? 1600;
                 break;
         }
 
-        $this->adjustCompression(
-            $this->detectExpectedCompressionRatio(),
-            (700*1024)
-        ); // max image size: 700KB
+        $expectedCompressionRatio = $this->detectExpectedCompressionRatio();
+        $maxSize = ($this->settings->getMaxSize() > 0)
+            ? FilesHelper::sizeToBytes($this->settings->getMaxSize().' '.$this->settings->getSizeUnit())
+            : (700 * 1024); // max image size: 700KB or from settings;
+
+        $this->changeImageDimensions($expectedWidth, $expectedHeight);
+        $this->adjustCompression($expectedCompressionRatio, $maxSize);
 
         return $this;
     }

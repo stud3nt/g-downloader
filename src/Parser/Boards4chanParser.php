@@ -14,6 +14,7 @@ use App\Parser\Base\ParserInterface;
 use App\Converter\EntityConverter;
 use App\Utils\FilesHelper;
 use App\Utils\UrlHelper;
+use Doctrine\Common\Util\Debug;
 use PHPHtmlParser\Dom\HtmlNode;
 use stringEncode\Exception;
 
@@ -308,6 +309,8 @@ class Boards4chanParser extends AbstractParser implements ParserInterface
                 usleep(200);
             }
 
+            $parserRequest->getStatus()->endSteppedProgress('get_gallery_data');
+
             $this->setParserCache($parserRequest, 300);
         }
 
@@ -331,17 +334,28 @@ class Boards4chanParser extends AbstractParser implements ParserInterface
         $previewFilePath = $this->previewTempDir.$parsedFile->getFullFilename();
         $previewWebPath = $this->previewTempFolder.$parsedFile->getFullFilename();
 
-        if (!file_exists($previewFilePath)) {
-            $this->downloadFile($parsedFile->getUrl(), $previewFilePath, function($resource, $downloadSize, $downloaded, $uploadSize, $uploaded) use ($parsedFile) {
-                if ($downloadSize > 0) {
-                    $redis = (new RedisFactory())->initializeConnection();
-                    $redis->set($parsedFile->getRedisPreviewKey(), round(($downloaded / $downloadSize) * 100));
-                    $redis->expire($parsedFile->getRedisPreviewKey(), 10);
-                }
-            });
-        }
-
         $parsedFile->setLocalUrl($previewWebPath);
+
+        if (!file_exists($previewFilePath)) {
+            $redis = (new RedisFactory())->initializeConnection();
+
+            $this->downloadFile(
+                $parsedFile->getUrl(),
+                $previewFilePath,
+                function ($resource, $downloadSize, $downloaded, $uploadSize, $uploaded) use ($parsedFile, $redis) {
+                    if ($downloadSize > 0) {
+                        $redis->set($parsedFile->getRedisPreviewKey(), round(($downloaded / $downloadSize) * 100));
+                        $redis->expire($parsedFile->getRedisPreviewKey(), 10);
+                    } elseif ($downloadSize === 0) { // no size and progress returned from boards4chan :/
+                        $redis->set($parsedFile->getRedisPreviewKey(), 50);
+                        $redis->expire($parsedFile->getRedisPreviewKey(), 10);
+                    }
+                }
+            );
+
+            $redis->set($parsedFile->getRedisPreviewKey(), 100);
+            $redis->expire($parsedFile->getRedisPreviewKey(), 10);
+        }
 
         return $parsedFile;
     }

@@ -352,15 +352,19 @@ class RedditParser extends AbstractParser implements ParserInterface
         $previewWebPath = $this->previewTempFolder.$parsedFile->getFullFilename();
 
         $parsedFile->setLocalUrl($previewWebPath);
+        $redis = (new RedisFactory())->initializeConnection();
 
         if (!file_exists($previewFilePath)) {
-            $this->downloadFile($parsedFile->getFileUrl() ?? $parsedFile->getUrl(), $previewFilePath, function($resource, $downloadSize, $downloaded, $uploadSize, $uploaded) use ($parsedFile) {
-                if ($downloadSize > 0) {
-                    $redis = (new RedisFactory())->initializeConnection();
-                    $redis->set($parsedFile->getRedisPreviewKey(), round(($downloaded / $downloadSize) * 100));
-                    $redis->expire($parsedFile->getRedisPreviewKey(), 10);
+            $this->downloadFile(
+                ($parsedFile->getFileUrl() ?? $parsedFile->getUrl()),
+                $previewFilePath,
+                function ($resource, $downloadSize, $downloaded, $uploadSize, $uploaded) use ($parsedFile, $redis) {
+                    if ($downloadSize > 0) {
+                        $redis->set($parsedFile->getRedisPreviewKey(), round(($downloaded / $downloadSize) * 100));
+                        $redis->expire($parsedFile->getRedisPreviewKey(), 10);
+                    }
                 }
-            });
+            );
         }
 
         return $parsedFile;

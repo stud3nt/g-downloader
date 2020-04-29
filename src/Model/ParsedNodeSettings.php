@@ -3,6 +3,8 @@
 namespace App\Model;
 
 use App\Annotation\ModelVariable;
+use App\Enum\FolderType;
+use App\Enum\PrefixSufixType;
 
 class ParsedNodeSettings extends AbstractModel
 {
@@ -16,13 +18,31 @@ class ParsedNodeSettings extends AbstractModel
      * @var string
      * @ModelVariable(type="string")
      */
+    public $prefixType = PrefixSufixType::CustomText;
+
+    /**
+     * @var string
+     * @ModelVariable(type="string")
+     */
     public $prefix = null;
 
     /**
      * @var string
      * @ModelVariable(type="string")
      */
+    public $sufixType = PrefixSufixType::CustomText;
+
+    /**
+     * @var string
+     * @ModelVariable(type="string")
+     */
     public $sufix = null;
+
+    /**
+     * @var string
+     * @ModelVariable(type="string")
+     */
+    public $folderType = FolderType::CustomText;
 
     /**
      * @var string
@@ -47,6 +67,12 @@ class ParsedNodeSettings extends AbstractModel
      * @ModelVariable(type="integer")
      */
     public $maxSize = 0;
+
+    /**
+     * @var string
+     * @ModelVariable(type="string")
+     */
+    public $sizeUnit = 'B';
 
     /**
      * @return int
@@ -172,7 +198,7 @@ class ParsedNodeSettings extends AbstractModel
 
     /**
      * @param int $maxSize
-     * @return $this;
+     * @return self
      */
     public function setMaxSize(int $maxSize = 0): self
     {
@@ -181,5 +207,79 @@ class ParsedNodeSettings extends AbstractModel
         return $this;
     }
 
+    /**
+     * @return string
+     */
+    public function getPrefixType(): ?string
+    {
+        return $this->prefixType;
+    }
 
+    /**
+     * @param string $prefixType
+     * @return self
+     */
+    public function setPrefixType(?string $prefixType): self
+    {
+        $this->prefixType = $prefixType;
+
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getSufixType(): ?string
+    {
+        return $this->sufixType;
+    }
+
+    /**
+     * @param string $sufixType
+     * @return self
+     */
+    public function setSufixType(?string $sufixType): self
+    {
+        $this->sufixType = $sufixType;
+
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getFolderType(): ?string
+    {
+        return $this->folderType;
+    }
+
+    /**
+     * @param string $folderType
+     * @return self
+     */
+    public function setFolderType(?string $folderType): self
+    {
+        $this->folderType = $folderType;
+
+        return $this;
+    }
+
+    /**
+     * @return string
+     * @return self
+     */
+    public function getSizeUnit(): ?string
+    {
+        return $this->sizeUnit;
+    }
+
+    /**
+     * @param string $sizeUnit
+     */
+    public function setSizeUnit(?string $sizeUnit): self
+    {
+        $this->sizeUnit = $sizeUnit;
+
+        return $this;
+    }
 }

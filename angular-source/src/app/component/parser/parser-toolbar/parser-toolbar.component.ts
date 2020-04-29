@@ -1,4 +1,4 @@
-import {Component, EventEmitter, Input, Output, OnInit} from '@angular/core';
+import {Component, EventEmitter, Input, Output, OnInit, OnDestroy} from '@angular/core';
 import {ParserRequest} from "../../../model/parser-request";
 import {NodeStatus} from "../../../enum/node-status";
 import {Pagination} from "../../../model/pagination";
@@ -13,13 +13,14 @@ import {ModalType} from "../../../enum/modal-type";
 import {ModalSize} from "../../../enum/modal-size";
 import {ModalService} from "../../../service/modal.service";
 import {ParserNodeSettings} from "../../../model/parser-node-settings";
+import {Subject} from "rxjs";
 
 @Component({
 	selector: 'app-parser-toolbar',
 	templateUrl: './parser-toolbar.component.html',
 	styleUrls: ['./parser-toolbar.component.scss']
 })
-export class ParserToolbarComponent implements OnInit {
+export class ParserToolbarComponent implements OnInit, OnDestroy {
 
 	public NodeStatus = NodeStatus;
 	public PaginationMode = PaginationMode;
@@ -32,6 +33,7 @@ export class ParserToolbarComponent implements OnInit {
 	public _currentNode: ParserNode = null;
 	public _pagination: Pagination = null;
 
+	// modals ids;
 	public _personalDescriptionModalId: string = 'node-personal-description';
 
 	public _nodeCategory: string = null;
@@ -73,6 +75,8 @@ export class ParserToolbarComponent implements OnInit {
 	public _toolbarContainerClasses: string = 'parser_toolbar';
 	public _toolbarMaskClasses: string = 'parser_toolbar_mask';
 
+	public settingsModalSubject: Subject<void> = new Subject<void>();
+
 	private _alphabet = Array.from(Array(26), (e, i) => String.fromCharCode(i + 97));
 
 	constructor(
@@ -84,15 +88,28 @@ export class ParserToolbarComponent implements OnInit {
 		);
 	}
 
+	@Input() set currentNode(node: ParserNode) {
+	    if (this._parserRequest)
+	        this._parserRequest.currentNode = node;
+
+	    this.parserRequest = this._parserRequest;
+    }
+
 	@Input() set parserRequest(parserRequest: ParserRequest) {
 		let countString = '';
+
+		if (!parserRequest)
+		    return;
 
 		if (parserRequest.files && parserRequest.parsedNodes.length === 0)
 			countString = ' ('+parserRequest.files.length+' files)';
 		else if (parserRequest.parsedNodes)
 			countString = ' ('+parserRequest.parsedNodes.length+' subnodes)';
 
-		this._nodeTitle = ('&nbsp;' + ((parserRequest.currentNode && parserRequest.currentNode.name) ? (parserRequest.currentNode.name + countString) : ''));
+		this._nodeTitle = ('&nbsp;' + ((parserRequest.currentNode && parserRequest.currentNode.name)
+            ? (parserRequest.currentNode.name + countString)
+            : 'LOADING...')
+        );
 		this._parserRequest = parserRequest;
 		this._currentNode = parserRequest.currentNode;
 		this._pagination = parserRequest.pagination;
@@ -117,11 +134,13 @@ export class ParserToolbarComponent implements OnInit {
 
 	@Output() onRequestChange = new EventEmitter<ParserRequestOperation>();
 
-	ngOnInit() {
-	    this.modalService.selectModal(this._personalDescriptionModalId);
+	ngOnInit() {}
+
+	ngOnDestroy(): void {
+	    this.modalService.remove(this._personalDescriptionModalId);
     }
 
-	public nodeMarking(selectedStatus: string): void {
+    public nodeMarking(selectedStatus: string): void {
 		this._parserRequest.currentNode.toggleStatus(selectedStatus);
 		this.updateCurrentRequest(ParserRequestAction.CurrentNodeUpdate);
 	}
@@ -148,7 +167,13 @@ export class ParserToolbarComponent implements OnInit {
 		this.updateCurrentRequest(ParserRequestAction.HardReload);
 	}
 
+	public toggleSettingsModal(): void {
+        this.settingsModalSubject.next();
+    }
+
 	public updateSettings(settings: ParserNodeSettings): void {
+	    settings.id = this._parserRequest.currentNode.settings.id
+
 	    this._parserRequest.currentNode.settings = settings;
 	    this.updateCurrentRequest(ParserRequestAction.CurrentNodeUpdate);
     }
@@ -269,6 +294,8 @@ export class ParserToolbarComponent implements OnInit {
 	}
 
 	public updateCurrentRequest(action: string): void {
+	    console.log(this._parserRequest);
+
 		this.onRequestChange.next(
 			(new ParserRequestOperation(action, this._parserRequest))
 		);

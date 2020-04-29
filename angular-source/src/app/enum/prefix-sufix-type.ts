@@ -1,39 +1,46 @@
 export class PrefixSufixType {
 
-    public static CustomText: string = '{custom-text}';
+    public static CustomText: string = 'custom-text';
 
-    public static FileName: string = '{file-name}';
+    public static FileName: string = 'file-name';
 
-    public static NodeName: string = '{node-name}';
+    public static CategoryName: string = 'category-name';
 
-    public static NodeSymbol: string = '{node-symbol}';
+    public static NodeName: string = 'node-name';
+
+    public static NodeSymbol: string = 'node-symbol';
 
 	public static getData(): {} {
 	    return {
 	        'Specified name': this.CustomText,
             'File name': this.FileName,
-            'Node name': this.NodeName,
+            'Category name': this.CategoryName,
+            'Node title': this.NodeName,
             'Node symbol': this.NodeSymbol
         };
     }
 
-    public static getIterableData(): {name: string, symbol: string}[] {
+    public static getIterableData(): {name: string, type: string}[] {
         return [
             {
                 name: 'Specific name',
-                symbol: this.CustomText
+                type: this.CustomText
             },
             {
                 name: 'File name',
-                symbol: this.FileName
+                type: this.FileName
             },
             {
-                name: 'Node name',
-                symbol: this.NodeName
+                name: 'Category name',
+                type: this.CategoryName
             },
             {
-                name: 'Node symbol',
-                symbol: this.NodeSymbol
+                name: 'File node title',
+                type: this.NodeName
+            },
+            {
+                name: 'File node symbol',
+                type: this.NodeSymbol
             },
         ]
     }

@@ -96,7 +96,7 @@ class Status extends AbstractModel
         $this->setDescription($description);
 
         if ($send)
-            $this->send(2);
+            $this->send(6);
 
         return $this;
     }

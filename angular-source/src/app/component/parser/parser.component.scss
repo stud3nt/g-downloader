@@ -137,7 +137,7 @@
                 display: table;
                 width: auto;
                 text-align: left;
-                font-size: 13px;
+                font-size: 16px;
                 font-weight: bold;
                 padding: 2px 8px;
                 margin-bottom: 8px;
@@ -146,6 +146,11 @@
                 &.icon-big {
                     opacity: 1;
                     font-size: 24px;
+                }
+
+                a {
+                    display: inline-block;
+                    color: #ffffff;
                 }
             }
 
@@ -249,11 +254,11 @@
     }
 
     .queued {
-        background: rgba(0, 96, 187, 0.24);
+        background: rgba(0, 96, 187, 0.24) !important;
         border: 1px #706e71 solid;
 
         .tile-header, .tile-header-image {
-            background: rgba(0, 96, 187, 0.24) !important;
+            background: rgba(0, 96, 187, 0.24);
         }
     }
 

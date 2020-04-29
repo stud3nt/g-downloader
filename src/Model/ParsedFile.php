@@ -602,10 +602,13 @@ class ParsedFile extends AbstractModel implements StatusInterface
 
     /**
      * @param mixed $localUrl
+     * @return $this
      */
-    public function setLocalUrl($localUrl): void
+    public function setLocalUrl($localUrl): self
     {
         $this->localUrl = $localUrl;
+
+        return $this;
     }
 
     /**

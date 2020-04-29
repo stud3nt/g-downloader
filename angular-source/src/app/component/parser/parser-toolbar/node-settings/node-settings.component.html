@@ -1,102 +1,98 @@
-<hr/>
-
-<div class="row">
-    <div class="col-md-4">
-        <div class="form-group">
-            <label for="node-settings-prefix">Files prefix</label>
-            <div class="input-group input-group-sm">
-                <div class="input-group-btn">
-                    <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
-                        {{ prefixLabel }} &nbsp; <span class="fa fa-caret-down"></span>
-                    </button>
-                    <ul class="dropdown-menu">
-                        <li *ngFor="let prefix of prefixes">
-                            <a [routerLink]="null" [innerText]="prefix.name" (click)="prefixType = prefix.symbol; prefixLabel = prefix.name"></a>
-                        </li>
-                    </ul>
+<universal-modal
+    [id]="_settingsModalId"
+    [modalTitle]="'Node settings'"
+    [modalType]="ModalType.Editor"
+    [modalSize]="ModalSize.Medium"
+    (onSave)="saveSettings()"
+>
+    <form role="form" style="width:100%">
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label for="node-settings-prefix">Files prefix</label>
+                    <div class="input-group input-group-sm">
+                        <div class="input-group-btn">
+                            <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                                {{ prefixLabel }} &nbsp; <span class="fa fa-caret-down"></span>
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li *ngFor="let prefix of prefixes">
+                                    <a [routerLink]="null" [innerText]="prefix.name" (click)="_nodeSettings.prefixType = prefix.type"></a>
+                                </li>
+                            </ul>
+                        </div>
+                        <input name="settings-prefix" id="node-settings-prefix" type="text" class="form-control" [(ngModel)]="_nodeSettings.prefix" [disabled]="_nodeSettings.prefixType !== PrefixSufixType.CustomText">
+                    </div>
                 </div>
-                <input id="node-settings-prefix" type="text" class="form-control" [(ngModel)]="prefixInputValue" [disabled]="prefixType !== PrefixSufixType.CustomText">
             </div>
-        </div>
-    </div>
-    <div class="col-md-4">
-        <div class="form-group">
-            <label for="node-settings-sufix">Files sufix</label>
-            <div class="input-group input-group-sm">
-                <div class="input-group-btn">
-                    <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
-                        {{ sufixLabel }} &nbsp; <span class="fa fa-caret-down"></span>
-                    </button>
-                    <ul class="dropdown-menu">
-                        <li *ngFor="let sufix of prefixes">
-                            <a [routerLink]="null" [innerText]="sufix.name" (click)="sufixType = sufix.symbol; sufixLabel = sufix.name"></a>
-                        </li>
-                    </ul>
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label for="node-settings-sufix">Files sufix</label>
+                    <div class="input-group input-group-sm">
+                        <div class="input-group-btn">
+                            <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                                {{ sufixLabel }} &nbsp; <span class="fa fa-caret-down"></span>
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li *ngFor="let sufix of prefixes">
+                                    <a [routerLink]="null" [innerText]="sufix.name" (click)="_nodeSettings.sufixType = sufix.type; sufixLabel = sufix.name"></a>
+                                </li>
+                            </ul>
+                        </div>
+                        <input name="settings-sufix" id="node-settings-sufix" type="text" class="form-control" [(ngModel)]="_nodeSettings.sufix" [disabled]="_nodeSettings.sufixType !== PrefixSufixType.CustomText">
+                    </div>
                 </div>
-                <input id="node-settings-sufix" type="text" class="form-control" [(ngModel)]="sufixInputValue" [disabled]="sufixType !== PrefixSufixType.CustomText">
             </div>
         </div>
-    </div>
-    <div class="col-md-4">
-        <div class="form-group">
-            <label for="node-settings-folder">Files subfolder</label>
-            <div class="input-group input-group-sm">
-                <div class="input-group-btn">
-                    <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
-                        {{ folderLabel }} &nbsp; <span class="fa fa-caret-down"></span>
-                    </button>
-                    <ul class="dropdown-menu">
-                        <li *ngFor="let folder of folders">
-                            <a [routerLink]="null" [innerText]="folder.name" (click)="folderType = folder.symbol; folderLabel = folder.name"></a>
-                        </li>
-                    </ul>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label for="node-settings-folder">Files subfolder</label>
+                    <div class="input-group input-group-sm">
+                        <div class="input-group-btn">
+                            <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                                {{ folderLabel }} &nbsp; <span class="fa fa-caret-down"></span>
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li *ngFor="let folder of folders">
+                                    <a [routerLink]="null" [innerText]="folder.name" (click)="_nodeSettings.folderType = folder.type; folderLabel = folder.name"></a>
+                                </li>
+                            </ul>
+                        </div>
+                        <input name="settings-folder" id="node-settings-folder" type="text" class="form-control" [(ngModel)]="_nodeSettings.folder" [disabled]="_nodeSettings.folderType !== FolderType.CustomName">
+                    </div>
                 </div>
-                <input id="node-settings-folder" type="text" class="form-control" [(ngModel)]="folderInputValue" [disabled]="folderType !== FolderType.CustomName">
+            </div>
+            <div class="col-md-6">
+                <label for="node-settings-max-size">Maximum file size</label>
+                <div class="input-group input-group-sm">
+                    <input name="settings-max-size" id="node-settings-max-size" type="text" class="form-control" [(ngModel)]="_nodeSettings.maxSize">
+                    <div class="input-group-btn">
+                        <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                            {{ sizeUnit }} &nbsp; <span class="fa fa-caret-down"></span>
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li *ngFor="let unit of filesHelper.filesSizesUnit">
+                                <a [routerLink]="null" (click)="sizeUnit = unit.name; _nodeSettings.sizeUnit = unit.symbol" [innerText]="unit.name"></a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
             </div>
         </div>
-    </div>
-</div>
-<div class="row">
-    <div class="col-md-4">
-        <label for="node-settings-max-size">Maximum file size</label>
-        <div class="input-group input-group-sm">
-            <input id="node-settings-max-size" type="text" class="form-control" [(ngModel)]="sizeInputValue">
-            <div class="input-group-btn">
-                <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
-                    {{ sizeUnit }} &nbsp; <span class="fa fa-caret-down"></span>
-                </button>
-                <ul class="dropdown-menu">
-                    <li *ngFor="let unit of filesHelper.filesSizesUnit">
-                        <a [routerLink]="null" (click)="sizeUnit = unit.symbol" [innerText]="unit.name" (keyup)="recalculateMaxSize()"></a>
-                    </li>
-                </ul>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label for="node-settings-width">Maximum file width (px)</label>
+                    <input name="settings-width" id="node-settings-width" type="text" class="form-control input-sm" [(ngModel)]="_nodeSettings.maxWidth">
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label for="node-settings-height">Maximum file height (px)</label>
+                    <input name="settings-height" id="node-settings-height" type="text" class="form-control input-sm" [(ngModel)]="_nodeSettings.maxHeight">
+                </div>
             </div>
         </div>
-    </div>
-    <div class="col-md-4">
-        <div class="form-group">
-            <label for="node-settings-width">Maximum file width (px)</label>
-            <input id="node-settings-width" type="text" class="form-control input-sm" [(ngModel)]="_nodeSettings.maxWidth">
-        </div>
-    </div>
-    <div class="col-md-4">
-        <div class="form-group">
-            <label for="node-settings-height">Maximum file height (px)</label>
-            <input id="node-settings-height" type="text" class="form-control input-sm" [(ngModel)]="_nodeSettings.maxHeight">
-        </div>
-    </div>
-</div>
-
-<hr>
-
-<div class="row">
-    <div class="col-md-12 text-right">
-        <button type="button" class="btn btn-sm btn-warning" (click)="resetSettings()">
-            <i class="fa fa-reply"></i> &nbsp; RESET
-        </button>
-        &nbsp;
-        <button type="button" class="btn btn-sm btn-default" (click)="saveSettings()">
-            <i class="fa fa-save"></i> &nbsp; SAVE
-        </button>
-    </div>
-</div>
+    </form>
+</universal-modal>

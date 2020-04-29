@@ -6,6 +6,8 @@ use App\Annotation\EntityVariable;
 use App\Entity\Base\AbstractEntity;
 use App\Entity\Traits\CreatedAtTrait;
 use App\Entity\Traits\UpdatedAtTrait;
+use App\Enum\FolderType;
+use App\Enum\PrefixSufixType;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
@@ -33,12 +35,20 @@ class NodeSettings extends AbstractEntity
      * @var Node
      *
      * @ORM\OneToOne(targetEntity="App\Entity\Parser\Node", inversedBy="settings", cascade={"persist"})
-     * @ORM\JoinColumn(name="node_id", referencedColumnName="id")
+     * @ORM\JoinColumn(name="node_id", referencedColumnName="id", onDelete="CASCADE")
      */
     protected $node;
 
     /**
-     * @var string
+     * @var string|null
+     *
+     * @ORM\Column(name="prefix_type", type="string", length=16, nullable=true)
+     * @EntityVariable(convertable=true, writable=true, readable=true, type="string")
+     */
+    protected $prefixType = PrefixSufixType::CustomText;
+
+    /**
+     * @var string|null
      *
      * @ORM\Column(name="prefix", type="string", length=255, nullable=true)
      * @EntityVariable(convertable=true, writable=true, readable=true, type="string")
@@ -46,7 +56,15 @@ class NodeSettings extends AbstractEntity
     protected $prefix = null;
 
     /**
-     * @var string
+     * @var string|null
+     *
+     * @ORM\Column(name="sufix_type", type="string", length=16, nullable=true)
+     * @EntityVariable(convertable=true, writable=true, readable=true, type="string")
+     */
+    protected $sufixType = PrefixSufixType::CustomText;
+
+    /**
+     * @var string|null
      *
      * @ORM\Column(name="sufix", type="string", length=255, nullable=true)
      * @EntityVariable(convertable=true, writable=true, readable=true, type="string")
@@ -54,7 +72,15 @@ class NodeSettings extends AbstractEntity
     protected $sufix = null;
 
     /**
-     * @var string
+     * @var string|null
+     *
+     * @ORM\Column(name="folder_type", type="string", length=16, nullable=true)
+     * @EntityVariable(convertable=true, writable=true, readable=true, type="string")
+     */
+    protected $folderType = FolderType::CustomText;
+
+    /**
+     * @var string|null
      *
      * @ORM\Column(name="folder", type="string", length=255, nullable=true)
      * @EntityVariable(convertable=true, writable=true, readable=true, type="string")
@@ -68,6 +94,14 @@ class NodeSettings extends AbstractEntity
      * @EntityVariable(convertable=true, writable=true, readable=true, type="string")
      */
     protected $maxSize = 0;
+
+    /**
+     * @var int
+     *
+     * @ORM\Column(name="size_unit", type="string", length=16, nullable=true)
+     * @EntityVariable(convertable=true, writable=true, readable=true, type="string")
+     */
+    protected $sizeUnit;
 
     /**
      * @var int
@@ -92,6 +126,15 @@ class NodeSettings extends AbstractEntity
         }
 
         $this->updatedAt = new \DateTime();
+
+        if (!$this->getPrefixType())
+            $this->setPrefixType(PrefixSufixType::CustomText);
+
+        if (!$this->getSufixType())
+            $this->setSufixType(PrefixSufixType::CustomText);
+
+        if (!$this->getFolderType())
+            $this->setFolderType(FolderType::CustomText);
     }
 
     public function setId($id): self
@@ -142,7 +185,7 @@ class NodeSettings extends AbstractEntity
         return $this->maxSize;
     }
 
-    public function setMaxSize(int $maxSize): self
+    public function setMaxSize(int $maxSize = 0): self
     {
         $this->maxSize = $maxSize;
 
@@ -154,7 +197,7 @@ class NodeSettings extends AbstractEntity
         return $this->maxWidth;
     }
 
-    public function setMaxWidth(int $maxWidth): self
+    public function setMaxWidth(int $maxWidth = 0): self
     {
         $this->maxWidth = $maxWidth;
 
@@ -166,7 +209,7 @@ class NodeSettings extends AbstractEntity
         return $this->maxHeight;
     }
 
-    public function setMaxHeight(int $maxHeight): self
+    public function setMaxHeight(int $maxHeight = 0): self
     {
         $this->maxHeight = $maxHeight;
 
@@ -181,6 +224,54 @@ class NodeSettings extends AbstractEntity
     public function setNode(?Node $node): self
     {
         $this->node = $node;
+
+        return $this;
+    }
+
+    public function getPrefixType(): ?string
+    {
+        return $this->prefixType;
+    }
+
+    public function setPrefixType(string $prefixType = PrefixSufixType::CustomText): self
+    {
+        $this->prefixType = $prefixType;
+
+        return $this;
+    }
+
+    public function getSufixType(): ?string
+    {
+        return $this->sufixType;
+    }
+
+    public function setSufixType(string $sufixType = PrefixSufixType::CustomText): self
+    {
+        $this->sufixType = $sufixType;
+
+        return $this;
+    }
+
+    public function getFolderType(): ?string
+    {
+        return $this->folderType;
+    }
+
+    public function setFolderType(string $folderType = FolderType::CustomText): self
+    {
+        $this->folderType = $folderType;
+
+        return $this;
+    }
+
+    public function getSizeUnit(): ?string
+    {
+        return $this->sizeUnit;
+    }
+
+    public function setSizeUnit(?string $sizeUnit): self
+    {
+        $this->sizeUnit = $sizeUnit;
 
         return $this;
     }

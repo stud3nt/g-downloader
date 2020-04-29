@@ -34,7 +34,6 @@ export class CategoriesComponent implements OnInit {
 	ngOnInit() {
 		this.setHeaderData();
 		this.getList();
-		this.modalService.selectModal(this._editModalId);
 	}
 
 	public editCategory(category: Category = null) {
@@ -44,7 +43,7 @@ export class CategoriesComponent implements OnInit {
 			this._operatedCategory = new Category();
 
 		this._editModalTitle = ((category) ? 'Edit' : 'Create') + ' category';
-		this.modalService.open();
+		this.modalService.selectModal(this._editModalId).open();
 	}
 
 	public saveEditedCategory() {
@@ -55,7 +54,7 @@ export class CategoriesComponent implements OnInit {
 
 	public deleteCategory(category: Category) {
 		this._operatedCategory = category;
-		this.modalService.open();
+		this.modalService.selectModal(this._editModalId).open();
 	}
 
 	public delete() {

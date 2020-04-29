@@ -7,7 +7,6 @@ use App\Enum\DownloaderStatus;
 use App\Manager\DownloadManager;
 use App\Manager\Object\FileManager;
 use App\Service\DownloadService;
-use Doctrine\Common\Util\Debug;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Annotation\Route;
@@ -33,26 +32,18 @@ class DownloaderController extends Controller
     public function downloadProcess(DownloadService $downloadService, FileManager $fileManager, DownloadManager $downloadManager): JsonResponse
     {
         $filesForDownload = $fileManager->getQueuedFiles(6);
+        $user = $this->getUser();
 
         if ($filesForDownload) {
-            $downloadManager->createStatusData(
-                $this->getUser(), DownloaderStatus::Downloading, $filesForDownload
-            );
-            $downloadedFiles = $downloadService->downloadQueuedParserFiles(
-                $filesForDownload, $this->getUser()
-            );
-
-            $downloadManager->createStatusData(
-                $this->getUser(), DownloaderStatus::Idle, []
-            );
+            $downloadManager->createStatusData($user, DownloaderStatus::Downloading, $filesForDownload);
+            $downloadedFiles = $downloadService->downloadQueuedParserFiles($filesForDownload, $user);
+            $downloadManager->createStatusData($user, DownloaderStatus::Idle, []);
 
             return $this->jsonSuccess([
                 'filesCount' => $downloadedFiles
             ]);
         } else {
-            $downloadManager->createStatusData(
-                $this->getUser(), DownloaderStatus::Idle, []
-            );
+            $downloadManager->createStatusData($user, DownloaderStatus::Idle, []);
         }
 
         return $this->jsonError();
@@ -71,9 +62,7 @@ class DownloaderController extends Controller
     public function stopDownload(DownloadManager $downloadManager): JsonResponse
     {
         try {
-            $downloadManager->createStatusData(
-                $this->getUser(), DownloaderStatus::Idle, []
-            );
+            $downloadManager->createStatusData($this->getUser(), DownloaderStatus::Idle, []);
 
             return $this->jsonSuccess();
         } catch (\Exception $ex) {

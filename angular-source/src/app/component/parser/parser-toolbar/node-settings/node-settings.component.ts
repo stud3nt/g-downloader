@@ -1,32 +1,35 @@
-import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
+import {Component, EventEmitter, Input, OnDestroy, OnInit, Output} from '@angular/core';
 import {ParserNodeSettings} from "../../../../model/parser-node-settings";
 import {FilesHelper} from "../../../../helper/files-helper";
 import {PrefixSufixType} from "../../../../enum/prefix-sufix-type";
 import {FolderType} from "../../../../enum/folder-type";
+import {AppHelper} from "../../../../helper/app-helper";
+import {ModalType} from "../../../../enum/modal-type";
+import {ModalSize} from "../../../../enum/modal-size";
+import {ModalService} from "../../../../service/modal.service";
+import {Observable} from "rxjs";
+import {ParserRequest} from "../../../../model/parser-request";
 
 @Component({
     selector: 'node-settings',
     templateUrl: './node-settings.component.html',
     styleUrls: ['./node-settings.component.scss']
 })
-export class NodeSettingsComponent implements OnInit {
+export class NodeSettingsComponent implements OnInit, OnDestroy {
+
+    public ModalType = ModalType;
+    public ModalSize = ModalSize;
+
+    public _settingsModalId: string = 'node-settings-modal';
 
     public filesHelper = new FilesHelper();
     public PrefixSufixType = PrefixSufixType;
     public FolderType = FolderType;
 
-    public prefixes: {name: string, symbol: string}[] = [];
-    public folders: {name: string, symbol: string}[] = [];
+    public prefixes: {name: string, type: string}[] = [];
+    public folders: {name: string, type: string}[] = [];
 
     public sizeUnit: string = '';
-    public prefixType: string = '';
-    public sufixType: string = '';
-    public folderType: string = '';
-
-    public sizeInputValue: number = 0;
-    public prefixInputValue: string = '';
-    public sufixInputValue: string = '';
-    public folderInputValue: string = '';
 
     public prefixLabel: string = '';
     public sufixLabel: string = '';
@@ -34,90 +37,71 @@ export class NodeSettingsComponent implements OnInit {
 
     public _nodeSettings: ParserNodeSettings = null;
     private _tmpNodeSettings: ParserNodeSettings = null;
+    private _parserRequest: ParserRequest = null;
 
-    @Input() set nodeSettings(settings: ParserNodeSettings) {
+    @Input() set parserRequest(parserRequest: ParserRequest) {
+        let settings = parserRequest.currentNode.settings;
+
         this._nodeSettings = settings;
         this._tmpNodeSettings = settings;
+        this._parserRequest = parserRequest;
 
         if (settings.maxSize > 0)
-            for (let unit of this.filesHelper.filesSizesUnit) {
-                let modulo = settings.maxSize % unit.multiplier;
-
-                if (settings.maxSize > unit.multiplier && modulo === 0) {
+            for (let unit of this.filesHelper.filesSizesUnit)
+                if (unit.symbol === this._nodeSettings.sizeUnit)
                     this.sizeUnit = unit.name;
-                    this.sizeInputValue = (settings.maxSize / unit.multiplier);
-                }
-
-            }
-        else
-            this.sizeUnit = this.filesHelper.filesSizesUnit[0].name;
 
         for (let prefix of this.prefixes)
-            if (settings.prefix === prefix.symbol) {
+            if (settings.prefixType === prefix.type)
                 this.prefixLabel = prefix.name;
-                this.prefixType = prefix.symbol;
-            }
 
         for (let sufix of this.prefixes)
-            if (settings.sufix === sufix.symbol) {
+            if (settings.sufixType === sufix.type)
                 this.sufixLabel = sufix.name;
-                this.sufixType = sufix.symbol;
-            }
 
         for (let folder of this.folders)
-            if (settings.folder === folder.symbol) {
+            if (settings.folderType === folder.type)
                 this.folderLabel = folder.name;
-                this.folderType = folder.symbol;
-            }
 
-        this.prefixLabel = this.prefixLabel || this.prefixes[0].name;
-        this.prefixType = this.folderType || this.prefixes[0].symbol;
-        this.sufixLabel = this.sufixLabel || this.prefixes[0].name;
-        this.sufixType = this.sufixType || this.prefixes[0].symbol;
-        this.folderLabel = this.folderLabel || this.folders[0].name;
-        this.folderType = this.folderType || this.folders[0].symbol;
-
-        this.recalculateMaxSize();
-
-        this.prefixInputValue = (this.prefixType === PrefixSufixType.CustomText) ? settings.prefix : '';
-        this.sufixInputValue = (this.sufixType === PrefixSufixType.CustomText) ? settings.sufix : '';
-        this.folderInputValue = (this.folderType === FolderType.CustomName) ? settings.folder : '';
+        for (let unit of this.filesHelper.filesSizesUnit)
+            if (settings.sizeUnit === unit.symbol)
+                this.sizeUnit = unit.name;
     }
 
-    @Output() onSettingsChange = new EventEmitter<ParserNodeSettings>()
+    @Input() events: Observable<void>;
 
-    constructor() {
+    @Output() onSettingsChange = new EventEmitter<ParserNodeSettings>();
+
+    @Output() onSettingsClose = new EventEmitter<number>();
+
+    constructor(
+        private modalService: ModalService
+    ) {
         this.prefixes = PrefixSufixType.getIterableData();
         this.folders = FolderType.getIterableData();
     }
 
-    ngOnInit() {}
+    ngOnInit() {
+        this.events.subscribe(() => {
+            this.modalService.selectModal(this._settingsModalId).open()
+        });
+    }
 
-    /**
-     * Calculates real max size (in bytes) based on input value and selected unit;
-     */
-    public recalculateMaxSize() {
-        let value = this.sizeInputValue;
-
-        for (let unit of this.filesHelper.filesSizesUnit) {
-            if (this.sizeUnit === unit.name) {
-                this._nodeSettings.maxSize = (value * unit.multiplier);
-                return;
-            }
-        }
-
-        this._nodeSettings.maxSize = value;
+    ngOnDestroy(): void {
+        this.modalService.remove(this._settingsModalId);
     }
 
     public resetSettings(): void {
         this._nodeSettings = this._tmpNodeSettings;
     }
 
-    public saveSettings(): void {
-        this._nodeSettings.prefix = (this.prefixType === PrefixSufixType.CustomText) ? this.prefixInputValue : this.prefixType;
-        this._nodeSettings.sufix = (this.sufixType === PrefixSufixType.CustomText) ? this.sufixInputValue : this.sufixType;
-        this._nodeSettings.folder = (this.folderType === FolderType.CustomName) ? this.folderInputValue : this.folderType;
+    public closeSettings(): void {
+        this.onSettingsClose.next(
+            AppHelper.randomNumber(1, 10000)
+        );
+    }
 
+    public saveSettings(): void {
         this.onSettingsChange.next(this._nodeSettings);
     }
 

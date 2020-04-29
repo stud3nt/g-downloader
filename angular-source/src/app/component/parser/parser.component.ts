@@ -62,6 +62,7 @@ export class ParserComponent implements OnInit {
 	protected scrollY = 0;
 
 	public parserRequest: ParserRequest = new ParserRequest();
+	public currentNode: ParserNode = new ParserNode();
 
 	public runningAction: boolean = false;
 	public parserRequestAction: boolean = false;
@@ -153,20 +154,32 @@ export class ParserComponent implements OnInit {
 	 *
 	 * @param node: ParserNode
 	 */
-	public updateNode(node: ParserNode): void {
+	public updateCurrentNode(node: ParserNode): void {
 		this.parserRequest.currentNode = node;
 
 		this.parserService.updateNode(node).subscribe((node: ParserNode) => {
             node.removeStatus(NodeStatus.Waiting);
+
+            console.log("RECEIVED NODE: ");
+            console.log(node);
+
+            this.parserRequest.currentNode = node;
+
+            setTimeout(() => {
+                this.currentNode = node;
+            }, 10)
+
+            this.toastrService.addSuccess('SUCCESS', 'Node has been updated.', 8);
 		}, (error) => {
             node.removeStatus(NodeStatus.Waiting);
+            this.toastrService.addError('ERROR', error.message);
 		});
 	};
 
 	public parserRequestChangeAction(operation: ParserRequestOperation): void {
 		switch (operation.action) {
 			case ParserRequestAction.CurrentNodeUpdate:
-				this.updateNode(operation.parserRequest.currentNode);
+				this.updateCurrentNode(operation.parserRequest.currentNode);
 				break;
 
 			case ParserRequestAction.HardReload:
@@ -262,7 +275,7 @@ export class ParserComponent implements OnInit {
 	 * Sends data to parser API
 	 */
 	private sendParserRequest(successFunction: () => any = null, errorFunction: () => any = null, completeFunction: () => any = null): void {
-		if (this.parserRequestAction === true) // only one action at same time
+	    if (this.parserRequestAction === true) // only one action at same time
 			return;
 		else
 			this.parserRequestAction = true;
@@ -281,11 +294,13 @@ export class ParserComponent implements OnInit {
 		}, 200);
 
 		this.parserService.sendParserActionRequest(parserRequestCopy).subscribe((response : ParserRequest) => {
+            this.parserRequestAction = false;
+
 			if (typeof response.currentNode !== 'undefined') {
 				this.parserRequest = response;
+				this.currentNode = response.currentNode;
 				this.previousNodeUrl = (response.previousNode) ? this.routerService.generateNodeUrl(response.previousNode) : null;
 				this.nextNodeUrl = (response.nextNode) ? this.routerService.generateNodeUrl(response.nextNode) : null;
-				this.parserRequestAction = false;
 
 				if (this._filesTemp) // adding new files at end of list;
 					this.parserRequest.files = [...this._filesTemp, ...this.parserRequest.files];

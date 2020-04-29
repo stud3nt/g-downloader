@@ -15,11 +15,12 @@ export class ModalService {
 	}
 
 	public add(modal: any) {
-		this.modals.push(modal);
+        if (!this.modals.find(x => x.id === modal.id))
+		    this.modals.push(modal);
 	}
 
-	public remove(): ModalService {
-		this.modals = this.modals.filter(x => x.id !== this.currentModalId);
+	public remove(id: string): ModalService {
+		this.modals = this.modals.filter(x => x.id !== id);
 		return this;
 	}
 

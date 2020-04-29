@@ -1,10 +1,10 @@
-<div *ngIf="parserRequest.parsedNodes.length > 0">
+<div *ngIf="_parserRequest && _parserRequest.parsedNodes.length > 0">
     <div class="grid-container grid-200">
         <a
           id="{{ node.identifier }}"
           [routerLink]="lockTiles ? currentUrl : routerService.generateNodeUrl(node)"
           [ngClass]="getNodeClass(node)"
-          *ngFor="let node of parserRequest.parsedNodes"
+          *ngFor="let node of _parserRequest.parsedNodes"
         >
             <div class="tile-header">
                 <div class="tile-header-icon-container">

@@ -13,7 +13,7 @@ import {ToastrDataService} from "../../../service/data/toastr-data.service";
 })
 export class NodesListComponent implements OnInit {
 
-	@Input() parserRequest: ParserRequest;
+	public _parserRequest: ParserRequest = null;
 
 	public NodeStatus = NodeStatus;
 	public NodeLevel = NodeLevel;
@@ -27,6 +27,10 @@ export class NodesListComponent implements OnInit {
 	public currentUrl: string = '';
 
 	public _ratingStars = [];
+
+    @Input() set parserRequest(parserRequest: ParserRequest) {
+        this._parserRequest = parserRequest;
+    }
 
 	constructor(
 		private parserService: ParserService,
@@ -63,24 +67,24 @@ export class NodesListComponent implements OnInit {
             node.removeStatus(NodeStatus.Waiting);
 		}, (error) => {
 			node.removeStatus(NodeStatus.Waiting);
-      this.toastrService.addError('ERROR', error);
-		});
+            this.toastrService.addError('ERROR', error);
+        });
 	}
 
 	public rateNode(node: ParserNode, rating: number) {
-	  if (node.hasStatus(NodeStatus.Waiting))
-	    return;
+        if (node.hasStatus(NodeStatus.Waiting))
+            return;
 
-	  node.personalRating = rating;
+	    node.personalRating = rating;
 
-    this.parserService.updateNode(node).subscribe((response) => {
-      this.toastrService.addSuccess('SUCCESS', 'Node rated.', 8);
-      node.removeStatus(NodeStatus.Waiting);
-    }, (error) => {
-      node.removeStatus(NodeStatus.Waiting);
-      this.toastrService.addError('ERROR', error);
-    });
-  }
+        this.parserService.updateNode(node).subscribe((response) => {
+            this.toastrService.addSuccess('SUCCESS', 'Node rated.', 8);
+            node.removeStatus(NodeStatus.Waiting);
+        }, (error) => {
+            node.removeStatus(NodeStatus.Waiting);
+            this.toastrService.addError('ERROR', error);
+        });
+    }
 
 	public showPersonalDescription(node: ParserNode): void {
 		if (!node.personalDescription)

@@ -10,6 +10,8 @@
     </div>
 </universal-modal>
 
+<node-settings [parserRequest]="_parserRequest" [events]="settingsModalSubject.asObservable()" (onSettingsChange)="updateSettings($event)"></node-settings>
+
 <div [ngClass]="_toolbarMaskClasses" id="parser-toolbar-mask" [ngStyle]="{'height':(_containerHeight+'px')}"></div>
 
 <div [ngClass]="_toolbarContainerClasses" id="parser-toolbar-container">
@@ -34,7 +36,7 @@
                 <a class="button button-small {{ _toolbarAction === ToolbarAction.Filtering ? 'active' : '' }}" title="Filtering">
                     <i class="fa fa-building-o"></i> &nbsp; FILTERING
                 </a>
-                <a class="button button-small {{ _toolbarAction === ToolbarAction.NodeSettings ? 'active' : '' }}" title="Settings" (click)="toggleToolbarAction(ToolbarAction.NodeSettings)">
+                <a class="button button-small" title="Settings" (click)="toggleSettingsModal()">
                     <i class="fa fa-cogs"></i> &nbsp; SETTINGS
                 </a>
             </div>
@@ -198,9 +200,6 @@
     </div>
 
     <div class="toolbar__row" id="parser-toolbar-action-area" *ngIf="_toolbarActionVisible && _toolbarAction !== null">
-        <div class="toolbar__row__actionbox" id="toolbar-node-settings-area" *ngIf="_toolbarAction === ToolbarAction.NodeSettings">
-            <node-settings [nodeSettings]="_currentNode.settings" (onSettingsChange)="updateSettings($event)"></node-settings>
-        </div>
         <div class="toolbar__row__actionbox" id="toolbar-filtration-area" *ngIf="_toolbarAction === ToolbarAction.Filtering">
 
         </div>

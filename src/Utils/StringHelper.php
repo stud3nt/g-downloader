@@ -72,6 +72,24 @@ class StringHelper
     }
 
     /**
+     * Clears folder string from forbidden characters
+     *
+     * @param string|null $rawString
+     * @param int $maxLength - maximum folder name length
+     * @return string|null
+     */
+    public static function folderString(?string $rawString, int $maxLength = 80): ?string
+    {
+        $rawString = str_replace( // replacing ABSOLUTELY forbidden characters;
+            ['*', '?', '<', '>', '|'],
+            ['_', 'q', '[', ']', '-'],
+            $rawString
+        );
+
+        return preg_replace('/[a-zA-Z0-9\\\/\-\.\,_\(\)\;\\]\[\'\"\&\%\#\@\! ]/', '_', $rawString);
+    }
+
+    /**
      * Converting 'CamelCase' strings to 'underscore_string';
      *
      * @param $text

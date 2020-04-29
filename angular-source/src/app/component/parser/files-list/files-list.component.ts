@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import {Component, Input, OnDestroy, OnInit} from '@angular/core';
 import { ParserRequest } from "../../../model/parser-request";
 import { ParsedFile } from "../../../model/parsed-file";
 import { NodeFileService } from "../../../service/node-file.service";
@@ -18,7 +18,7 @@ import { ModalService } from "../../../service/modal.service";
   selector: 'app-files-list',
   templateUrl: './files-list.component.html'
 })
-export class FilesListComponent implements OnInit {
+export class FilesListComponent implements OnInit, OnDestroy {
 
 	@Input() parserRequest: ParserRequest;
 
@@ -47,11 +47,13 @@ export class FilesListComponent implements OnInit {
 		protected modalService: ModalService
 	) {}
 
-	ngOnInit() {
-		this.modalService.selectModal(this._previewModalId);
-	}
+	ngOnInit() {}
 
-	public determineFileClass(file: ParsedFile) : string {
+	ngOnDestroy(): void {
+	    this.modalService.remove(this._previewModalId);
+    }
+
+    public determineFileClass(file: ParsedFile) : string {
 		let nodeClass = 'tile tile-250';
 
 		if (file.hasStatus(FileStatus.Queued))
@@ -67,9 +69,11 @@ export class FilesListComponent implements OnInit {
 	 * Toggle file in queue (removes or adds);
 	 *
 	 * @param file
+     * @param forced: boolean
 	 */
-	public toggleFileQueue(file: ParsedFile) : void {
-		if (this.lockTiles || file.hasStatus(FileStatus.Waiting) || file.hasStatus(FileStatus.Downloaded))
+	public toggleFileQueue(file: ParsedFile, forced: boolean = false) : void {
+		if ((this.lockTiles || file.hasStatus(FileStatus.Waiting) || file.hasStatus(FileStatus.Downloaded)
+            || file.hasStatus(FileStatus.Queued) && !forced))
 			return;
 
 		file.parentNode = this.parserRequest.currentNode;
@@ -92,17 +96,13 @@ export class FilesListComponent implements OnInit {
 
 	public openFilePreview(file: ParsedFile) : void {
 		let modalTitle = ((file.title && file.title !== 'null') ? file.title : (file.name+'.'+file.extension));
+		let recursive = true;
 
 		this._previewFile = file;
-		this.modalService.open()
+		this.modalService.selectModal(this._previewModalId)
+            .open()
 			.setTitle(modalTitle)
 			.showLoader(true);
-
-
-		this.nodeFileService.toggleFilePreview(file).subscribe((result: ParsedFile) => {
-			this._previewModalContent = result.htmlPreview;
-			this.modalService.hideLoader();
-		});
 
 		if (this.webSocketService.isConnected(this._webSocketName))
 			this.webSocketService.disconnect(this._webSocketName);
@@ -123,6 +123,7 @@ export class FilesListComponent implements OnInit {
 							}, 250);
 						} else  {
 							this.modalService.setLoaderText('DONE.');
+							recursive = false;
 						}
 					}
 				}
@@ -134,7 +135,12 @@ export class FilesListComponent implements OnInit {
 			}
 		);
 
-		this.sendPreviewStatusRequest(file);
+        this.sendPreviewStatusRequest(file);
+
+        this.nodeFileService.toggleFilePreview(file).subscribe((result: ParsedFile) => {
+            this._previewModalContent = result.htmlPreview;
+            this.modalService.hideLoader();
+        });
 	}
 
 	public toggleFilePreviewMode(): void {

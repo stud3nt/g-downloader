@@ -358,12 +358,12 @@ class Node extends AbstractEntity
         return $this;
     }
 
-    public function getParentNode(): ?self
+    public function getParentNode(): ?Node
     {
         return $this->parentNode;
     }
 
-    public function setParentNode(?self $parentNode): self
+    public function setParentNode(?Node $parentNode): self
     {
         $this->parentNode = $parentNode;
 

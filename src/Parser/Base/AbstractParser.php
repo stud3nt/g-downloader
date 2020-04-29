@@ -4,12 +4,17 @@ namespace App\Parser\Base;
 
 use App\Converter\ModelConverter;
 use App\Entity\Parser\File;
+use App\Entity\Parser\Node;
+use App\Entity\Parser\NodeSettings;
 use App\Entity\User;
 use App\Enum\FileType;
+use App\Enum\FolderType;
 use App\Enum\PaginationMode;
+use App\Enum\PrefixSufixType;
 use App\Factory\RedisFactory;
 use App\Model\ParserRequest;
 use App\Model\SettingsModel;
+use App\Utils\StringHelper;
 use App\Service\{FileCache, CurlRequest};
 use App\Utils\AppHelper;
 use Doctrine\Common\Util\Debug;
@@ -48,7 +53,6 @@ class AbstractParser
     protected $thumbnailFolder;
     protected $previewTempDir;
     protected $previewTempFolder;
-    protected $cookieFile;
 
     // url's
     protected $mainBoardUrl;
@@ -113,8 +117,11 @@ class AbstractParser
         $ds = DIRECTORY_SEPARATOR;
         $fs = new Filesystem();
 
+        $parserSymbol = preg_replace('/[^a-zA-Z0-9\-\_]/', '_', $this->parserName);
+        $nodeSettings = $this->determineSettings($file->getParentNode());
+
         $targetDirectory = $this->settings->getCommonSetting('downloadDirectory');
-        $targetDirectory .= $ds.preg_replace('/[^a-zA-Z0-9\-\_]/', '_', $this->parserName);
+        $targetDirectory .= $ds.$parserSymbol;
         $targetDirectory .= (($file->getType() === FileType::Video) ? '_webms' : '');
 
         if ($parserDownloadFolder = $this->settings->getParserSetting($this->parserName, 'downloadFolder')) {
@@ -145,8 +152,58 @@ class AbstractParser
 
         $file->setTargetFilePath($targetFilePath);
         $file->setTempFilePath($this->previewTempDir.$file->getName().'.'.$file->getExtension());
+        $file->setNodeSettings($nodeSettings);
 
         return $file;
+    }
+
+    public function determineFileSubfolder(File $file): ?string
+    {
+        $subfolder = '';
+
+        if ($settings = $file->getNodeSettings()) {
+            if ($settings->getFolderType()) {
+                switch ($settings->getFolderType()) {
+                    case FolderType::CustomText:
+                        $subfolder = $settings->getFolder();
+                        break;
+
+                    case FolderType::CategoryName:
+                        $categoryName = $file->getParentNode()->getCategory()->getName();
+                        $subfolder = StringHelper::folderString($categoryName);
+                        break;
+
+                    case FolderType::NodeName:
+                        $nodeName = $file->getParentNode()->getName();
+                        $subfolder = StringHelper::folderString($nodeName);
+                        break;
+
+                    case FolderType::NodeSymbol:
+                        $nodeSymbol = $file->getParentNode()->getIdentifier();
+                        $subfolder = StringHelper::folderString($nodeSymbol);
+                        break;
+                }
+            }
+        }
+
+        return $subfolder;
+    }
+
+    public function determinePrefixSufixName(File $file): ?string
+    {
+        if ($settings = $file->getNodeSettings()) {
+            if ($settings->getPrefixType()) {
+                switch ($settings->getPrefixType()) {
+                    case PrefixSufixType::CustomText:
+
+                }
+            }
+        }
+    }
+
+    public function determineFileName(File $file): string
+    {
+
     }
 
     /**
@@ -178,9 +235,22 @@ class AbstractParser
         return $file;
     }
 
-    public function determineFileSubfolder(File $file): ?string
+    /**
+     * @param Node|null $node
+     * @return NodeSettings|null
+     */
+    public function determineSettings(Node $node = null): ?NodeSettings
     {
-        return '';
+        if (!$node)
+            return null;
+
+        if ($settings = $node->getSettings())
+            return $settings;
+
+        if ($node->getParentNode())
+            return $this->determineSettings($node);
+
+        return null;
     }
 
     /**

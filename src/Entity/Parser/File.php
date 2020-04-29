@@ -155,6 +155,9 @@ class File extends AbstractEntity
     protected $tempFilePath;
     protected $targetFilePath;
 
+    /** @var NodeSettings|null */
+    protected $nodeSettings = null;
+
     /** @var boolean */
     protected $corrupted = false;
 
@@ -558,6 +561,25 @@ class File extends AbstractEntity
     public function setDuplicateOf($duplicateOf): self
     {
         $this->duplicateOf = $duplicateOf;
+
+        return $this;
+    }
+
+    /**
+     * @return NodeSettings|null
+     */
+    public function getNodeSettings(): ?NodeSettings
+    {
+        return $this->nodeSettings;
+    }
+
+    /**
+     * @param NodeSettings|null $nodeSettings
+     * @return $this;
+     */
+    public function setNodeSettings(?NodeSettings $nodeSettings): self
+    {
+        $this->nodeSettings = $nodeSettings;
 
         return $this;
     }
