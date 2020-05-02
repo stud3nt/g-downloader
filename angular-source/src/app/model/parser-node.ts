@@ -14,7 +14,7 @@ export class ParserNode extends BaseModel {
 		Object.assign(this, obj);
 
 		if (obj && typeof obj.settings !== 'undefined' && obj.settings)
-		    Object.assign(this._settings, obj.settings);
+		    this._settings = new ParserNodeSettings(obj.settings);
 	}
 
 	private _id: number;

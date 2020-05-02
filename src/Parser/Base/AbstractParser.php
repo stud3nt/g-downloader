@@ -14,10 +14,9 @@ use App\Enum\PrefixSufixType;
 use App\Factory\RedisFactory;
 use App\Model\ParserRequest;
 use App\Model\SettingsModel;
-use App\Utils\StringHelper;
+use App\Utils\FilesHelper;
 use App\Service\{FileCache, CurlRequest};
 use App\Utils\AppHelper;
-use Doctrine\Common\Util\Debug;
 use GuzzleHttp\Client;
 use PHPHtmlParser\Dom;
 use Symfony\Component\Filesystem\Filesystem;
@@ -60,8 +59,6 @@ class AbstractParser
     protected $mainMediaUrl;
 
     protected $localThumbnailsLifetime = (60*60*24*7); // initial - 1 week lifetime;
-
-    protected $sessionData = [];
 
     /**
      * AbstractParser constructor.
@@ -118,7 +115,7 @@ class AbstractParser
         $fs = new Filesystem();
 
         $parserSymbol = preg_replace('/[^a-zA-Z0-9\-\_]/', '_', $this->parserName);
-        $nodeSettings = $this->determineSettings($file->getParentNode());
+        $nodeSettings = $file->getFinalNodeSettings();
 
         $targetDirectory = $this->settings->getCommonSetting('downloadDirectory');
         $targetDirectory .= $ds.$parserSymbol;
@@ -140,28 +137,32 @@ class AbstractParser
         }
 
         $targetDirectory .= $this->determineFileSubfolder($file);
+        $targetDirectory .= $this->determineSettingsSubfolder($file);
 
         if (!$fs->exists($targetDirectory)) {
             $fs->mkdir($targetDirectory, 0777);
         }
 
-        if ($file->getType() === FileType::Video)
-            $targetFilePath = $targetDirectory.$ds.$file->getName().'.'.$file->getExtension();
-        else
-            $targetFilePath = $targetDirectory.$ds.$file->getName().'.jpg';
+        $fileName = $this->determineFileName($file);
 
+        if ($file->getType() === FileType::Video)
+            $targetFilePath = $targetDirectory.$ds.$fileName.'.'.$file->getExtension();
+        else
+            $targetFilePath = $targetDirectory.$ds.$fileName.'.jpg';
+
+        // value for standard downloaded file;
+        $file->setTempFilePath($this->previewTempDir.$fileName.'.'.$file->getExtension());
         $file->setTargetFilePath($targetFilePath);
-        $file->setTempFilePath($this->previewTempDir.$file->getName().'.'.$file->getExtension());
         $file->setNodeSettings($nodeSettings);
 
         return $file;
     }
 
-    public function determineFileSubfolder(File $file): ?string
+    public function determineSettingsSubfolder(File $file): ?string
     {
         $subfolder = '';
 
-        if ($settings = $file->getNodeSettings()) {
+        if ($settings = $file->getFinalNodeSettings()) {
             if ($settings->getFolderType()) {
                 switch ($settings->getFolderType()) {
                     case FolderType::CustomText:
@@ -170,40 +171,77 @@ class AbstractParser
 
                     case FolderType::CategoryName:
                         $categoryName = $file->getParentNode()->getCategory()->getName();
-                        $subfolder = StringHelper::folderString($categoryName);
+                        $subfolder = FilesHelper::folderNameFromString($categoryName);
                         break;
 
                     case FolderType::NodeName:
                         $nodeName = $file->getParentNode()->getName();
-                        $subfolder = StringHelper::folderString($nodeName);
+                        $subfolder = FilesHelper::folderNameFromString($nodeName);
                         break;
 
                     case FolderType::NodeSymbol:
                         $nodeSymbol = $file->getParentNode()->getIdentifier();
-                        $subfolder = StringHelper::folderString($nodeSymbol);
+                        $subfolder = FilesHelper::folderNameFromString($nodeSymbol);
                         break;
                 }
             }
         }
 
+        if ($subfolder)
+            $subfolder = DIRECTORY_SEPARATOR.$subfolder;
+
         return $subfolder;
     }
 
-    public function determinePrefixSufixName(File $file): ?string
+    public function determinePrefixSufixName(File $file, string $type = null, string $value = null): ?string
     {
-        if ($settings = $file->getNodeSettings()) {
-            if ($settings->getPrefixType()) {
-                switch ($settings->getPrefixType()) {
-                    case PrefixSufixType::CustomText:
+        switch ($type) {
+            case PrefixSufixType::CustomText:
+                return (($value) ? FilesHelper::fileNameFromString($value) : null);
+                break;
 
-                }
-            }
+            case PrefixSufixType::NodeSymbol:
+                return ($parentNode = $file->getParentNode())
+                    ? FilesHelper::fileNameFromString($parentNode->getIdentifier())
+                    : null;
+                break;
+
+            case PrefixSufixType::NodeName:
+                return ($parentNode = $file->getParentNode())
+                    ? FilesHelper::fileNameFromString($parentNode->getName())
+                    : null;
+                break;
+
+            case PrefixSufixType::CategoryName:
+                if ($file->getParentNode() && $category = $file->getParentNode()->getCategory())
+                    return FilesHelper::fileNameFromString($category->getName());
+                else
+                    return null;
+                break;
+
+            case PrefixSufixType::FileDescription:
+                return FilesHelper::fileNameFromString($file->getDescription(), false, 50);
+                break;
         }
+
+        return null;
     }
 
-    public function determineFileName(File $file): string
+    public function determineFileName(File $file): ?string
     {
+        $prefix = null;
+        $sufix = null;
 
+        if ($settings = $file->getFinalNodeSettings()) {
+            $prefix = $settings->getPrefixType()
+                ? $this->determinePrefixSufixName($file, $settings->getPrefixType(), $settings->getPrefix())
+                : null;
+            $sufix = $settings->getSufixType()
+                ? $this->determinePrefixSufixName($file, $settings->getSufixType(), $settings->getSufix())
+                : null;
+        }
+
+        return $prefix.($prefix ? ' ' : '').$file->getName().($sufix ? ' ' : '').$sufix;
     }
 
     /**

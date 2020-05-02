@@ -30,6 +30,8 @@ export class ParserNodeSettings extends BaseModel {
 
 	private _maxHeight: number = 0;
 
+	private _minLength: number = 0;
+
     get id(): number {
         return this._id;
     }
@@ -116,5 +118,13 @@ export class ParserNodeSettings extends BaseModel {
 
     set sizeUnit(value: string) {
         this._sizeUnit = value;
+    }
+
+    get minLength(): number {
+        return this._minLength;
+    }
+
+    set minLength(value: number) {
+        this._minLength = value;
     }
 }

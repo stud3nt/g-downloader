@@ -2,7 +2,7 @@ export class PrefixSufixType {
 
     public static CustomText: string = 'custom-text';
 
-    public static FileName: string = 'file-name';
+    public static FileDescription: string = 'file-description';
 
     public static CategoryName: string = 'category-name';
 
@@ -13,7 +13,7 @@ export class PrefixSufixType {
 	public static getData(): {} {
 	    return {
 	        'Specified name': this.CustomText,
-            'File name': this.FileName,
+            'File title/description': this.FileDescription,
             'Category name': this.CategoryName,
             'Node title': this.NodeName,
             'Node symbol': this.NodeSymbol
@@ -27,8 +27,8 @@ export class PrefixSufixType {
                 type: this.CustomText
             },
             {
-                name: 'File name',
-                type: this.FileName
+                name: 'File title/description',
+                type: this.FileDescription
             },
             {
                 name: 'Category name',

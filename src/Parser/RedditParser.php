@@ -267,6 +267,7 @@ class RedditParser extends AbstractParser implements ParserInterface
             $parsedFile = (new ParsedFile(ParserType::Reddit, $fileType))
                 ->setName(FilesHelper::getFileName($clearFileUrl))
                 ->setTitle($child->title)
+                ->setDescription($child->title)
                 ->setExtension(FilesHelper::getFileExtension($clearFileUrl))
                 ->setIdentifier($image->id)
                 ->setWidth($image->source->width)
@@ -391,7 +392,7 @@ class RedditParser extends AbstractParser implements ParserInterface
 
         if ($parentNode = $file->getParentNode()) {
             if ($parentNode->getLevel() === NodeLevel::Board) {
-                $subfolder = DIRECTORY_SEPARATOR.FilesHelper::createFolderNameFromString(
+                $subfolder = DIRECTORY_SEPARATOR.FilesHelper::folderNameFromString(
                     str_replace('r_', '', $parentNode->getIdentifier())
                 );
             }

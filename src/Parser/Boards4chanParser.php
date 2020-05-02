@@ -366,7 +366,7 @@ class Boards4chanParser extends AbstractParser implements ParserInterface
 
         if ($gallery = $file->getParentNode()) {
             if ($board = $gallery->getParentNode()) {
-                $subfolder = DIRECTORY_SEPARATOR.FilesHelper::createFolderNameFromString($board->getName());
+                $subfolder = DIRECTORY_SEPARATOR.FilesHelper::folderNameFromString($board->getName());
             }
         }
 

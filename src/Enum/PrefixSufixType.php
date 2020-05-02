@@ -8,7 +8,7 @@ abstract class PrefixSufixType extends Enum
 {
     const CustomText = 'custom-text';
 
-    const FileName = 'file-name';
+    const FileDescription = 'file-description';
 
     const CategoryName = 'category-name';
 
@@ -20,7 +20,7 @@ abstract class PrefixSufixType extends Enum
     {
         return [
             self::CustomText => 'Custom text',
-            self::FileName => 'File name',
+            self::FileDescription => 'File description',
             self::CategoryName => 'Category name',
             self::NodeName => 'Node title',
             self::NodeSymbol => 'Node symbol'

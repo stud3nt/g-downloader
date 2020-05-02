@@ -69,6 +69,12 @@ class ParsedNodeSettings extends AbstractModel
     public $maxSize = 0;
 
     /**
+     * @var integer
+     * @ModelVariable(type="integer")
+     */
+    public $minLength = 0;
+
+    /**
      * @var string
      * @ModelVariable(type="string")
      */
@@ -279,6 +285,25 @@ class ParsedNodeSettings extends AbstractModel
     public function setSizeUnit(?string $sizeUnit): self
     {
         $this->sizeUnit = $sizeUnit;
+
+        return $this;
+    }
+
+    /**
+     * @return int
+     */
+    public function getMinLength(): int
+    {
+        return $this->minLength;
+    }
+
+    /**
+     * @param int $minLength
+     * @return self
+     */
+    public function setMinLength(int $minLength = 0): self
+    {
+        $this->minLength = $minLength;
 
         return $this;
     }

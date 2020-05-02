@@ -152,7 +152,11 @@ class File extends AbstractEntity
     protected $parentNode;
 
     protected $curlRequest;
-    protected $tempFilePath;
+    /** @var string */
+    protected $tempFilePath = null;
+    /** @var string */
+    protected $cleanTempFilePath = null;
+    /** @var string */
     protected $targetFilePath;
 
     /** @var NodeSettings|null */
@@ -409,9 +413,9 @@ class File extends AbstractEntity
     }
 
     /**
-     * @return mixed
+     * @return string|null
      */
-    public function getTempFilePath()
+    public function getTempFilePath(): ?string
     {
         return $this->tempFilePath;
     }
@@ -423,6 +427,25 @@ class File extends AbstractEntity
     public function setTempFilePath($tempFilePath): self
     {
         $this->tempFilePath = $tempFilePath;
+
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getCleanTempFilePath(): ?string
+    {
+        return $this->cleanTempFilePath;
+    }
+
+    /**
+     * @param string $cleanTempFilePath
+     * @return self
+     */
+    public function setCleanTempFilePath(string $cleanTempFilePath = null): self
+    {
+        $this->cleanTempFilePath = $cleanTempFilePath;
 
         return $this;
     }
@@ -570,7 +593,7 @@ class File extends AbstractEntity
      */
     public function getNodeSettings(): ?NodeSettings
     {
-        return $this->nodeSettings;
+        return $this->nodeSettings ?? $this->getFinalNodeSettings();
     }
 
     /**
@@ -582,5 +605,36 @@ class File extends AbstractEntity
         $this->nodeSettings = $nodeSettings;
 
         return $this;
+    }
+
+    public function getFinalNodeSettings(): ?NodeSettings
+    {
+        $nodeSettings = $this->determineNodeSettings($this->getParentNode());
+
+        if ($nodeSettings) {
+            foreach ($nodeSettings as $setting) {
+                if ($setting) {
+                    return $setting;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    private function determineNodeSettings(Node $node = null): array
+    {
+        $settingsArray = [];
+
+        if (!$node)
+            return [];
+
+        if ($settings = $node->getSettings())
+            $settingsArray[] = $settings;
+
+        if ($node->getParentNode())
+            $settingsArray[] = $this->determineNodeSettings($node->getParentNode());
+
+        return $settingsArray;
     }
 }

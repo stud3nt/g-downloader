@@ -91,7 +91,7 @@ class NodeSettings extends AbstractEntity
      * @var int
      *
      * @ORM\Column(name="max_size", type="integer", length=8, options={"default":0})
-     * @EntityVariable(convertable=true, writable=true, readable=true, type="string")
+     * @EntityVariable(convertable=true, writable=true, readable=true, type="integer")
      */
     protected $maxSize = 0;
 
@@ -107,7 +107,7 @@ class NodeSettings extends AbstractEntity
      * @var int
      *
      * @ORM\Column(name="max_width", type="integer", length=8, options={"default":0})
-     * @EntityVariable(convertable=true, writable=true, readable=true, type="string")
+     * @EntityVariable(convertable=true, writable=true, readable=true, type="integer")
      */
     protected $maxWidth = 0;
 
@@ -115,9 +115,17 @@ class NodeSettings extends AbstractEntity
      * @var int
      *
      * @ORM\Column(name="max_height", type="integer", length=8, options={"default":0})
-     * @EntityVariable(convertable=true, writable=true, readable=true, type="string")
+     * @EntityVariable(convertable=true, writable=true, readable=true, type="integer")
      */
     protected $maxHeight = 0;
+
+    /**
+     * @var int
+     *
+     * @ORM\Column(name="min_length", type="integer", length=8, options={"default":0})
+     * @EntityVariable(convertable=true, writable=true, readable=true, type="integer")
+     */
+    protected $minLength = 0;
 
     public function __construct()
     {
@@ -272,6 +280,18 @@ class NodeSettings extends AbstractEntity
     public function setSizeUnit(?string $sizeUnit): self
     {
         $this->sizeUnit = $sizeUnit;
+
+        return $this;
+    }
+
+    public function getMinLength(): ?int
+    {
+        return $this->minLength;
+    }
+
+    public function setMinLength(int $minLength = 0): self
+    {
+        $this->minLength = $minLength;
 
         return $this;
     }

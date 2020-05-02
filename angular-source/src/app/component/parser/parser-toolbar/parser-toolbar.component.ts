@@ -294,8 +294,6 @@ export class ParserToolbarComponent implements OnInit, OnDestroy {
 	}
 
 	public updateCurrentRequest(action: string): void {
-	    console.log(this._parserRequest);
-
 		this.onRequestChange.next(
 			(new ParserRequestOperation(action, this._parserRequest))
 		);

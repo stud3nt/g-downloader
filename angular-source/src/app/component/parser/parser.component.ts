@@ -160,9 +160,6 @@ export class ParserComponent implements OnInit {
 		this.parserService.updateNode(node).subscribe((node: ParserNode) => {
             node.removeStatus(NodeStatus.Waiting);
 
-            console.log("RECEIVED NODE: ");
-            console.log(node);
-
             this.parserRequest.currentNode = node;
 
             setTimeout(() => {

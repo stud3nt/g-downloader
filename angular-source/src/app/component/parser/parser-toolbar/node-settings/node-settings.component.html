@@ -66,7 +66,7 @@
             <div class="col-md-6">
                 <label for="node-settings-max-size">Maximum file size</label>
                 <div class="input-group input-group-sm">
-                    <input name="settings-max-size" id="node-settings-max-size" type="text" class="form-control" [(ngModel)]="_nodeSettings.maxSize">
+                    <input name="settings-max-size" id="node-settings-max-size" type="number" class="form-control" [(ngModel)]="_nodeSettings.maxSize">
                     <div class="input-group-btn">
                         <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
                             {{ sizeUnit }} &nbsp; <span class="fa fa-caret-down"></span>
@@ -81,16 +81,22 @@
             </div>
         </div>
         <div class="row">
-            <div class="col-md-6">
+            <div class="col-md-4">
                 <div class="form-group">
                     <label for="node-settings-width">Maximum file width (px)</label>
-                    <input name="settings-width" id="node-settings-width" type="text" class="form-control input-sm" [(ngModel)]="_nodeSettings.maxWidth">
+                    <input name="settings-width" id="node-settings-width" type="number" class="form-control input-sm" [(ngModel)]="_nodeSettings.maxWidth">
                 </div>
             </div>
-            <div class="col-md-6">
+            <div class="col-md-4">
                 <div class="form-group">
                     <label for="node-settings-height">Maximum file height (px)</label>
-                    <input name="settings-height" id="node-settings-height" type="text" class="form-control input-sm" [(ngModel)]="_nodeSettings.maxHeight">
+                    <input name="settings-height" id="node-settings-height" type="number" class="form-control input-sm" [(ngModel)]="_nodeSettings.maxHeight">
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group">
+                    <label for="node-settings-movie-length">Minimum movie length (sec)</label>
+                    <input name="settings-height" id="node-settings-movie-length" type="number" class="form-control input-sm" [(ngModel)]="_nodeSettings.minLength">
                 </div>
             </div>
         </div>

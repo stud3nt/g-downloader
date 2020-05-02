@@ -193,10 +193,36 @@ class FilesHelper
         return (int)$sizeValue;
     }
 
-    public static function createFolderNameFromString(string $customName): string
+    /**
+     * Clears folder string from forbidden characters
+     *
+     * @param string|null $rawString
+     * @param boolean $allowSlashes
+     * @param int $maxLength - maximum folder name length
+     * @return string|null
+     */
+    public static function fileNameFromString(?string $rawString, bool $allowSlashes = false, int $maxLength = 80): ?string
     {
-        return mb_strtolower(
-            preg_replace('/[^a-zA-Z0-9\-\_ ]/', '_', $customName)
+        $rawString = str_replace( // replacing ABSOLUTELY forbidden characters;
+            ['*', '?', '<', '>', '|', '”', '&#039;'],
+            ['_', 'q', '[', ']', '-', '\'\'', '\'\''],
+            $rawString
         );
+
+        if ($allowSlashes)
+            $pattern = '/[^a-zA-Z0-9\\\/\-\.\,\_\(\)\;\]\[\'\"\&\%\#\@\! ]/';
+        else
+            $pattern = '/[^a-zA-Z0-9\-\.\,\_\(\)\;\]\[\'\’\&\%\#\@\! ]/';
+
+        $string = preg_replace($pattern, '-', $rawString);
+
+        return substr($string, 0, $maxLength);
+    }
+
+    public static function folderNameFromString(string $rawString): string
+    {
+        $rawString = htmlspecialchars_decode($rawString);
+
+        return preg_replace('/[^a-zA-Z0-9\-\_\.\, ]/', '_', $rawString);
     }
 }

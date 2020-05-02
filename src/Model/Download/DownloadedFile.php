@@ -18,9 +18,7 @@ use Symfony\Component\Filesystem\Filesystem;
 
 class DownloadedFile extends AbstractModel
 {
-    /**
-     * @ModelVariable()
-     */
+    /** @ModelVariable() */
     public $resource;
 
     protected $width = 0;
@@ -28,7 +26,6 @@ class DownloadedFile extends AbstractModel
 
     protected $tempFileDir;
     protected $operationalFileDir;
-    protected $targetFileDir;
 
     protected $tempFilePath;
     protected $operationalFilePath;
@@ -102,15 +99,29 @@ class DownloadedFile extends AbstractModel
 
     public function analyseTempFiles(): self
     {
-        if ($this->fileEntity->getType() === FileType::Image) {
+        if ($this->getFileEntity()->getType() === FileType::Image) {
             $hash = $this->imageHasher->hash($this->tempFilePath);
 
             $this->getFileEntity()
                 ->setBinHash($hash->toBits())
                 ->setHexHash($hash->toHex());
-        } elseif ($this->fileEntity->getType() === FileType::Video) {
+        } elseif ($this->getFileEntity()->getType() === FileType::Video) {
             $data = $this->id3->analyze($this->tempFilePath);
-            $this->getFileEntity()->setLength($data['playtime_seconds']);
+
+            if (array_key_exists('playtime_seconds', $data)) {
+                $length = $data['playtime_seconds'];
+                $minLength = ($this->settings->getMinLength() > 0) ? $this->settings->getMinLength() : 14;
+
+                if ($length < $minLength) {
+                    $this->getFileEntity()->setCorrupted(true);
+                    return $this;
+                }
+
+                $this->getFileEntity()->setLength($length);
+            } else {
+                $this->getFileEntity()->setCorrupted(true);
+                return $this;
+            }
         }
 
         $this->getFileEntity()->setDimensionRatio(
@@ -131,18 +142,18 @@ class DownloadedFile extends AbstractModel
 
         if ($potentialDuplicates) {
             foreach ($potentialDuplicates as $potentialDuplicate) {
-                if ($this->fileEntity->getType() === FileType::Image) {
+                if ($this->getFileEntity()->getType() === FileType::Image) {
                     $compareHash = Hash::fromHex($potentialDuplicate->getHexHash());
                     $distance = $currentImageHash->distance($compareHash);
 
-                    if ($distance < 10 && $distance < $bestHashDistance) {
+                    if ($distance < 14 && $distance < $bestHashDistance) { // distance less than 14 equals very similar or identical images
                         $bestHashDistance = $distance;
                         $this->getFileEntity()->setDuplicateOf($potentialDuplicate);
 
                         if ($distance < 4)
                             break;
                     }
-                } elseif ($this->fileEntity->getType() === FileType::Video) {
+                } elseif ($this->getFileEntity()->getType() === FileType::Video) {
                     if ($potentialDuplicate->getLength() === $this->getFileEntity()->getLength()) {
                         if ($potentialDuplicate->getSize() === $this->getFileEntity()->getSize() ||
                             $potentialDuplicate->getName() === $this->getFileEntity()->getName() ||
@@ -178,13 +189,13 @@ class DownloadedFile extends AbstractModel
 
         switch ($this->fileEntity->getParser()) {
             case ParserType::HentaiFoundry:
-                $expectedWidth = $this->settings->getMaxWidth() ?? 1920;
-                $expectedHeight = $this->settings->getMaxHeight() ?? 1200;
+                $expectedWidth = $this->settings->getMaxWidth() > 0 ? $this->settings->getMaxWidth() : 1920;
+                $expectedHeight = $this->settings->getMaxHeight() > 0 ? $this->settings->getMaxHeight() : 1200;
                 break;
 
             default:
-                $expectedWidth = $this->settings->getMaxWidth() ?? 2000;
-                $expectedHeight = $this->settings->getMaxHeight() ?? 1600;
+                $expectedWidth = $this->settings->getMaxWidth() > 0 ? $this->settings->getMaxWidth() : 2000;
+                $expectedHeight = $this->settings->getMaxHeight() > 0 ? $this->settings->getMaxHeight() : 1600;
                 break;
         }
 
@@ -212,8 +223,8 @@ class DownloadedFile extends AbstractModel
         $tempFilesize = filesize($this->tempFilePath);
         $operationalFilesize = filesize($this->operationalFilePath);
 
-        if (($operationalFilesize * 1.4) < $tempFilesize)
-            $ratio = 4.0; // color image (big size loss after grayscaling);
+        if (($operationalFilesize * 1.05) < $tempFilesize)
+            $ratio = 3.4; // color image (big size loss after grayscaling);
         else
             $ratio = 5.2; // grayscale;
 
@@ -408,10 +419,12 @@ class DownloadedFile extends AbstractModel
 
         $this->tempFilePath = $fileEntity->getTempFilePath();
         $this->targetFilePath = $fileEntity->getTargetFilePath();
+        $this->settings = $fileEntity->getFinalNodeSettings();
 
-        $file = fopen($this->tempFilePath,"w");
-        fwrite($file,"");
-        fclose($file);
+        if (!$this->settings)
+            $this->settings = new NodeSettings();
+
+        file_put_contents($this->tempFilePath, '');
 
         return $this;
     }
