@@ -202,7 +202,7 @@ class DownloadedFile extends AbstractModel
         $expectedCompressionRatio = $this->detectExpectedCompressionRatio();
         $maxSize = ($this->settings->getMaxSize() > 0)
             ? FilesHelper::sizeToBytes($this->settings->getMaxSize().' '.$this->settings->getSizeUnit())
-            : (700 * 1024); // max image size: 700KB or from settings;
+            : (620 * 1024); // max image size: 620KB or from settings;
 
         $this->changeImageDimensions($expectedWidth, $expectedHeight);
         $this->adjustCompression($expectedCompressionRatio, $maxSize);

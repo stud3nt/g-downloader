@@ -4,6 +4,7 @@ namespace App\Parser;
 
 use App\Entity\Parser\File;
 use App\Entity\User;
+use App\Enum\FileIcon;
 use App\Enum\FileType;
 use App\Enum\NodeLevel;
 use App\Enum\ParserType;
@@ -280,9 +281,16 @@ class RedditParser extends AbstractParser implements ParserInterface
 
             if ($child->domain === 'gfycat.com') {
                 $parsedFile->setUrl($child->url);
+                $parsedFile->setIcon(FileIcon::Gfycat);
             } else {
                 $parsedFile->setUrl($image->source->url);
                 $parsedFile->setFileUrl($image->source->url);
+
+                if (strpos($parsedFile->getUrl(), 'https://i.imgur.com')) {
+                    $parsedFile->setIcon(FileIcon::Imgur);
+                } else {
+                    $parsedFile->setIcon(FileIcon::Reddit);
+                }
             }
 
             foreach ($image->resolutions as $imagePreview) {

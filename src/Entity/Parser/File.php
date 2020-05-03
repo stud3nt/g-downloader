@@ -86,6 +86,18 @@ class File extends AbstractEntity
     protected $type;
 
     /**
+     * @ORM\Column(name="icon", type="string", length=16, nullable=true)
+     * @EntityVariable(convertable=true, writable=true, readable=true)
+     */
+    protected $icon = null;
+
+    /**
+     * @ORM\Column(name="download_info", type="array", nullable=true)
+     * @EntityVariable(convertable=true, writable=true, readable=true)
+    */
+    protected $downloadInfo = [];
+
+    /**
      * @ORM\Column(name="width", type="integer", nullable=true, length=4, options={"unsigned"=true, "default":0})
      * @EntityVariable(convertable=true, writable=true, readable=true)
      */
@@ -124,6 +136,19 @@ class File extends AbstractEntity
     protected $downloadedAt;
 
     /**
+     * @ORM\ManyToOne(targetEntity="App\Entity\Parser\File")
+     * @ORM\JoinColumn(name="duplicate_of_id", referencedColumnName="id")
+     * @EntityVariable(convertable=false, writable=false, readable=false)
+     */
+    protected $duplicateOf;
+
+    /**
+     * @ORM\ManyToOne(targetEntity="App\Entity\Parser\Node", inversedBy="files")
+     * @ORM\JoinColumn(name="node_id", referencedColumnName="id", nullable=true)
+     */
+    protected $parentNode;
+
+    /**
      * @EntityVariable(convertable=true, writable=false, readable=true)
      */
     protected $imageUrl;
@@ -137,19 +162,6 @@ class File extends AbstractEntity
      * @EntityVariable(convertable=true, writable=false, readable=true)
      */
     protected $textSize = '0 bytes';
-
-    /**
-     * @ORM\ManyToOne(targetEntity="App\Entity\Parser\File")
-     * @ORM\JoinColumn(name="duplicate_of_id", referencedColumnName="id")
-     * @EntityVariable(convertable=false, writable=false, readable=false)
-     */
-    protected $duplicateOf;
-
-    /**
-     * @ORM\ManyToOne(targetEntity="App\Entity\Parser\Node", inversedBy="files")
-     * @ORM\JoinColumn(name="node_id", referencedColumnName="id", nullable=true)
-     */
-    protected $parentNode;
 
     protected $curlRequest;
     /** @var string */
@@ -607,6 +619,18 @@ class File extends AbstractEntity
         return $this;
     }
 
+    public function getIcon(): ?string
+    {
+        return $this->icon;
+    }
+
+    public function setIcon(?string $icon): self
+    {
+        $this->icon = $icon;
+
+        return $this;
+    }
+
     public function getFinalNodeSettings(): ?NodeSettings
     {
         $nodeSettings = $this->determineNodeSettings($this->getParentNode());
@@ -636,5 +660,17 @@ class File extends AbstractEntity
             $settingsArray[] = $this->determineNodeSettings($node->getParentNode());
 
         return $settingsArray;
+    }
+
+    public function getDownloadInfo(): ?array
+    {
+        return $this->downloadInfo;
+    }
+
+    public function setDownloadInfo(?array $downloadInfo): self
+    {
+        $this->downloadInfo = $downloadInfo;
+
+        return $this;
     }
 }

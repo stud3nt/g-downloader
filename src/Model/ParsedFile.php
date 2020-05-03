@@ -10,51 +10,61 @@ use App\Utils\FilesHelper;
 class ParsedFile extends AbstractModel implements StatusInterface
 {
     /**
+     * @var string
      * @ModelVariable()
      */
     public $name;
 
     /**
+     * @var string
      * @ModelVariable()
      */
     public $title;
 
     /**
+     * @var string
      * @ModelVariable()
      */
     public $description;
 
     /**
+     * @var string
      * @ModelVariable()
      */
     public $domain;
 
     /**
+     * @var string
      * @ModelVariable()
      */
     public $extension;
 
     /**
+     * @var string
      * @ModelVariable()
      */
     public $url;
 
     /**
+     * @var string
      * @ModelVariable()
      */
     public $fileUrl;
 
     /**
+     * @var string
      * @ModelVariable()
      */
     public $localUrl;
 
     /**
+     * @var string
      * @ModelVariable()
      */
     public $previewUrl;
 
     /**
+     * @var string
      * @ModelVariable()
      */
     public $mimeType;
@@ -70,6 +80,7 @@ class ParsedFile extends AbstractModel implements StatusInterface
     public $uploadedAt;
 
     /**
+     * @var integer
      * @ModelVariable(type="integer")
      */
     public $rating = -1;
@@ -80,16 +91,19 @@ class ParsedFile extends AbstractModel implements StatusInterface
     public $downloadedAt;
 
     /**
+     * @var integer
      * @ModelVariable(type="integer")
      */
     public $width = 0;
 
     /**
+     * @var integer
      * @ModelVariable(type="integer")
      */
     public $height = 0;
 
     /**
+     * @var integer
      * @ModelVariable(type="integer")
      */
     public $size = 0;
@@ -100,16 +114,19 @@ class ParsedFile extends AbstractModel implements StatusInterface
     public $dimensionRatio;
 
     /**
+     * @var integer
      * @ModelVariable(type="integer")
      */
     public $length = 0;
 
     /**
+     * @var string
      * @ModelVariable()
      */
     public $textSize = null;
 
     /**
+     * @var string
      * @ModelVariable()
      */
     public $identifier;
@@ -125,9 +142,16 @@ class ParsedFile extends AbstractModel implements StatusInterface
     public $thumbnail;
 
     /**
+     * @var string
      * @ModelVariable()
      */
-    public $localThumbnail;
+    public $icon = null;
+
+    /**
+     * @var string
+     * @ModelVariable()
+     */
+    public $localThumbnail = null;
 
     /**
      * @ModelVariable()
@@ -763,6 +787,25 @@ class ParsedFile extends AbstractModel implements StatusInterface
     public function setDimensionRatio($dimensionRatio): self
     {
         $this->dimensionRatio = $dimensionRatio;
+
+        return $this;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getIcon()
+    {
+        return $this->icon;
+    }
+
+    /**
+     * @param mixed $icon
+     * @return ParsedFile
+     */
+    public function setIcon(string $icon = null): self
+    {
+        $this->icon = $icon;
 
         return $this;
     }

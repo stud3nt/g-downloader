@@ -3,6 +3,7 @@
 namespace App\Parser;
 
 use App\Entity\Parser\File;
+use App\Enum\FileIcon;
 use App\Enum\FileType;
 use App\Enum\NodeLevel;
 use App\Enum\ParserType;
@@ -153,6 +154,7 @@ class HentaiFoundryParser extends AbstractParser implements ParserInterface
 
             $files[] = (new ParsedFile(ParserType::HentaiFoundry, FilesHelper::getFileType($fileUrl)))
                 ->setUrl($fileUrl)
+                ->setIcon(FileIcon::HentaiFoundry)
                 ->setThumbnail(substr($thumbnailUrl, 0, strlen($thumbnailUrl) - 1));
         }
 

@@ -3,6 +3,8 @@
 namespace App\Parser;
 
 use App\Entity\Parser\File;
+use App\Enum\FileIcon;
+use App\Enum\FileType;
 use App\Enum\NodeLevel;
 use App\Enum\ParserType;
 use App\Factory\RedisFactory;
@@ -282,6 +284,7 @@ class Boards4chanParser extends AbstractParser implements ParserInterface
                                 ->setMimeType(FilesHelper::getFileMimeType($imageUrl, true))
                                 ->setUrl($imageUrl)
                                 ->setFileUrl($imageUrl)
+                                ->setIcon(FileIcon::Boards4Chan)
                                 //->setThumbnail($thumbnailUrl) ==> web thumbnail is available, but often blocked
                                 ->setSize(FilesHelper::sizeToBytes($fileData['textSize']))
                                 ->setTextSize($fileData['textSize'])

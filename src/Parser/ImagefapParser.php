@@ -2,6 +2,7 @@
 
 namespace App\Parser;
 
+use App\Enum\FileIcon;
 use App\Enum\FileType;
 use App\Enum\NodeLevel;
 use App\Enum\PaginationMode;
@@ -362,6 +363,7 @@ class ImagefapParser extends AbstractParser implements ParserInterface
                                 ->setThumbnail($thumbnail->getAttribute('href'))
                                 ->setExtension(FilesHelper::getFileExtension($thumbnail->getAttribute('href')))
                                 ->setUrl($anchor->getAttribute('href'))
+                                ->setIcon(FileIcon::ImageFap)
                             ;
 
                             $parserRequest->files[] = $this->modelConverter->convert($image);

@@ -63,6 +63,8 @@ export class ParserNode extends BaseModel {
 
 	private _lastViewedAt: string = '---';
 
+	private _icon: string = null;
+
 	private _allowTags: boolean = false;
 
 	private _allowCategory: boolean = false;
@@ -441,4 +443,12 @@ export class ParserNode extends BaseModel {
 	set personalDescription(value: string) {
 		this._personalDescription = value;
 	}
+
+    get icon(): string {
+        return this._icon;
+    }
+
+    set icon(value: string) {
+        this._icon = value;
+    }
 }

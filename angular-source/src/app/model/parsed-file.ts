@@ -54,6 +54,10 @@ export class ParsedFile extends BaseModel {
 
 	private _htmlPreview: string = null;
 
+	private _icon: string = null;
+
+	private _downloadInfo: string = null;
+
 	// file type (image, movie)
 	private _type: string;
 
@@ -308,4 +312,20 @@ export class ParsedFile extends BaseModel {
 	set rating(value: number) {
 		this._rating = value;
 	}
+
+    get downloadInfo(): string {
+        return this._downloadInfo;
+    }
+
+    set downloadInfo(value: string) {
+        this._downloadInfo = value;
+    }
+
+    get icon(): string {
+        return this._icon;
+    }
+
+    set icon(value: string) {
+        this._icon = value;
+    }
 }
