@@ -1,4 +1,6 @@
 framework:
     test: true
+    validation:
+        enable_annotations: true
     session:
         storage_id: session.storage.mock_file

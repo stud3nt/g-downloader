@@ -43,6 +43,16 @@ abstract class NodeLevel extends Enum
         }
     }
 
+    public static function determineLevelValue(string $name): int
+    {
+        foreach (self::getLevelValue() as $levelName => $levelValue) {
+            if ($levelName === $name)
+                return $levelValue;
+        }
+
+        return 0;
+    }
+
     public static function determineNextLevel(string $baseLevel): ?string
     {
         $level = null;

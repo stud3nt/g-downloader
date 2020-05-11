@@ -4,6 +4,7 @@ namespace App\Repository;
 
 use App\Entity\Parser\File;
 use App\Enum\FileType;
+use App\Model\ParsedFile;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\AbstractQuery;
 use Doctrine\ORM\QueryBuilder;
@@ -102,6 +103,22 @@ class FileRepository extends ServiceEntityRepository
         return $qb;
     }
 
+
+    public function getRandomFiles(string $parser, int $limit = 1): array
+    {
+        return $this->_em->createQueryBuilder()
+            ->select('f')
+            ->from('App:Parser\File', 'f')
+            ->addSelect('RAND() as HIDDEN rand')
+            ->where('f.parser = :parser')
+            ->setParameter('parser', $parser)
+            ->orderBy('rand')
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult()
+        ;
+    }
+
     /**
      * @param array $filters
      * @return int
@@ -120,7 +137,7 @@ class FileRepository extends ServiceEntityRepository
         return $counter['files_count'];
     }
 
-    private function completeQueryFromFilters(QueryBuilder &$qb, array $filters = []): QueryBuilder
+    private function completeFilters(array &$filters = []): array
     {
         $filters = array_merge([
             'type' => null,
@@ -130,8 +147,17 @@ class FileRepository extends ServiceEntityRepository
             'downloadedTo' => null,
             'limit' => 10,
             'offset' => 0,
-            'select' => null
+            'select' => null,
+            'singleResult' => false,
+            'arrayResult' => false
         ], $filters);
+
+        return $filters;
+    }
+
+    private function completeQueryFromFilters(QueryBuilder &$qb, array $filters = []): QueryBuilder
+    {
+        $this->completeFilters();
 
         if ($filters['select'])
             $qb->select($filters['select']);

@@ -9,6 +9,7 @@
         "ext-iconv": "*",
         "ext-json": "*",
         "ext-libxml": "*",
+        "beberlei/doctrineextensions": "^1.2",
         "cboden/ratchet": "^0.4.1",
         "doctrine/annotations": "^1.6",
         "gregwar/image": "^2.0",

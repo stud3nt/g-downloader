@@ -4,7 +4,9 @@ namespace App\Entity\Parser;
 
 use App\Annotation\EntityVariable;
 use App\Entity\Base\AbstractEntity;
+use App\Enum\NodeLevel;
 use App\Entity\Traits\{CreatedAtTrait, IdentifierTrait, ParserTrait, NameTrait, UpdatedAtTrait, UrlTrait };
+use Doctrine\Common\Util\Debug;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
@@ -634,10 +636,11 @@ class File extends AbstractEntity
     public function getFinalNodeSettings(): ?NodeSettings
     {
         $nodeSettings = $this->determineNodeSettings($this->getParentNode());
+        krsort($nodeSettings);
 
         if ($nodeSettings) {
             foreach ($nodeSettings as $setting) {
-                if ($setting) {
+                if (!empty($setting) && !$setting->isEmpty()) {
                     return $setting;
                 }
             }
@@ -653,11 +656,22 @@ class File extends AbstractEntity
         if (!$node)
             return [];
 
-        if ($settings = $node->getSettings())
-            $settingsArray[] = $settings;
+        if ($settings = $node->getSettings()) {
+            $nodeLevel = NodeLevel::determineLevelValue($node->getLevel());
+            $settingsArray[$nodeLevel] = $settings;
+        }
 
-        if ($node->getParentNode())
-            $settingsArray[] = $this->determineNodeSettings($node->getParentNode());
+
+        if ($parentNode = $node->getParentNode()) {
+            $parentNodeSettings = $this->determineNodeSettings($parentNode);
+
+            if ($parentNodeSettings) {
+                foreach ($parentNodeSettings as $parentNodeSetting) {
+                    $parentLevel = NodeLevel::determineLevelValue($parentNode->getLevel());
+                    $settingsArray[$parentLevel] = $parentNodeSetting;
+                }
+            }
+        }
 
         return $settingsArray;
     }

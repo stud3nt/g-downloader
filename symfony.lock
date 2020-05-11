@@ -1,4 +1,7 @@
 {
+    "beberlei/doctrineextensions": {
+        "version": "v1.2.6"
+    },
     "cboden/ratchet": {
         "version": "v0.4.1"
     },

@@ -5,7 +5,7 @@ namespace App\Annotation;
 /**
  * @Annotation
  */
-final class ModelVariable
+class ModelVariable
 {
     // field type;
     public $type = null;

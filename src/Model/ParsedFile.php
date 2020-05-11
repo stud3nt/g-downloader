@@ -175,6 +175,9 @@ class ParsedFile extends AbstractModel implements StatusInterface
      */
     public $status;
 
+    /** @var string */
+    protected $previewFilePath = null;
+
     public function __construct(string $parser = null, string $type = null)
     {
         if ($parser) {
@@ -806,6 +809,25 @@ class ParsedFile extends AbstractModel implements StatusInterface
     public function setIcon(string $icon = null): self
     {
         $this->icon = $icon;
+
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getPreviewFilePath(): string
+    {
+        return $this->previewFilePath;
+    }
+
+    /**
+     * @param string $previewFilePath
+     * @return ParsedFile
+     */
+    public function setPreviewFilePath(string $previewFilePath): ParsedFile
+    {
+        $this->previewFilePath = $previewFilePath;
 
         return $this;
     }

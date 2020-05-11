@@ -4,6 +4,7 @@ namespace App\Entity;
 
 use App\Annotation\EntityVariable;
 use App\Entity\Base\AbstractEntity;
+use App\Utils\StringHelper;
 use App\Entity\Traits\{CreatedAtTrait, DescriptionTrait};
 use Doctrine\ORM\Mapping as ORM;
 
@@ -132,9 +133,7 @@ class Category extends AbstractEntity
     public function completeSymbolFromName(): self
     {
         if (empty($this->getSymbol))
-            $this->setSymbol(
-                preg_replace('/[^a-z0-9\-]/', '-', mb_strtolower($this->getName()))
-            );
+            $this->setSymbol(StringHelper::basicCharactersOnly($this->getName()));
 
         return $this;
     }

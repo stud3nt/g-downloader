@@ -145,6 +145,19 @@ class NodeSettings extends AbstractEntity
             $this->setFolderType(FolderType::CustomText);
     }
 
+    public function isEmpty(): bool
+    {
+        return !(
+            ($this->getPrefixType() !== PrefixSufixType::CustomText || !empty($this->getPrefix()))
+            ||
+            ($this->getSufixType() !== PrefixSufixType::CustomText || !empty($this->getSufix()))
+            ||
+            ($this->getFolderType() !== FolderType::CustomText || !empty($this->getFolder()))
+            ||
+            ($this->getMaxHeight() > 0 || $this->getMaxWidth() > 0 || $this->getMaxHeight() > 0)
+        );
+    }
+
     public function setId($id): self
     {
         $this->id = $id;
@@ -241,7 +254,7 @@ class NodeSettings extends AbstractEntity
         return $this->prefixType;
     }
 
-    public function setPrefixType(string $prefixType = PrefixSufixType::CustomText): self
+    public function setPrefixType(string $prefixType = null): self
     {
         $this->prefixType = $prefixType;
 
@@ -253,7 +266,7 @@ class NodeSettings extends AbstractEntity
         return $this->sufixType;
     }
 
-    public function setSufixType(string $sufixType = PrefixSufixType::CustomText): self
+    public function setSufixType(string $sufixType = null): self
     {
         $this->sufixType = $sufixType;
 
@@ -265,7 +278,7 @@ class NodeSettings extends AbstractEntity
         return $this->folderType;
     }
 
-    public function setFolderType(string $folderType = FolderType::CustomText): self
+    public function setFolderType(string $folderType = null): self
     {
         $this->folderType = $folderType;
 

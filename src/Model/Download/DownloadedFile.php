@@ -224,7 +224,7 @@ class DownloadedFile extends AbstractModel
         $operationalFilesize = filesize($this->operationalFilePath);
 
         if (($operationalFilesize * 1.05) < $tempFilesize)
-            $ratio = 3.4; // color image (big size loss after grayscaling);
+            $ratio = 2.8; // color image (big size loss after grayscaling);
         else
             $ratio = 5.2; // grayscale;
 

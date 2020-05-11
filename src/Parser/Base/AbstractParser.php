@@ -166,22 +166,29 @@ class AbstractParser
             if ($settings->getFolderType()) {
                 switch ($settings->getFolderType()) {
                     case FolderType::CustomText:
-                        $subfolder = $settings->getFolder();
+                        $subfolder = $settings->getFolder() ?? null;
                         break;
 
                     case FolderType::CategoryName:
-                        $categoryName = $file->getParentNode()->getCategory()->getName();
-                        $subfolder = FilesHelper::folderNameFromString($categoryName);
+                        $parentNode = $file->getParentNode();
+                        $parentCategory = $parentNode->getCategory();
+
+                        if ($parentCategory) {
+                            $rawSubfolder = FilesHelper::folderNameFromString($parentCategory->getName());
+                            $subfolder = ($rawSubfolder && strlen($rawSubfolder > 0)) ? $rawSubfolder : null;
+                        }
                         break;
 
                     case FolderType::NodeName:
                         $nodeName = $file->getParentNode()->getName();
-                        $subfolder = FilesHelper::folderNameFromString($nodeName);
+                        $rawSubfolder = FilesHelper::folderNameFromString($nodeName);
+                        $subfolder = ($rawSubfolder && strlen($rawSubfolder > 0)) ? $rawSubfolder : null;
                         break;
 
                     case FolderType::NodeSymbol:
                         $nodeSymbol = $file->getParentNode()->getIdentifier();
-                        $subfolder = FilesHelper::folderNameFromString($nodeSymbol);
+                        $rawSubfolder = FilesHelper::folderNameFromString($nodeSymbol);
+                        $subfolder = ($rawSubfolder && strlen($rawSubfolder > 0)) ? $rawSubfolder : null;
                         break;
                 }
             }

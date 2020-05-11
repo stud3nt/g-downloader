@@ -16,7 +16,6 @@ use App\Parser\Base\ParserInterface;
 use App\Converter\EntityConverter;
 use App\Utils\FilesHelper;
 use App\Utils\UrlHelper;
-use Doctrine\Common\Util\Debug;
 use PHPHtmlParser\Dom\HtmlNode;
 use stringEncode\Exception;
 
@@ -338,6 +337,7 @@ class Boards4chanParser extends AbstractParser implements ParserInterface
         $previewWebPath = $this->previewTempFolder.$parsedFile->getFullFilename();
 
         $parsedFile->setLocalUrl($previewWebPath);
+        $parsedFile->setPreviewFilePath($previewFilePath);
 
         if (!file_exists($previewFilePath)) {
             $redis = (new RedisFactory())->initializeConnection();

@@ -109,4 +109,15 @@ class StringHelper
 
         return $camelCaseText;
     }
+
+    /**
+     * Clears string and replace '-' to all characters excepting 'a-z', '0-9' and '-' chars.
+     *
+     * @param string $inputString
+     * @return string
+     */
+    public static function basicCharactersOnly(string $inputString): string
+    {
+        return preg_replace('/[^a-z0-9\-]/', '-', mb_strtolower($inputString));
+    }
 }
