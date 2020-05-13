@@ -814,9 +814,9 @@ class ParsedFile extends AbstractModel implements StatusInterface
     }
 
     /**
-     * @return string
+     * @return string|null
      */
-    public function getPreviewFilePath(): string
+    public function getPreviewFilePath(): ?string
     {
         return $this->previewFilePath;
     }
@@ -825,7 +825,7 @@ class ParsedFile extends AbstractModel implements StatusInterface
      * @param string $previewFilePath
      * @return ParsedFile
      */
-    public function setPreviewFilePath(string $previewFilePath): ParsedFile
+    public function setPreviewFilePath(string $previewFilePath = null): ParsedFile
     {
         $this->previewFilePath = $previewFilePath;
 

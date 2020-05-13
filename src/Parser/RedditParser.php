@@ -199,17 +199,7 @@ class RedditParser extends AbstractParser implements ParserInterface
             if ($subreddit) {
                 foreach ($subreddit->data->children as $childIndex => $child) {
                     if (property_exists($child->data, 'crosspost_parent_list')) { // this is not post, but crosspost :/
-                        foreach ($child->data->crosspost_parent_list as $parentChild) {
-                            if (property_exists($parentChild, 'preview')) {
-                                $childData = $this->processBoardChildData($parentChild);
-
-                                if ($childData) {
-                                    foreach ($childData as $file) {
-                                        $parserRequest->addFile($file);
-                                    }
-                                }
-                            }
-                        }
+                        continue; // no crosspostes allowed! I don't like duplicates :/
                     } else {
                         if (property_exists($child->data, 'preview')) {
                             $childData = $this->processBoardChildData($child->data);
@@ -361,6 +351,7 @@ class RedditParser extends AbstractParser implements ParserInterface
         $previewWebPath = $this->previewTempFolder.$parsedFile->getFullFilename();
 
         $parsedFile->setLocalUrl($previewWebPath);
+        $parsedFile->setPreviewFilePath($previewFilePath);
         $redis = (new RedisFactory())->initializeConnection();
 
         if (!file_exists($previewFilePath)) {

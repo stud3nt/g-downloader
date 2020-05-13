@@ -104,19 +104,24 @@ class FileRepository extends ServiceEntityRepository
     }
 
 
-    public function getRandomFiles(string $parser, int $limit = 1): array
+    public function getRandomFiles(string $parser, int $limit = 1, bool $imagesOnly = true): array
     {
-        return $this->_em->createQueryBuilder()
+        $qb = $this->_em->createQueryBuilder()
             ->select('f')
             ->from('App:Parser\File', 'f')
             ->addSelect('RAND() as HIDDEN rand')
             ->where('f.parser = :parser')
-            ->setParameter('parser', $parser)
+            ->setParameter('parser', $parser);
+
+        if ($imagesOnly)
+            $qb->andWhere('f.type = :imageType')
+                ->setParameter('imageType', FileType::Image);
+
+        return $qb
             ->orderBy('rand')
             ->setMaxResults($limit)
             ->getQuery()
-            ->getResult()
-        ;
+            ->getResult();
     }
 
     /**
