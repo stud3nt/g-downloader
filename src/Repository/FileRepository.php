@@ -53,6 +53,12 @@ class FileRepository extends ServiceEntityRepository
             ->getResult(($asArray) ? AbstractQuery::HYDRATE_ARRAY : AbstractQuery::HYDRATE_OBJECT);
     }
 
+    /**
+     * Searches for files entries similar to passed file entity;
+     *
+     * @param File $file
+     * @return array
+     */
     public function getSimilarFiles(File $file): array
     {
         $qb = $this->_em->createQueryBuilder()
@@ -103,7 +109,14 @@ class FileRepository extends ServiceEntityRepository
         return $qb;
     }
 
-
+    /**
+     * Selects random file entities from database;
+     *
+     * @param string $parser
+     * @param int $limit
+     * @param bool $imagesOnly
+     * @return array
+     */
     public function getRandomFiles(string $parser, int $limit = 1, bool $imagesOnly = true): array
     {
         $qb = $this->_em->createQueryBuilder()
@@ -142,7 +155,13 @@ class FileRepository extends ServiceEntityRepository
         return $counter['files_count'];
     }
 
-    private function completeFilters(array &$filters = []): array
+    /**
+     * Completes filters array with empty values if specified keys does not exists;
+     *
+     * @param array $filters
+     * @return array
+     */
+    private function completeFilters(array &$filters): array
     {
         $filters = array_merge([
             'type' => null,
@@ -160,9 +179,16 @@ class FileRepository extends ServiceEntityRepository
         return $filters;
     }
 
+    /**
+     * Completes passed query based on array with filters;
+     *
+     * @param QueryBuilder $qb
+     * @param array $filters
+     * @return QueryBuilder
+     */
     private function completeQueryFromFilters(QueryBuilder &$qb, array $filters = []): QueryBuilder
     {
-        $this->completeFilters();
+        $this->completeFilters($filters);
 
         if ($filters['select'])
             $qb->select($filters['select']);
@@ -186,7 +212,7 @@ class FileRepository extends ServiceEntityRepository
         if ($filters['createdFrom'])
             $qb->andWhere('f.createdAt >= :timeFrom')->setParameter('timeFrom', $filters['createdFrom']);
         if ($filters['createdTo'])
-            $qb->andWhere('f.createdAt >= :timeTo')->setParameter('timeTo', $filters['createdFrom']);
+            $qb->andWhere('f.createdAt >= :timeTo')->setParameter('timeTo', $filters['createdTo']);
         if ($filters['downloadedFrom'])
             $qb->andWhere('f.downloadedAt >= :downloadedFrom')->setParameter('downloadedFrom', $filters['downloadedFrom']);
         if ($filters['downloadedTo'])

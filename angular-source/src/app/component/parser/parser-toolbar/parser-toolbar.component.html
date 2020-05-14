@@ -97,8 +97,8 @@
                 <a class="button button-small" title="Previous page" (click)="changePage(-1)">
                     <i class="fa fa-angle-left"></i>
                 </a>
-                <select class="select select-small" [ngModel]="_currentPage" (change)="nodePaginating()">
-                    <option *ngFor="let page of _pages" [value]="page" [selected]="page === _currentPage">
+                <select class="select select-small" [(ngModel)]="_currentPage" (change)="nodePaginating()">
+                    <option *ngFor="let page of _pages" [value]="page">
                         {{ page }}
                     </option>
                 </select>

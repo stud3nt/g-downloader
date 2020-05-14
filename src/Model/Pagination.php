@@ -9,55 +9,61 @@ class Pagination extends AbstractModel
 {
     /**
      * @var boolean
-     * @ModelVariable()
+     * @ModelVariable(type="boolean")
      */
     public $active = false;
 
     /**
      * @var integer
-     * @ModelVariable()
+     * @ModelVariable(type="integer")
      */
     public $currentPage = 1;
 
     /**
+     * @var integer
+     * @ModelVariable(type="integer")
+     */
+    public $pagesPackageSize = 2;
+
+    /**
      * @var string
-     * @ModelVariable()
+     * @ModelVariable(type="string")
      */
     public $currentLetter = 'A';
 
     /**
      * @var string
-     * @ModelVariable()
+     * @ModelVariable(type="string")
      */
     public $mode = PaginationMode::Numbers;
 
     /**
      * @var integer
-     * @ModelVariable()
+     * @ModelVariable(type="integer")
      */
     public $totalPages = 1;
 
     /**
      * @var integer
-     * @ModelVariable()
+     * @ModelVariable(type="integer")
      */
     public $pageShift = 0;
 
     /**
      * @var integer
-     * @ModelVariable()
+     * @ModelVariable(type="integer")
      */
     public $packageStep = 100;
 
     /**
      * @var integer
-     * @ModelVariable()
+     * @ModelVariable(type="integer")
      */
     public $minPackage = 1;
 
     /**
      * @var integer
-     * @ModelVariable()
+     * @ModelVariable(type="integer")
      */
     public $maxPackage = 10;
 
@@ -69,7 +75,7 @@ class Pagination extends AbstractModel
 
     /**
      * @var integer
-     * @ModelVariable()
+     * @ModelVariable(type="integer")
      */
     public $packageSize = 100;
 
@@ -117,7 +123,7 @@ class Pagination extends AbstractModel
         return $this;
     }
 
-    public function letterPagination(string $letter = 'A') : Pagination
+    public function setLetterPagination(string $letter = 'A') : Pagination
     {
         $this->reset();
 
@@ -128,7 +134,7 @@ class Pagination extends AbstractModel
         return $this;
     }
 
-    public function loadMorePagination() : Pagination
+    public function setLoadMorePagination() : Pagination
     {
         $this->reset();
 
@@ -382,6 +388,25 @@ class Pagination extends AbstractModel
     public function setSelectors(array $selectors): self
     {
         $this->selectors = $selectors;
+
+        return $this;
+    }
+
+    /**
+     * @return int
+     */
+    public function getPagesPackageSize(): int
+    {
+        return $this->pagesPackageSize;
+    }
+
+    /**
+     * @param int $pagesPackageSize
+     * @return Pagination
+     */
+    public function setPagesPackageSize(int $pagesPackageSize = 2): Pagination
+    {
+        $this->pagesPackageSize = $pagesPackageSize;
 
         return $this;
     }

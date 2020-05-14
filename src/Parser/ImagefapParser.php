@@ -5,20 +5,18 @@ namespace App\Parser;
 use App\Enum\FileIcon;
 use App\Enum\FileType;
 use App\Enum\NodeLevel;
-use App\Enum\PaginationMode;
 use App\Enum\ParserType;
 use App\Factory\RedisFactory;
 use App\Model\ParsedFile;
 use App\Model\ParsedNode;
 use App\Model\ParserRequest;
 use App\Parser\Base\AbstractParser;
-use App\Parser\Base\ParserInterface;
 use App\Utils\FilesHelper;
 use App\Utils\StringHelper;
 use App\Utils\UrlHelper;
 use PHPHtmlParser\Dom\HtmlNode;
 
-class ImagefapParser extends AbstractParser implements ParserInterface
+class ImagefapParser extends AbstractParser
 {
     protected $parserName = ParserType::Imagefap;
 

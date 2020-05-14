@@ -2,11 +2,7 @@
 
 namespace App\Tests\Functional\Parser;
 
-use App\Entity\Parser\File;
-use App\Enum\FolderType;
 use App\Enum\ParserType;
-use App\Model\ParsedFile;
-use App\Repository\FileRepository;
 use App\Tests\Functional\Parser\Base\BasicParserTestcase;
 use App\Tests\Functional\Parser\Base\ParserTestInterface;
 

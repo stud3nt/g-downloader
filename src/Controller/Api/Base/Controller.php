@@ -127,7 +127,7 @@ class Controller extends BaseController
      *
      * @final
      */
-    protected final function getUser(): ?User
+    protected function getUser(): ?User
     {
         if (!$this->container->has('security.token_storage')) {
             throw new \LogicException('The SecurityBundle is not registered in your application. Try running "composer require symfony/security-bundle".');

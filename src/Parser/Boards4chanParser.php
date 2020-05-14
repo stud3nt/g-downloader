@@ -4,7 +4,6 @@ namespace App\Parser;
 
 use App\Entity\Parser\File;
 use App\Enum\FileIcon;
-use App\Enum\FileType;
 use App\Enum\NodeLevel;
 use App\Enum\ParserType;
 use App\Factory\RedisFactory;
@@ -12,14 +11,12 @@ use App\Model\ParsedFile;
 use App\Model\ParsedNode;
 use App\Model\ParserRequest;
 use App\Parser\Base\AbstractParser;
-use App\Parser\Base\ParserInterface;
-use App\Converter\EntityConverter;
 use App\Utils\FilesHelper;
 use App\Utils\UrlHelper;
 use PHPHtmlParser\Dom\HtmlNode;
 use stringEncode\Exception;
 
-class Boards4chanParser extends AbstractParser implements ParserInterface
+class Boards4chanParser extends AbstractParser
 {
     protected $parserName = ParserType::Boards4chan;
 
@@ -28,21 +25,6 @@ class Boards4chanParser extends AbstractParser implements ParserInterface
     protected $mainGalleryUrl = 'http://boards.4chan.org/';
 
     protected $mainMediaUrl = 'https://i.4cdn.org/';
-
-    /** @var EntityConverter */
-    protected $entityConverter;
-
-    /** @required */
-    public function setEntityConverter(EntityConverter $entityConverter)
-    {
-        $this->entityConverter = $entityConverter;
-    }
-
-    public function getOwnersList(ParserRequest &$parserRequest): ParserRequest
-    {
-        // NOTHING TO DO HERE
-        return $parserRequest;
-    }
 
     /**
      * @param int $page
@@ -188,6 +170,9 @@ class Boards4chanParser extends AbstractParser implements ParserInterface
 
                         $parserRequest->addParsedNode($node);
                         $parserRequest->getStatus()->executeSteppedProgressStep('get_board_data');
+
+                        if ($this->testGalleriesLimitReached(count($parserRequest->getParsedNodes())))
+                            break;
                     }
                 }
 
@@ -245,16 +230,18 @@ class Boards4chanParser extends AbstractParser implements ParserInterface
                 ->updateProgress(50, "READING FROM CACHE...")
                 ->send();
         } else {
-            $parserRequest->pagination->disable();
+            $parserRequest->getPagination()->disable();
 
             /** @var HtmlNode $anchor */
             /** @var HtmlNode $image */
             /** @var HtmlNode $div */
-            $dom = $this->loadDomFromUrl($parserRequest->currentNode->getUrl());
+            $dom = $this->loadDomFromUrl($parserRequest->getCurrentNode()->getUrl());
             $divs = $dom->getElementsByClass('postContainer');
 
+
+
             $galleryName = $dom->find('title')[0]->text();
-            $parserRequest->currentNode
+            $parserRequest->getCurrentNode()
                 ->setName($galleryName, true)
                 ->setLabel($galleryName);
 
@@ -309,6 +296,9 @@ class Boards4chanParser extends AbstractParser implements ParserInterface
 
                 $parserRequest->getStatus()->executeSteppedProgressStep('get_gallery_data');
                 usleep(200);
+
+                if ($this->testGalleryImagesLimitReached(count($parserRequest->getFiles())))
+                    break;
             }
 
             $parserRequest->getStatus()->endSteppedProgress('get_gallery_data');
@@ -317,16 +307,6 @@ class Boards4chanParser extends AbstractParser implements ParserInterface
         }
 
         return $parserRequest;
-    }
-
-    /**
-     * Nothing to do in this parser;
-     *
-     * @return array
-     */
-    public function getFileData(ParsedFile &$parsedFile) : ParsedFile
-    {
-        return $parsedFile; // nothing to do here;
     }
 
     public function getFilePreview(ParsedFile &$parsedFile) : ParsedFile

@@ -113,7 +113,7 @@ export class ParserToolbarComponent implements OnInit, OnDestroy {
 		this._parserRequest = parserRequest;
 		this._currentNode = parserRequest.currentNode;
 		this._pagination = parserRequest.pagination;
-		this._nodeCategory = (this._currentNode.category) ? this._currentNode.category.symbol : null;
+		this._nodeCategory = (this._currentNode !== null && this._currentNode.category !== null) ? this._currentNode.category.symbol : null;
 
 		this.createPaginationData();
 	}

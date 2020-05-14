@@ -36,6 +36,8 @@ export class ParsedFile extends BaseModel {
 
 	private _url: string = null;
 
+	private _fileUrl: string = null;
+
 	private _localUrl: string = null;
 
 	private _width: number = 0;
@@ -327,5 +329,13 @@ export class ParsedFile extends BaseModel {
 
     set icon(value: string) {
         this._icon = value;
+    }
+
+    get fileUrl(): string {
+        return this._fileUrl;
+    }
+
+    set fileUrl(value: string) {
+        this._fileUrl = value;
     }
 }

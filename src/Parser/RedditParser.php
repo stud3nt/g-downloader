@@ -15,13 +15,12 @@ use App\Model\ParsedNode;
 use App\Model\ParserRequest;
 use App\Model\SettingsModel;
 use App\Parser\Base\AbstractParser;
-use App\Parser\Base\ParserInterface;
 use App\Parser\FileService\GfycatParser;
 use App\Service\Reddit\RedditApi;
 use App\Traits\CurrentUrlTrait;
 use App\Utils\FilesHelper;
 
-class RedditParser extends AbstractParser implements ParserInterface
+class RedditParser extends AbstractParser
 {
     use CurrentUrlTrait;
 
@@ -91,12 +90,6 @@ class RedditParser extends AbstractParser implements ParserInterface
         parent::__construct($settings, $user);
 
         $this->redditApi = (new RedditApi())->init($this->settings);
-    }
-
-    public function getOwnersList(ParserRequest &$parserRequest): ParserRequest
-    {
-        // NOTHING TO DO HERE
-        return $parserRequest;
     }
 
     /**
@@ -180,7 +173,7 @@ class RedditParser extends AbstractParser implements ParserInterface
     {
         $parserRequest->clearParsedData()
             ->getPagination()
-            ->loadMorePagination();
+            ->setLoadMorePagination();
 
         $parserRequest->getCurrentNode()
             ->setAllowCategory(true)
@@ -352,6 +345,7 @@ class RedditParser extends AbstractParser implements ParserInterface
 
         $parsedFile->setLocalUrl($previewWebPath);
         $parsedFile->setPreviewFilePath($previewFilePath);
+
         $redis = (new RedisFactory())->initializeConnection();
 
         if (!file_exists($previewFilePath)) {

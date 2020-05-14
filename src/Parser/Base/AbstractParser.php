@@ -12,6 +12,7 @@ use App\Enum\FolderType;
 use App\Enum\PaginationMode;
 use App\Enum\PrefixSufixType;
 use App\Factory\RedisFactory;
+use App\Model\ParsedFile;
 use App\Model\ParserRequest;
 use App\Model\SettingsModel;
 use App\Utils\FilesHelper;
@@ -21,7 +22,7 @@ use GuzzleHttp\Client;
 use PHPHtmlParser\Dom;
 use Symfony\Component\Filesystem\Filesystem;
 
-class AbstractParser
+class AbstractParser implements ParserInterface
 {
     // parser name
     protected $parserName = 'parser_name';
@@ -57,6 +58,11 @@ class AbstractParser
     protected $mainBoardUrl;
     protected $mainGalleryUrl;
     protected $mainMediaUrl;
+
+    protected $testOwnersLimit = -1;
+    protected $testBoardsLimit = -1;
+    protected $testGalleryImagesLimit = -1;
+    protected $testGalleriesLimit = -1;
 
     protected $localThumbnailsLifetime = (60*60*24*7); // initial - 1 week lifetime;
 
@@ -101,6 +107,83 @@ class AbstractParser
     public function __destruct()
     {
         $this->clearFileCache();
+    }
+
+    /**
+     * Dummy implementation for interface function
+     *
+     * @param ParserRequest $parserRequest
+     * @return ParserRequest
+     */
+    public function getOwnersList(ParserRequest &$parserRequest): ParserRequest
+    {
+        return $parserRequest;
+    }
+
+    /**
+     * Dummy implementation for interface function
+     *
+     * @param ParserRequest $parserRequest
+     * @return ParserRequest
+     */
+    public function getBoardsListData(ParserRequest &$parserRequest): ParserRequest
+    {
+        return $parserRequest;
+    }
+
+    /**
+     * Dummy implementation for interface function
+     *
+     * @param ParserRequest $parserRequest
+     * @return ParserRequest
+     */
+    public function getBoardData(ParserRequest &$parserRequest): ParserRequest
+    {
+        return $parserRequest;
+    }
+
+    /**
+     * Dummy implementation for interface function
+     *
+     * @param ParserRequest $parserRequest
+     * @return ParserRequest
+     */
+    public function getGalleryData(ParserRequest &$parserRequest): ParserRequest
+    {
+        return $parserRequest;
+    }
+
+    /**
+     * Dummy implementation for interface function
+     *
+     * @param ParsedFile $parsedFile
+     * @return ParsedFile
+     */
+    public function getFileData(ParsedFile &$parsedFile): ParsedFile
+    {
+        return $parsedFile;
+    }
+
+    /**
+     * Dummy implementation for interface function
+     *
+     * @param ParsedFile $parsedFile
+     * @return ParsedFile
+     */
+    public function getFilePreview(ParsedFile &$parsedFile): ParsedFile
+    {
+        return $parsedFile;
+    }
+
+    /**
+     * Dummy implementation for interface function
+     *
+     * @param File $file
+     * @return string|null
+     */
+    public function determineFileSubfolder(File $file): ?string
+    {
+        return null;
     }
 
     /**
@@ -416,7 +499,7 @@ class AbstractParser
      */
     protected function getParserCache(ParserRequest $parserRequest) : ?ParserRequest
     {
-        if (!$parserRequest->ignoreCache) {
+        if (!$parserRequest->isIgnoreCache()) {
             $cacheKey = $this->determineCacheKey($parserRequest);
 
             if ($this->cache->has($cacheKey)) {
@@ -497,5 +580,97 @@ class AbstractParser
         }
 
         return $cacheKey;
+    }
+
+    /**
+     * @return int
+     */
+    public function getTestOwnersLimit(): int
+    {
+        return $this->testOwnersLimit;
+    }
+
+    /**
+     * @param int $testOwnersLimit
+     * @return AbstractParser
+     */
+    public function setTestOwnersLimit(int $testOwnersLimit = -1): AbstractParser
+    {
+        $this->testOwnersLimit = $testOwnersLimit;
+        return $this;
+    }
+
+    public function testOwnersLimitReached(int $check = 0): bool
+    {
+        return ($this->getTestOwnersLimit() > -1 && $check >= $this->getTestOwnersLimit());
+    }
+
+    /**
+     * @return int
+     */
+    public function getTestBoardsLimit(): int
+    {
+        return $this->testBoardsLimit;
+    }
+
+    /**
+     * @param int $testBoardsLimit
+     * @return AbstractParser
+     */
+    public function setTestBoardsLimit(int $testBoardsLimit = -1): AbstractParser
+    {
+        $this->testBoardsLimit = $testBoardsLimit;
+        return $this;
+    }
+
+    public function testBoardsLimitReached(int $check = 0): bool
+    {
+        return ($this->getTestBoardsLimit() > -1 && $check >= $this->getTestBoardsLimit());
+    }
+
+    /**
+     * @return int
+     */
+    public function getTestGalleryImagesLimit(): int
+    {
+        return $this->testGalleryImagesLimit;
+    }
+
+    /**
+     * @param int $testGalleryImagesLimit
+     * @return AbstractParser
+     */
+    public function setTestGalleryImagesLimit(int $testGalleryImagesLimit = -1): AbstractParser
+    {
+        $this->testGalleryImagesLimit = $testGalleryImagesLimit;
+        return $this;
+    }
+
+    public function testGalleryImagesLimitReached(int $check = 0): bool
+    {
+        return ($this->getTestGalleryImagesLimit() > -1 && $check >= $this->getTestGalleryImagesLimit());
+    }
+
+    /**
+     * @return int
+     */
+    public function getTestGalleriesLimit(): int
+    {
+        return $this->testGalleriesLimit;
+    }
+
+    /**
+     * @param int $testGalleriesLimit
+     * @return AbstractParser
+     */
+    public function setTestGalleriesLimit(int $testGalleriesLimit = -1): AbstractParser
+    {
+        $this->testGalleriesLimit = $testGalleriesLimit;
+        return $this;
+    }
+
+    public function testGalleriesLimitReached(int $check = 0): bool
+    {
+        return ($this->getTestGalleriesLimit() > -1 && $check >= $this->getTestGalleriesLimit());
     }
 }
