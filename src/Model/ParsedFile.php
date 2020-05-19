@@ -142,6 +142,12 @@ class ParsedFile extends AbstractModel implements StatusInterface
     public $thumbnail;
 
     /**
+     * @var boolean
+     * @ModelVariable(type="boolean")
+     */
+    public $miniPreview = false;
+
+    /**
      * @var string
      * @ModelVariable()
      */
@@ -829,6 +835,24 @@ class ParsedFile extends AbstractModel implements StatusInterface
     {
         $this->previewFilePath = $previewFilePath;
 
+        return $this;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isMiniPreview(): bool
+    {
+        return $this->miniPreview;
+    }
+
+    /**
+     * @param bool $miniPreview
+     * @return ParsedFile
+     */
+    public function setMiniPreview(bool $miniPreview): ParsedFile
+    {
+        $this->miniPreview = $miniPreview;
         return $this;
     }
 }

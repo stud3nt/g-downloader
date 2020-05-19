@@ -38,10 +38,7 @@ export class ParserComponent implements OnInit {
 		if (!tiles || tiles.length === 0)
 			return;
 
-		let scrollValue = (tiles.item(0).clientHeight);
-
-		scrollValue += scrollValue;
-		scrollValue += 24;
+		let scrollValue = this.getScrollValue();
 
 		if (event.code === 'ArrowUp') { // UP
 			event.preventDefault();
@@ -51,6 +48,11 @@ export class ParserComponent implements OnInit {
 			window.scrollTo(0, (this.scrollY + scrollValue));
 		}
 	}
+
+	// scroll value
+	protected scrollValue: number = 0;
+	// single tile height
+	public tileHeight: number = 0;
 
 	// current parser name
 	protected parserName: string = '';
@@ -268,6 +270,29 @@ export class ParserComponent implements OnInit {
 	private createWebsocketListenerTimeout = null;
 	private websockedRequestRecursiveTimeout = null;
 
+    private getScrollValue(forceRecalculation: boolean = false): number {
+        if (this.scrollValue > 0 && !forceRecalculation)
+            return this.scrollValue
+
+        let tiles = document.getElementsByClassName('tile');
+
+        this.scrollValue = 0;
+
+        for (let tileKey = 0; tileKey < tiles.length; tileKey++) {
+            let tileHeight = (tiles.item(tileKey).clientHeight + 2); // real height + border
+
+            if (tileHeight > this.scrollValue) {
+                this.scrollValue = tileHeight;
+                this.tileHeight = tileHeight;
+            }
+        }
+
+        this.scrollValue += this.scrollValue;
+        this.scrollValue += 20;
+
+        return this.scrollValue;
+    }
+
 	/**
 	 * Sends data to parser API
 	 */
@@ -292,6 +317,7 @@ export class ParserComponent implements OnInit {
 
 		this.parserService.sendParserActionRequest(parserRequestCopy).subscribe((response : ParserRequest) => {
             this.parserRequestAction = false;
+            this.scrollValue = 0;
 
 			if (typeof response.currentNode !== 'undefined') {
 				this.parserRequest = response;

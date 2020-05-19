@@ -50,13 +50,4 @@ class AppHelper
             define('PUBLIC_DIR', __DIR__.$ds.'..'.$ds.'..'.$ds.'public');
         }
     }
-
-    /**
-     * @deprecated - temporary replacer for user entity;
-     * @return string
-     */
-    public static function getUserToken()
-    {
-        return 'xb466AkZ8TaDBBWJuYdsysm';
-    }
 }

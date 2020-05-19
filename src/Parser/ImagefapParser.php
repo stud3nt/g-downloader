@@ -45,19 +45,19 @@ class ImagefapParser extends AbstractParser
                 ->updateProgress(50, 'Loading from cache...')
                 ->send();
         } else {
-            $pagination = $parserRequest->pagination;
-            $urlParams = array_merge($parserRequest->sorting, [
-                'page' => ($pagination->currentPage + $pagination->pageShift)
+            $pagination = $parserRequest->getPagination();
+            $urlParams = array_merge($parserRequest->getSorting(), [
+                'page' => ($pagination->getCurrentPage() + $pagination->getPageShift())
             ]);
 
-            $parserRequest->currentNode
+            $parserRequest->getCurrentNode()
                 ->setUrl($this->mainBoardUrl.'profiles.php?'.http_build_query($urlParams))
                 ->setName('Users list', true)
                 ->setLabel('Users list');
 
             $dom = $this->loadDomFromUrl(
-                $parserRequest->currentNode->getUrl())
-            ;
+                $parserRequest->getCurrentNode()->getUrl()
+            );
 
             $parserRequest->getStatus()
                 ->updateProgress(20)
@@ -85,22 +85,21 @@ class ImagefapParser extends AbstractParser
                     $messageAnchor = $sendmail->find('a');
                     $image = $avatar->find('img')[0];
 
-                    if (!$anchor) {
+                    if (!$anchor)
                         continue;
-                    }
 
                     $ratio = trim(str_replace(['&lt;', '&gt;', 'fans'], ['', '', ''], $subscribers->text()));
                     $messageUrl = $messageAnchor->getAttribute('href');
                     $userId = (substr($messageUrl, (strpos($messageUrl, '%3fuid%3d') + 9)));
                     $username = str_replace('\'s profile', '', $image->getAttribute('alt'));
 
-                    $parserRequest->parsedNodes[] = ($node = new ParsedNode(ParserType::Imagefap, NodeLevel::BoardsList))
+                    $parserRequest->addParsedNode((new ParsedNode(ParserType::Imagefap, NodeLevel::BoardsList))
                         ->setName($username)
                         ->setIdentifier($userId)
                         ->setUrl($this->mainBoardUrl.substr($anchor->getAttribute('href'), 1))
                         ->setRating($ratio)
                         ->addThumbnail($image->getAttribute('src'))
-                    ;
+                    );
 
                     $parserRequest->getStatus()->executeSteppedProgressStep('load_owners_list');
                 }
@@ -108,7 +107,7 @@ class ImagefapParser extends AbstractParser
                 // extract pagination data
                 if ($paginationTag) {
                     $currentPage = (int)trim($paginationTag->find('b')[0]->text());
-                    $parserRequest->pagination->numericPagination($currentPage, 10, -1);
+                    $parserRequest->getPagination()->setNumericPagination($currentPage, 10, -1);
                 }
 
                 $parserRequest->getStatus()->endSteppedProgress('load_owners_list');
@@ -234,12 +233,11 @@ class ImagefapParser extends AbstractParser
                 ->updateProgress(50, 'Loading from cache...')
                 ->send();
         } else {
-            $boardUrl = $parserRequest->currentNode->getUrl();
-            $pagination = $parserRequest->pagination;
+            $boardUrl = $parserRequest->getCurrentNode()->getUrl();
+            $pagination = $parserRequest->getPagination();
 
-            if ($pagination->active) {
-                $boardUrl .= '&page='.($pagination->currentPage + $pagination->pageShift);
-            }
+            if ($pagination->getActive())
+                $boardUrl .= '&page='.($pagination->getCurrentPage() + $pagination->getPageShift());
 
             $html = $this->loadHtmlFromUrl($boardUrl);
             $dom = new \DOMDocument('1.0', 'UTF-8');
@@ -277,16 +275,15 @@ class ImagefapParser extends AbstractParser
                             }
                         }
 
-                        $parserRequest->pagination->numericPagination($currentPage, $totalPages, -1);
+                        $parserRequest->getPagination()->setNumericPagination($currentPage, $totalPages, -1);
                     }
 
                     break;
                 }
             }
 
-            if (!$paginationTag) {
-                $parserRequest->pagination->disable();
-            }
+            if (!$paginationTag)
+                $parserRequest->getPagination()->disable();
 
             if ($tableRows && $tableCells) {
                 $mode = null;
@@ -397,11 +394,11 @@ class ImagefapParser extends AbstractParser
                 ->updateProgress(50, 'Loading from cache...')
                 ->send();
         } else {
-            $parserRequest->files = [];
-            $parserRequest->pagination->disable();
+            $parserRequest->setFiles([]);
+            $parserRequest->getPagination()->disable();
 
-            $galleryUrl = $parserRequest->currentNode->url;
-            $imagesNo = $parserRequest->currentNode->imagesNo;
+            $galleryUrl = $parserRequest->getCurrentNode()->getUrl();
+            $imagesNo = $parserRequest->getCurrentNode()->getImagesNo();
             $pagesNo = ceil($imagesNo / 24);
 
             $parserRequest->getStatus()
@@ -480,8 +477,10 @@ class ImagefapParser extends AbstractParser
                     }
                 }
 
-
                 $parserRequest->getStatus()->executeSteppedProgressStep('get_gallery_data');
+
+                if ($this->testGalleryImagesLimitReached(count($parserRequest->getFiles())))
+                    break;
             }
 
             $parserRequest->getStatus()->endSteppedProgress('get_gallery_data');
@@ -544,6 +543,9 @@ class ImagefapParser extends AbstractParser
         $previewFilePath = $this->previewTempDir.$parsedFile->getFullFilename();
         $previewWebPath = $this->previewTempFolder.$parsedFile->getFullFilename();
 
+        $parsedFile->setLocalUrl($previewWebPath);
+        $parsedFile->setPreviewFilePath($previewFilePath);
+
         $this->downloadFile($parsedFile->getFileUrl(), $previewFilePath, function($resource, $downloadSize, $downloaded, $uploadSize, $uploaded) use ($parsedFile) {
             if ($downloadSize > 0) {
                 $redis = (new RedisFactory())->initializeConnection();
@@ -551,8 +553,6 @@ class ImagefapParser extends AbstractParser
                 $redis->expire($parsedFile->getRedisPreviewKey(), 10);
             }
         });
-
-        $parsedFile->setLocalUrl($previewWebPath);
 
         return $parsedFile;
     }

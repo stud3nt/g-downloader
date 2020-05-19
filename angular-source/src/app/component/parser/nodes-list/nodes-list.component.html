@@ -5,6 +5,7 @@
           [routerLink]="lockTiles ? currentUrl : routerService.generateNodeUrl(node)"
           [ngClass]="getNodeClass(node)"
           *ngFor="let node of _parserRequest.parsedNodes"
+          [ngStyle]="{'height':(this._tileHeight > 0 ? this._tileHeight+'px' : 'auto')}"
         >
             <div class="tile-header">
                 <div class="tile-header-icon-container">

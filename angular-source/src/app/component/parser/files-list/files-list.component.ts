@@ -22,6 +22,11 @@ export class FilesListComponent implements OnInit, OnDestroy {
 
 	@Input() parserRequest: ParserRequest;
 
+    @Input() set tileHeight(tileHeight: number) {
+        if (tileHeight > 0)
+            this._tileHeight = tileHeight;
+    }
+
 	public FileStatus = FileStatus;
 	public FileType = FileType;
 
@@ -30,6 +35,8 @@ export class FilesListComponent implements OnInit, OnDestroy {
 	public _previewModalId: string = 'file-preview-modal';
 	public _previewModalTitle: string = '';
 	public _previewModalContent: string = '';
+
+	public _tileHeight: number = 0;
 
 	public _previewFile: ParsedFile = null;
 	public _previewClass: string = 'files-preview';

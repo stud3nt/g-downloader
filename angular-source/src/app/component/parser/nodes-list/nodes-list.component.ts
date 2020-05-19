@@ -15,6 +15,8 @@ export class NodesListComponent implements OnInit {
 
 	public _parserRequest: ParserRequest = null;
 
+	public _tileHeight: number = 0;
+
 	public NodeStatus = NodeStatus;
 	public NodeLevel = NodeLevel;
 
@@ -27,6 +29,12 @@ export class NodesListComponent implements OnInit {
 	public currentUrl: string = '';
 
 	public _ratingStars = [];
+
+	@Input() set tileHeight(tileHeight: number) {
+	    console.log(tileHeight);
+	    if (tileHeight > 0)
+	        this._tileHeight = tileHeight;
+    }
 
     @Input() set parserRequest(parserRequest: ParserRequest) {
         this._parserRequest = parserRequest;

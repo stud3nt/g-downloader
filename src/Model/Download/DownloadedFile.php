@@ -11,6 +11,7 @@ use App\Model\AbstractModel;
 use App\Utils\FilesHelper;
 use App\Utils\StringHelper;
 use Gregwar\Image\Image;
+use Intervention\Image\Exception\NotReadableException;
 use Jenssegers\ImageHash\Hash;
 use Jenssegers\ImageHash\ImageHash;
 use Jenssegers\ImageHash\Implementations\DifferenceHash;
@@ -100,11 +101,13 @@ class DownloadedFile extends AbstractModel
     public function analyseTempFiles(): self
     {
         if ($this->getFileEntity()->getType() === FileType::Image) {
-            $hash = $this->imageHasher->hash($this->tempFilePath);
-
-            $this->getFileEntity()
-                ->setBinHash($hash->toBits())
-                ->setHexHash($hash->toHex());
+            try {
+                $hash = $this->imageHasher->hash($this->tempFilePath);
+                $this->getFileEntity()->setBinHash($hash->toBits())
+                    ->setHexHash($hash->toHex());
+            } catch (NotReadableException $ex) {
+                $this->getFileEntity()->setCorrupted(true); // file corrupted or invalid format.
+            }
         } elseif ($this->getFileEntity()->getType() === FileType::Video) {
             $data = $this->id3->analyze($this->tempFilePath);
 
@@ -317,7 +320,7 @@ class DownloadedFile extends AbstractModel
                 $controlFilesize = filesize($this->operationalFilePath);
                 $controlCompressionRatio = (($testWidth * $testHeight) / $controlFilesize);
 
-                if (($controlCompressionRatio > $minCompressionRatio && $controlFilesize < $maxFileSize) || $i === 8) {
+                if (($controlCompressionRatio > $minCompressionRatio && $controlFilesize < $maxFileSize) || ($controlFilesize < ($maxFileSize * 0.8)) || $i === 8) {
                     copy($this->operationalFilePath, $this->tempFilePath);
                     unlink($this->operationalFilePath);
                     break;

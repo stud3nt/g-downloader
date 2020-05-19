@@ -73,7 +73,12 @@ class BasicParserTestcase extends WebTestCase
         $this->loadParser($this->parserName);
         $this->prepareRequestModel();
 
-        $this->assertTrue(true);
+        $this->parserRequest->setParsedNodes([]);
+        $this->parserRequest->setIgnoreCache(true);
+
+        $this->parserObject->getOwnersList($this->parserRequest);
+
+        $this->assertGreaterThan(0, count($this->parserRequest->getParsedNodes()));
     }
 
     public function testGetBoardsListData()
@@ -84,6 +89,7 @@ class BasicParserTestcase extends WebTestCase
         // test with cache enabled;
         $this->parserRequest->setParsedNodes([]);
         $this->parserRequest->setIgnoreCache(false);
+
         $this->parserObject->getBoardsListData($this->parserRequest);
 
         $this->assertGreaterThan(0, count($this->parserRequest->getParsedNodes()));
@@ -91,6 +97,7 @@ class BasicParserTestcase extends WebTestCase
         // test with cache disabled;
         $this->parserRequest->setParsedNodes([]);
         $this->parserRequest->setIgnoreCache(true);
+
         $this->parserObject->getBoardsListData($this->parserRequest);
 
         $this->assertGreaterThan(0, count($this->parserRequest->getParsedNodes()));
@@ -101,14 +108,16 @@ class BasicParserTestcase extends WebTestCase
         $this->loadParser($this->parserName);
         $this->prepareRequestModel();
 
-        $this->parserRequest->setParsedNodes([]);
-        $this->parserRequest->setIgnoreCache(true);
-        $this->parserRequest->getCurrentNode()->setUrl($this->boardUrl);
+        $this->parserRequest->setParsedNodes([])
+            ->setIgnoreCache(true)
+            ->getCurrentNode()
+            ->setUrl($this->boardUrl);
 
         $this->parserObject->setTestGalleriesLimit(5);
         $this->parserObject->getBoardData($this->parserRequest);
 
         $this->assertTrue((count($this->parserRequest->getParsedNodes()) > 0 || count($this->parserRequest->getFiles()) > 0));
+
     }
 
     public function testGetGalleryData()
@@ -116,9 +125,10 @@ class BasicParserTestcase extends WebTestCase
         $this->loadParser($this->parserName);
         $this->prepareRequestModel();
 
-        $this->parserRequest->setParsedNodes([]);
-        $this->parserRequest->setIgnoreCache(false);
-        $this->parserRequest->getCurrentNode()->setUrl($this->boardUrl);
+        $this->parserRequest->setParsedNodes([])
+            ->setIgnoreCache(false)
+            ->getCurrentNode()
+            ->setUrl($this->boardUrl);
 
         $this->parserObject->setTestGalleriesLimit(5);
         $this->parserObject->getBoardData($this->parserRequest);
@@ -127,8 +137,10 @@ class BasicParserTestcase extends WebTestCase
 
         $galleryUrl = $this->parserRequest->getParsedNodes()[1]->getUrl();
 
-        $this->parserRequest->getCurrentNode()->setUrl($galleryUrl);
-        $this->parserRequest->setIgnoreCache(true);
+        $this->parserRequest->setIgnoreCache(true)
+            ->getCurrentNode()
+            ->setUrl($galleryUrl)
+            ->setImagesNo(40);
 
         $this->parserObject->setTestGalleryImagesLimit(6);
         $this->parserObject->getGalleryData($this->parserRequest);
@@ -202,18 +214,6 @@ class BasicParserTestcase extends WebTestCase
                 $this->assertIsString($subfolder);
             else
                 $this->assertEmpty($subfolder);
-
-            /*
-            $fileSettings = $randomFile->getFinalNodeSettings();
-
-            if (($fileSettings && ($fileSettings->getFolderType() !== FolderType::CustomText
-                    ||
-                $fileSettings->getFolderType() === FolderType::CustomText && !empty($fileSettings->getFolderType()))
-            ) || $randomFile->getParentNode()) {
-
-            } else {
-                $this->assertEmpty($subfolder);
-            }*/
         }
     }
 

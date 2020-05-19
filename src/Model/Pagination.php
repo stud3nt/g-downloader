@@ -110,7 +110,7 @@ class Pagination extends AbstractModel
      * @param int $pageShift
      * @return $this
      */
-    public function numericPagination(int $currentPage = 1, int $totalPages = 1, int $pageShift = 0) : Pagination
+    public function setNumericPagination(int $currentPage = 1, int $totalPages = 1, int $pageShift = 0) : Pagination
     {
         $this->reset();
 

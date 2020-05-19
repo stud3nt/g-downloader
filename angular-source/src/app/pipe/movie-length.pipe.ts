@@ -4,10 +4,18 @@ import {Pipe, PipeTransform} from "@angular/core";
 export class MovieLengthPipe implements PipeTransform {
 
 	transform(seconds: number = 0): any {
-		let hours = (Math.ceil(seconds / 60)).toString().padStart(2, '0');
-		let minutes = ((seconds % 60)).toString().padStart(2, '0');
+	    let h = Math.floor(seconds / 60 / 60);
+	    let m = Math.floor(seconds / 60);
+	    let s = (seconds % 60);
 
-		return hours+':'+minutes;
+		let hourString = (h).toString().padStart(2, '0');
+		let minuteString = (m).toString().padStart(2, '0');
+		let secondString = (s).toString().padStart(2, '0');
+
+
+		return (h > 0)
+            ? hourString+':'+minuteString+':'+secondString
+            : minuteString+':'+secondString;
 	}
 
 }

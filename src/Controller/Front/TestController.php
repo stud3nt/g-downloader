@@ -91,13 +91,13 @@ class TestController extends \App\Controller\Api\Base\Controller
                 switch ($test) {
                     case 'load_users': // load users
                         $parserRequest->sorting = ['page' => 0];
-                        $parser->loadOwnersList($parserRequest);
+                        $parser->getOwnersList($parserRequest);
                         break;
 
                     case 'load_users_boards': // load user boards
                         $parserRequest->name = 'Jasondayfap83';
                         $parserRequest->identifier = 1481674;
-                        $parser->getBoardData($parserRequest);
+                        $parser->getBoardsListData($parserRequest);
                         break;
 
                     case 'load_board_galleries': // load board galleries

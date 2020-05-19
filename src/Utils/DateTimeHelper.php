@@ -17,7 +17,9 @@ class DateTimeHelper
 
         if ($difference->m > 0) {
             $differenceText .= (empty($differenceText) ? '' : ' ').$difference->m.' month'.(($difference->m > 1) ? 's' : '');
-            return $differenceText;
+
+            if ($difference->y > 0)
+                return $differenceText;
         }
 
         if ($difference->d > 0) {

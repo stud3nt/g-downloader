@@ -3,10 +3,7 @@
 namespace App\Traits;
 
 use App\Annotation\ModelVariable;
-use App\Enum\StatusCode;
-use App\Model\ParserRequest;
 use App\Model\Status;
-use App\Utils\CacheHelper;
 use Ratchet\ConnectionInterface;
 
 trait PageLoaderTrait

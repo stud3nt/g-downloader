@@ -235,6 +235,18 @@ class RedditParser extends AbstractParser
         foreach ($child->preview->images as $image) {
             $clearFileUrl = strtok($image->source->url, '?');
 
+            $parsedFile = (new ParsedFile(ParserType::Reddit))
+                ->setName(FilesHelper::getFileName($clearFileUrl))
+                ->setTitle($child->title)
+                ->setDescription($child->title)
+                ->setExtension(FilesHelper::getFileExtension($clearFileUrl))
+                ->setIdentifier($image->id)
+                ->setWidth($image->source->width)
+                ->setHeight($image->source->height)
+                ->setSize(0)
+                ->setRating($child->ups)
+            ;
+
             if ($child->domain === 'gfycat.com') {
                 $fileType = FileType::Video;
                 $mimeType = 'video/mp4';
@@ -248,26 +260,22 @@ class RedditParser extends AbstractParser
                 ->setTimestamp($child->created_utc)
                 ->setTimezone(new \DateTimeZone('Europe/Warsaw'));
 
-            $parsedFile = (new ParsedFile(ParserType::Reddit, $fileType))
-                ->setName(FilesHelper::getFileName($clearFileUrl))
-                ->setTitle($child->title)
-                ->setDescription($child->title)
-                ->setExtension(FilesHelper::getFileExtension($clearFileUrl))
-                ->setIdentifier($image->id)
-                ->setWidth($image->source->width)
-                ->setHeight($image->source->height)
-                ->setMimeType($mimeType)
-                ->setSize(0)
+            $parsedFile->setMimeType($mimeType)
                 ->setUploadedAt($createdAt)
-                ->setRating($child->ups)
-            ;
+                ->setType($fileType);
 
             if ($child->domain === 'gfycat.com') {
-                $parsedFile->setUrl($child->url);
-                $parsedFile->setIcon(FileIcon::Gfycat);
+                $parsedFile->setUrl($child->url)
+                    ->setIcon(FileIcon::Gfycat);
+
+                if (property_exists($child->preview, 'reddit_video_preview')) {
+                    $parsedFile->setLength(
+                        $child->preview->reddit_video_preview->duration
+                    );
+                }
             } else {
-                $parsedFile->setUrl($image->source->url);
-                $parsedFile->setFileUrl($image->source->url);
+                $parsedFile->setUrl($image->source->url)
+                    ->setFileUrl($image->source->url);
 
                 if (strpos($parsedFile->getUrl(), 'https://i.imgur.com')) {
                     $parsedFile->setIcon(FileIcon::Imgur);

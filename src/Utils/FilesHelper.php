@@ -204,25 +204,26 @@ class FilesHelper
     public static function fileNameFromString(?string $rawString, bool $allowSlashes = false, int $maxLength = 80): ?string
     {
         $rawString = str_replace( // replacing ABSOLUTELY forbidden characters;
-            ['*', '?', '<', '>', '|', '”', '&#039;'],
-            ['_', 'q', '[', ']', '-', '\'\'', '\'\''],
+            ['*', '?', '<', '>', '|', '”', '&#039;', '&quot;', '’'],
+            ['_', 'q', '[', ']', '-', '\'\'', '\'\'', '\'\'', '\'\''],
             $rawString
         );
 
+        $rawString = preg_replace('/[^(\x20-\x7F)]*/', '', $rawString);
+        $rawString = preg_replace('!\s+\s+!', ' - ', $rawString);
+
         if ($allowSlashes)
-            $pattern = '/[^a-zA-Z0-9\\\/\-\.\,\_\(\)\;\]\[\'\"\&\%\#\@\! ]/';
+            $pattern = '/[^a-zA-Z0-9\/\.\,\-\_\(\)\;\]\[\'\&\%\#\@\!\s+]/';
         else
-            $pattern = '/[^a-zA-Z0-9\-\.\,\_\(\)\;\]\[\'\’\&\%\#\@\! ]/';
+            $pattern = '/[^a-zA-Z0-9\-\.\,\-\_\(\)\;\]\[\'\&\%\#\@\!\s+]/';
 
         $string = preg_replace($pattern, '-', $rawString);
 
-        return substr($string, 0, $maxLength);
+        return trim(substr($string, 0, $maxLength));
     }
 
     public static function folderNameFromString(string $rawString): string
     {
-        $rawString = htmlspecialchars_decode($rawString);
-
-        return preg_replace('/[^a-zA-Z0-9\-\_\.\, ]/', '_', $rawString);
+        return self::fileNameFromString($rawString, true);
     }
 }

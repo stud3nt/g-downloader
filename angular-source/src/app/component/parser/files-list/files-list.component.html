@@ -10,7 +10,13 @@
 
 <div *ngIf="parserRequest.files !== null && parserRequest.files.length > 0">
     <div class="grid-container grid-200">
-        <article id="{{ file.identifier }}" [ngClass]="determineFileClass(file)" *ngFor="let file of parserRequest.files" (click)="toggleFileQueue(file)">
+        <article
+            id="{{ file.identifier }}"
+            [ngClass]="determineFileClass(file)"
+            *ngFor="let file of parserRequest.files"
+            (click)="toggleFileQueue(file)"
+            [ngStyle]="{'height':(this._tileHeight > 0 ? this._tileHeight+'px' : 'auto')}"
+        >
             <div class="tile-header">
                 <div class="tile-header-icon-container">
                     <div class="tile-header-icon bg-primary icon-big" *ngIf="file.type === FileType.Video">
