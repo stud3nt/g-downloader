@@ -38,7 +38,9 @@ class GfycatParser
         /** @var HtmlNode $video */
         /** @var HtmlNode $source */
         foreach ($videos as $video) {
-            if ($video->getAttribute('class') === 'video media') {
+            $videoClass = $video->getAttribute('class');
+
+            if (in_array($videoClass, ['video media', 'video'])) {
                 $sources = $video->find('source');
 
                 foreach ($sources as $source) {

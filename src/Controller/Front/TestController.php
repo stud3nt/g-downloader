@@ -16,11 +16,29 @@ use App\Service\ParserService;
 use App\Utils\StringHelper;
 use Doctrine\Common\Util\Debug;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Stopwatch\Stopwatch;
 
 class TestController extends \App\Controller\Api\Base\Controller
 {
+    /**
+     * @Route("/test/403_page", name="app_test_403")
+     */
+    public function sample403page(Request $request)
+    {
+        throw new AccessDeniedHttpException();
+    }
+
+    /**
+     * @Route("/test/404_page", name="app_test_404")
+     */
+    public function sample404page(Request $request)
+    {
+        throw new NotFoundHttpException();
+    }
+
     /**
      * @Route("/tester/parser_test/{parser}/{test}", name="app_parser_test_function")
      * @throws \ReflectionException

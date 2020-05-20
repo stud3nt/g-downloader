@@ -53,22 +53,18 @@ class StringHelper
      * @param bool $clearNewLines
      * @return string
      */
-    public static function clearString(string $string, bool $clearWhitespaces = true, bool $clearNewLines = true) : string
+    public static function clearString(string $string, bool $clearWhitespaces = true, bool $clearNewLines = true): ?string
     {
         $convertedString = htmlentities($string, null, 'utf-8');
-        $pattenInputs = [];
+        $htmlEntitiesPattern = '/[\&]{1}[a-zA-Z]{2,7}[\;]{1}/';
 
-        if ($clearNewLines) {
-            $pattenInputs[] = 's*';
-        }
+        if (preg_match($htmlEntitiesPattern, $convertedString))
+            $convertedString = preg_replace($htmlEntitiesPattern, '-', $convertedString);
 
-        if ($clearWhitespaces) {
-            $pattenInputs[] = '&nbsp;';
-        }
+        $convertedString = preg_replace('/[^(\x20-\x7F)]*/', '', $convertedString);
+        $convertedString = trim(preg_replace('/\s+!/', ' ', $convertedString));
 
-        $pattern = '/\\'.implode('|', $pattenInputs).'/m';
-
-        return preg_replace($pattern, '', $convertedString);
+        return (string)trim($convertedString);
     }
 
     /**
@@ -118,6 +114,6 @@ class StringHelper
      */
     public static function basicCharactersOnly(string $inputString): string
     {
-        return preg_replace('/[^a-z0-9\-]/', '-', mb_strtolower($inputString));
+        return preg_replace('/[^a-zA-Z0-9\-]/', '-', mb_strtolower($inputString));
     }
 }

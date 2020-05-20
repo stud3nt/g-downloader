@@ -15,7 +15,26 @@ class StringHelperTest extends KernelTestCase
     ];
 
     private $clearStringTestCases = [
+        'my first drop ♥️ 18' => 'my first drop - 18'
+    ];
 
+    private $camelCaseNames = [
+        [
+            'camelCase' => 'functionName',
+            'underscore' => 'function_name'
+        ],
+        [
+            'camelCase' => 'loremIpsumDolorEmit',
+            'underscore' => 'lorem_ipsum_dolor_emit'
+        ],
+        [
+            'camelCase' => 'testFunctionName1',
+            'underscore' => 'test_function_name_1'
+        ],
+        [
+            'camelCase' => 'function1',
+            'underscore' => 'function_1'
+        ],
     ];
 
     public function testRandomString()
@@ -41,6 +60,47 @@ class StringHelperTest extends KernelTestCase
 
     public function testClearString()
     {
+        foreach ($this->clearStringTestCases as $inputString => $expectedOutputString) {
+            $clearedString = StringHelper::clearString($inputString);
 
+            $this->assertIsString($clearedString);
+            $this->assertEquals($expectedOutputString, $clearedString);
+        }
+    }
+
+    public function testCamelCaseToUnderscore()
+    {
+        foreach ($this->camelCaseNames as $cc) {
+            $testedCamelCase = $cc['camelCase'];
+            $expectedUnderscore = $cc['underscore'];
+            $testedUnderscore = StringHelper::camelCaseToUnderscore($testedCamelCase);
+
+            $this->assertIsString($testedUnderscore);
+            $this->assertEquals($expectedUnderscore, $testedUnderscore);
+        }
+    }
+
+    public function testUnderscoreToCamelCase()
+    {
+        foreach ($this->camelCaseNames as $cc) {
+            $testedUnderscore = $cc['underscore'];
+            $expectedCamelCase = $cc['camelCase'];
+
+            $testedCamelCase = StringHelper::underscoreToCamelCase($testedUnderscore);
+
+            $this->assertIsString($testedCamelCase);
+            $this->assertEquals($expectedCamelCase, $testedCamelCase);
+        }
+    }
+
+    public function testBasicCharactersStringOnly()
+    {
+        $inputString = 'Mik#ołajczyk ^ to były oficer z rozwiąza=nych w 2006 r Wojskowych#$ Służb Info$rmacyjnych';
+        $expectedString = 'mik-o--ajczyk---to-by--y-oficer-z-rozwi--za-nych-w-2006-r-wojskowych---s--u--b-info-rmacyjnych';
+
+        $testString = StringHelper::basicCharactersOnly($inputString);
+
+        $this->assertIsString($inputString);
+        $this->assertEquals($expectedString, $testString);
     }
 }

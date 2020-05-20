@@ -7,7 +7,7 @@ class UrlHelper
     public static function prepareLocalUrl(string $filePath) : string
     {
         $url = str_replace(AppHelper::getPublicDir(), '', $filePath);
-        $url = str_replace('\\', '/', $url);
+        $url = str_replace('\\', DIRECTORY_SEPARATOR, $url);
 
         return $url;
     }

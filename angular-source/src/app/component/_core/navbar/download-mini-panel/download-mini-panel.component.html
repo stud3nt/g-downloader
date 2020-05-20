@@ -2,7 +2,7 @@
     <a [ngClass]="mainButtonClass" data-toggle="dropdown">
         <i class="fa fa-fw fa-cloud-download"></i>
         <span class="label label-info">
-            {{ downloader.queuedFilesCount > 999 ? '999+' : downloader.queuedFilesCount }}
+            {{ downloader.queuedFilesCount }}
         </span>
     </a>
     <ul [ngClass]="miniPanelClass" (click)="$event.stopPropagation()">
