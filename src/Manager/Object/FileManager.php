@@ -145,7 +145,7 @@ class FileManager extends EntityManager
      */
     public function getQueuedFilesData(): \stdClass
     {
-        $queuedData = $this->repository->getFilesCountData('queued');
+        $queuedData = $this->repository->getFilesCountData(FileStatus::Queued);
 
         $queuedObject = new \stdClass();
         $queuedObject->count = $queuedData['totalCount'];
@@ -162,7 +162,7 @@ class FileManager extends EntityManager
      */
     public function getDownloadedFilesData(): \stdClass
     {
-        $downloadedData = $this->repository->getFilesCountData('downloaded');
+        $downloadedData = $this->repository->getFilesCountData(FileStatus::Downloaded);
 
         $downloadedObject = new \stdClass();
         $downloadedObject->count = $downloadedData['totalCount'];
@@ -225,12 +225,12 @@ class FileManager extends EntityManager
      * @throws NonUniqueResultException
      * @throws \ReflectionException
      */
-    public function setStatusData(User $user): arraytes
+    public function setStatusData(User $user): ?array
     {
         $redisKey = 'downloader_data_'.$user->getApiToken();
 
-        $queuedCounts = $this->repository->getFilesCountData('queued');
-        $downloadedCounts = $this->repository->getFilesCountData('downloaded');
+        $queuedCounts = $this->repository->getFilesCountData(FileStatus::Queued);
+        $downloadedCounts = $this->repository->getFilesCountData(FileStatus::Downloaded);
 
         $downloadStatus = (new DownloadStatus())
             ->setQueuedFilesCount($queuedCounts['totalCount'])

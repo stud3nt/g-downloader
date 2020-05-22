@@ -47,7 +47,7 @@ class ParserController extends Controller
         $nodeManager->completeCurrentNodeDataFromDb($parserRequest);
 
         try {
-            $parserService->executeRequestedAction($parserRequest, $this->getUser());
+            $parserService->executeRequestedAction($parserRequest, $this->getCurrentUser());
 
             $nodeManager->completeParsedNodes($parserRequest); // complete nodes statuses from db data;
             $fileManager->completeParsedStatuses($parserRequest); // complete files statuses from db data;

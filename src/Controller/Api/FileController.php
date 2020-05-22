@@ -39,7 +39,7 @@ class FileController extends Controller
         $parsedFile = (new ParsedFileFactory())->buildFromRequestData(
             $request->request->all()
         );
-        $user = $this->getUser();
+        $user = $this->getCurrentUser();
 
         $parser = $parserService->loadParser(
             $parsedFile->getParser(),
@@ -106,7 +106,7 @@ class FileController extends Controller
             )
         );
 
-        if ($downloadService->downloadFileByEntity($fileEntity, $this->getUser()))
+        if ($downloadService->downloadFileByEntity($fileEntity, $this->getCurrentUser()))
             $parsedFile->addStatus(FileStatus::Downloaded);
 
         $fileManager->save($fileEntity);
@@ -129,7 +129,7 @@ class FileController extends Controller
         );
         $parser = $parserService->loadParser(
             $parsedFile->getParser(),
-            $this->getUser()
+            $this->getCurrentUser()
         );
         $parser->getFilePreview($parsedFile);
 

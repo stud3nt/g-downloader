@@ -6,7 +6,6 @@ use App\Converter\ModelConverter;
 use App\Enum\ParserType;
 use App\Enum\SettingsGroup;
 use App\Enum\SettingsLevel;
-use App\Enum\SettingsType;
 use App\Manager\SettingsManager;
 use App\Model\SettingsModel;
 use App\Utils\AppHelper;

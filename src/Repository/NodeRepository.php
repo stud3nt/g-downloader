@@ -20,7 +20,13 @@ class NodeRepository extends ServiceEntityRepository
         parent::__construct($registry, Node::class);
     }
 
-    public function findOneByParsedNode(ParsedNode $node)
+    /**
+     * Founds one node by ParsedNode model
+     *
+     * @param ParsedNode $node
+     * @return Node|null
+     */
+    public function findOneByParsedNode(ParsedNode $node): ?Node
     {
         return $this->findOneBy([
             'parser' => $node->getParser(),
@@ -29,6 +35,13 @@ class NodeRepository extends ServiceEntityRepository
         ]);
     }
 
+    /**
+     * Found nodes by parent node or node identifiers
+     *
+     * @param Node|null $parent
+     * @param array $identifiers
+     * @return Node[]
+     */
     public function findByParentAndIdentifiers(Node $parent = null, array $identifiers = [])
     {
         return $this->findBy([

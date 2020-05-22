@@ -19,10 +19,8 @@ class FilesHelperTest extends KernelTestCase
         '(f) Early 30\'s. 5ft8 56kgs. I\'m always for feedback 😊' => '(f) Early 30\'s. 5ft8 56kgs. I\'m always for feedback'
     ];
 
-    public function __construct($name = null, array $data = [], $dataName = '')
+    public function setUp()
     {
-        parent::__construct($name, $data, $dataName);
-
         $this->testImageFile = AppHelper::getDataDir().'test'.DIRECTORY_SEPARATOR.'BwjLv73.jpg';
         $this->testVideoFile = AppHelper::getDataDir().'test'.DIRECTORY_SEPARATOR.'HN3pfFPs37hxghO5FkDVshUx3e4WeCznMwn7Y3XWuWU.mp4';
     }

@@ -26,7 +26,7 @@ class SecurityController extends Controller
     public function loginStatus() : JsonResponse
     {
         /** @var User $user */
-        if ($user = $this->getUser()) {
+        if ($user = $this->getCurrentUser()) {
             $userArray = $this->get(EntityConverter::class)->convert($user);
 
             return $this->jsonSuccess($userArray);
@@ -94,7 +94,7 @@ class SecurityController extends Controller
         try {
             /** @var User $user */
             $manager = $this->get(UserManager::class);
-            $user = $this->getUser();
+            $user = $this->getCurrentUser();
 
             $user->setApiToken(StringHelper::randomStr(64));
             $manager->save($user);

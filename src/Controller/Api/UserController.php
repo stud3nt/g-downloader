@@ -18,7 +18,7 @@ class UserController extends Controller
      */
     public function pageProgress(): JsonResponse
     {
-        $fileCache = new FileCache($this->getUser());
+        $fileCache = new FileCache($this->getCurrentUser());
 
         return $this->jsonSuccess(
             $fileCache->get(CacheType::PageLoaderStatus, [
@@ -34,7 +34,7 @@ class UserController extends Controller
      */
     public function pageProgressReset(): JsonResponse
     {
-        $fileCache = new FileCache($this->getUser());
+        $fileCache = new FileCache($this->getCurrentUser());
         $fileCache->remove(CacheType::PageLoaderStatus);
 
         return $this->jsonSuccess();
@@ -46,7 +46,7 @@ class UserController extends Controller
      */
     public function clearCache(): JsonResponse
     {
-        $fileCache = new FileCache($this->getUser());
+        $fileCache = new FileCache($this->getCurrentUser());
         $fileCache->removeAll();
 
         return $this->jsonSuccess();

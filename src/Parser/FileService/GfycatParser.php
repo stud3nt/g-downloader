@@ -51,6 +51,11 @@ class GfycatParser
                         $parsedFile->setExtension('mp4');
                         break;
                     }
+
+                    if (strpos($src, 'giant.gfycat.com') && strpos($src, '.webm')) {
+                        $parsedFile->setFileUrl($src);
+                        $parsedFile->setExtension('webm');
+                    }
                 }
             }
         }

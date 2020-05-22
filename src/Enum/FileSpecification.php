@@ -54,6 +54,12 @@ abstract class FileSpecification extends Enum
         'type' => FileType::Video
     ];
 
+    const icon = [
+        'mimeType' => 'image/x-icon',
+        'extension' => 'ico',
+        'type' => FileType::Image
+    ];
+
     public static function getData()
     {
         return [

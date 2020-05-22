@@ -3,8 +3,8 @@
 namespace App\Repository;
 
 use App\Entity\Parser\File;
+use App\Enum\FileStatus;
 use App\Enum\FileType;
-use App\Model\ParsedFile;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\AbstractQuery;
 use Doctrine\ORM\QueryBuilder;
@@ -17,7 +17,7 @@ class FileRepository extends ServiceEntityRepository
         parent::__construct($registry, File::class);
     }
 
-    public function getQb()
+    public function getQb(): QueryBuilder
     {
         return $this->_em->createQueryBuilder()
             ->select('f')
@@ -33,11 +33,11 @@ class FileRepository extends ServiceEntityRepository
             ->getQuery()->getArrayResult();
     }
 
-    public function getFilesCountData(string $type = 'queued'): array
+    public function getFilesCountData(string $status = FileStatus::Queued): array
     {
         $filters = [
             'select' => 'COUNT(f.id) as totalCount, SUM(f.size) as totalSize',
-            'type' => $type
+            'status' => $status
         ];
 
         return $this->getFilesQb($filters)
@@ -48,9 +48,39 @@ class FileRepository extends ServiceEntityRepository
 
     public function getQueuedFiles(int $limit = 10, bool $asArray = true): array
     {
-        return $this->getFilesQb(['type' => 'queued', 'limit' => $limit])
+        return $this->getFilesQb(['status' => FileStatus::Queued, 'limit' => $limit])
             ->getQuery()
             ->getResult(($asArray) ? AbstractQuery::HYDRATE_ARRAY : AbstractQuery::HYDRATE_OBJECT);
+    }
+
+    /**
+     * Selects random file entities from database;
+     *
+     * @param string $parser
+     * @param int $limit
+     * @param bool $imagesOnly
+     * @return array
+     */
+    public function getRandomFiles(string $parser = null, int $limit = 1, bool $imagesOnly = true): array
+    {
+        $qb = $this->_em->createQueryBuilder()
+            ->select('f')
+            ->from('App:Parser\File', 'f')
+            ->addSelect('RAND() as HIDDEN rand');
+
+        if ($parser)
+            $qb->where('f.parser = :parser')->setParameter('parser', $parser);
+
+        if ($imagesOnly)
+            $qb->andWhere('f.type = :imageType')
+                ->andWhere('f.binHash IS NOT NULL')
+                ->setParameter('imageType', FileType::Image);
+
+        return $qb
+            ->orderBy('rand')
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
     }
 
     /**
@@ -64,7 +94,7 @@ class FileRepository extends ServiceEntityRepository
         $qb = $this->_em->createQueryBuilder()
             ->select('f')
             ->from('App:Parser\File', 'f')
-            ->where('f.downloadedAt IS NOT NULL');
+            ->andWhere('f.downloadedAt IS NOT NULL');
 
         $minDimensionRatio = round(($file->getDimensionRatio() * 0.98), 2);
         $maxDimensionRatio = round(($file->getDimensionRatio() * 1.02), 2);
@@ -93,6 +123,9 @@ class FileRepository extends ServiceEntityRepository
                     ->setParameter('videoLength', $file->getLength());
         }
 
+        if ($file->getId())
+            $qb->andWhere('f.id <> :fileID')->setParameter('fileID', $file->getId());
+
         return $qb->getQuery()->getResult();
     }
 
@@ -110,52 +143,6 @@ class FileRepository extends ServiceEntityRepository
     }
 
     /**
-     * Selects random file entities from database;
-     *
-     * @param string $parser
-     * @param int $limit
-     * @param bool $imagesOnly
-     * @return array
-     */
-    public function getRandomFiles(string $parser, int $limit = 1, bool $imagesOnly = true): array
-    {
-        $qb = $this->_em->createQueryBuilder()
-            ->select('f')
-            ->from('App:Parser\File', 'f')
-            ->addSelect('RAND() as HIDDEN rand')
-            ->where('f.parser = :parser')
-            ->setParameter('parser', $parser);
-
-        if ($imagesOnly)
-            $qb->andWhere('f.type = :imageType')
-                ->setParameter('imageType', FileType::Image);
-
-        return $qb
-            ->orderBy('rand')
-            ->setMaxResults($limit)
-            ->getQuery()
-            ->getResult();
-    }
-
-    /**
-     * @param array $filters
-     * @return int
-     * @throws \Doctrine\ORM\NonUniqueResultException
-     */
-    public function countFiles(array $filters = []): int
-    {
-        $qb = $this->_em->createQueryBuilder();
-
-        $filters['select'] = 'COUNT(f.id) as files_count';
-
-        $this->completeQueryFromFilters($qb, $filters);
-
-        $counter = $qb->getQuery()->getOneOrNullResult(AbstractQuery::HYDRATE_ARRAY);
-
-        return $counter['files_count'];
-    }
-
-    /**
      * Completes filters array with empty values if specified keys does not exists;
      *
      * @param array $filters
@@ -164,7 +151,7 @@ class FileRepository extends ServiceEntityRepository
     private function completeFilters(array &$filters): array
     {
         $filters = array_merge([
-            'type' => null,
+            'status' => null,
             'createdFrom' => null,
             'createdTo' => null,
             'downloadedFrom' => null,
@@ -197,13 +184,13 @@ class FileRepository extends ServiceEntityRepository
 
         $qb->from("App:Parser\File", 'f');
 
-        if ($filters['type']) {
-            switch ($filters['type']) {
-                case 'queued':
+        if ($filters['status']) {
+            switch ($filters['status']) {
+                case FileStatus::Queued:
                     $qb->where('f.downloadedAt IS NULL AND f.duplicateOf IS NULL');
                     break;
 
-                case 'downloaded':
+                case FileStatus::Downloaded:
                     $qb->where('f.downloadedAt IS NOT NULL AND f.duplicateOf IS NULL');
                     break;
             }

@@ -59,7 +59,7 @@ class TestController extends \App\Controller\Api\Base\Controller
         );
 
         $parsedFile = new ParsedFile();
-        $parser = $parserService->loadParser($parserName, $this->getUser());
+        $parser = $parserService->loadParser($parserName, $this->getCurrentUser());
 
         switch ($parserName) {
             case ParserType::Boards4chan:
@@ -197,7 +197,7 @@ class TestController extends \App\Controller\Api\Base\Controller
     public function downloadSingleFileTest(Request $request, DownloadService $downloadService, FileManager $fileManager)
     {
         $file = $fileManager->get($request->get('fileId'));
-        $file = $downloadService->downloadFileByEntity($file, $this->getUser());
+        $file = $downloadService->downloadFileByEntity($file, $this->getCurrentUser());
 
         Debug::dump($file);
 
@@ -238,7 +238,7 @@ class TestController extends \App\Controller\Api\Base\Controller
     public function cacheTest(Request $request)
     {
         $test = $request->get('test');
-        $user = $this->getUser();
+        $user = $this->getCurrentUser();
         $cache = new FileCache($user);
 
         switch ($test) {

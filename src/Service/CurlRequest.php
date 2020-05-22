@@ -2,7 +2,6 @@
 
 namespace App\Service;
 
-use App\Factory\RedisFactory;
 use App\Utils\AppHelper;
 use Symfony\Component\Filesystem\Filesystem;
 
@@ -15,7 +14,7 @@ class CurlRequest
 
     protected $cookieFile;
 
-    public function init(string $pageName, string $userToken = null) : self
+    public function init(string $pageName, string $userToken = null): self
     {
         if ($userToken) {
             $ds = DIRECTORY_SEPARATOR;

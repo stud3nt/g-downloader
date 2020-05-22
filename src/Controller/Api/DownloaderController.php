@@ -32,7 +32,7 @@ class DownloaderController extends Controller
     public function downloadProcess(DownloadService $downloadService, FileManager $fileManager, DownloadManager $downloadManager): JsonResponse
     {
         $filesForDownload = $fileManager->getQueuedFiles(6);
-        $user = $this->getUser();
+        $user = $this->getCurrentUser();
 
         if ($filesForDownload) {
             $downloadManager->createStatusData($user, DownloaderStatus::Downloading, $filesForDownload);
@@ -62,7 +62,7 @@ class DownloaderController extends Controller
     public function stopDownload(DownloadManager $downloadManager): JsonResponse
     {
         try {
-            $downloadManager->createStatusData($this->getUser(), DownloaderStatus::Idle, []);
+            $downloadManager->createStatusData($this->getCurrentUser(), DownloaderStatus::Idle, []);
 
             return $this->jsonSuccess();
         } catch (\Exception $ex) {

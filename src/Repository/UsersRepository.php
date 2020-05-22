@@ -15,10 +15,10 @@ class UsersRepository extends ServiceEntityRepository
 
     /**
      * @param string $usernameEmail
-     * @return mixed
+     * @return User
      * @throws \Doctrine\ORM\NonUniqueResultException
      */
-    public function findOneByUsernameOrEmail(string $usernameEmail)
+    public function findOneByUsernameOrEmail(string $usernameEmail): ?User
     {
         return $this->_em->createQueryBuilder()
             ->select('u')

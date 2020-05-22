@@ -2,9 +2,9 @@
 
 namespace App\Controller\Front\Base;
 
-use Symfony\Bundle\FrameworkBundle\Controller\Controller as BaseController;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
-class Controller extends BaseController
+class Controller extends AbstractController
 {
     protected function validateUser() : bool
     {
