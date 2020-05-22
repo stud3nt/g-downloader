@@ -14,7 +14,6 @@ security:
             security: false
         main:
             anonymous: true
-
             form_login:
                 provider: user_provider
 

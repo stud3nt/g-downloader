@@ -45,6 +45,9 @@ class IndexControllerTest extends BasicControllerTestcase
         }
     }
 
+    /**
+     * Favicon load test;
+     */
     public function testFavicon()
     {
         $this->client->request('GET', $this->router->generate('app_favicon'));
