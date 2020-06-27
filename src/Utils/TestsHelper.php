@@ -4,7 +4,10 @@ namespace App\Utils;
 
 class TestsHelper
 {
-    public static $testUsername = 'stud3nt';
+    public static $testAdminUser = [
+        'username' => 'stud3nt',
+        'password' => '1234567890'
+    ];
 
     public static function generateNodeArray(): array
     {

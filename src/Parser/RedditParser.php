@@ -291,6 +291,9 @@ class RedditParser extends AbstractParser
                 }
             }
 
+            if ($parsedFile->getLength() > 0 && $parsedFile->getLength() < 15)
+                continue;
+
             $parsedFiles[] = $parsedFile;
         }
 

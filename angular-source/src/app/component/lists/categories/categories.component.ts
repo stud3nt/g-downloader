@@ -54,7 +54,7 @@ export class CategoriesComponent implements OnInit {
 
 	public deleteCategory(category: Category) {
 		this._operatedCategory = category;
-		this.modalService.selectModal(this._editModalId).open();
+		this.modalService.selectModal(this._deleteModalId).open();
 	}
 
 	public delete() {

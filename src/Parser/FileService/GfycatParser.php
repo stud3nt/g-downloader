@@ -46,13 +46,13 @@ class GfycatParser
                 foreach ($sources as $source) {
                     $src = $source->getAttribute('src');
 
-                    if (strpos($src, 'thumbs.gfycat.com') && strpos($src, '.mp4')) {
+                    if (strpos($src, 'thumbs.gfycat.com') && strpos($src, '.webm')) {
                         $parsedFile->setFileUrl($src);
-                        $parsedFile->setExtension('mp4');
+                        $parsedFile->setExtension('webm');
                         break;
                     }
-
-                    if (strpos($src, 'giant.gfycat.com') && strpos($src, '.webm')) {
+                    
+                    if (strpos($src, '.webm')) {
                         $parsedFile->setFileUrl($src);
                         $parsedFile->setExtension('webm');
                     }

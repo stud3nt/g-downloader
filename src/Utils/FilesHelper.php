@@ -4,7 +4,6 @@ namespace App\Utils;
 
 use App\Enum\FileSpecification;
 use App\Enum\FileType;
-use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpFoundation\File\File;
 
 class FilesHelper

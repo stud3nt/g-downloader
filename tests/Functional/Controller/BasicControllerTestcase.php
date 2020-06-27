@@ -3,11 +3,13 @@
 namespace App\Tests\Functional\Controller;
 
 use App\Manager\UserManager;
+use App\Utils\TestsHelper;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\BrowserKit\Cookie;
 use Symfony\Component\Routing\RouterInterface;
 use Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken;
+use Symfony\Component\HttpFoundation\Response;
 
 class BasicControllerTestcase extends WebTestCase
 {
@@ -25,6 +27,47 @@ class BasicControllerTestcase extends WebTestCase
         $this->containerInstance = self::bootKernel()->getContainer();
         $this->router = $this->containerInstance->get('router');
         $this->client = $this->containerInstance->get('test.client');
+    }
+
+    protected function executeAnonymousUserRequest(KernelBrowser &$client, string $route, string $method = 'GET', bool $expectLoginRedirection = true): ?Response
+    {
+        $this->logoutUserFromClient($client);
+
+        // execute request as anonymous user;
+        $this->client->request($method, $this->router->generate($route));
+
+        $response = $this->client->getResponse();
+
+        $this->responseAssertions($response, $expectLoginRedirection);
+
+        return $response;
+    }
+
+    protected function executeAdminUserRequest(KernelBrowser &$client, string $route, string $method = 'GET', bool $expectLoginRedirection = false): ?Response
+    {
+        $this->loginUserIntoClient(TestsHelper::$testAdminUser['username'], $client);
+
+        // execute request as logged admin user
+        $this->client->request($method, $this->router->generate($route));
+
+        $response = $this->client->getResponse();
+
+        $this->responseAssertions($response, $expectLoginRedirection);
+
+        return $this->client->getResponse();
+    }
+
+    protected function responseAssertions(Response $response, bool $expectLoginRedirection = false)
+    {
+        if ($expectLoginRedirection) {
+            $this->assertFalse($response->isSuccessful());
+            $this->assertEquals(302, $response->getStatusCode());
+            $this->assertContains('login', $response->headers->get('location'));
+        } else {
+            $this->assertTrue($response->isSuccessful());
+            $this->assertEquals(200, $response->getStatusCode());
+            $this->assertIsString($response->getContent());
+        }
     }
 
     protected function loginUserIntoClient(string $username, KernelBrowser &$client): KernelBrowser

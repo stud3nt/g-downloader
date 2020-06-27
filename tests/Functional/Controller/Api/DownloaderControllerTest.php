@@ -10,20 +10,11 @@ class DownloaderControllerTest extends BasicControllerTestcase
 {
     public function testDownloadProcess()
     {
-        // execute request as anonymous user;
-        $this->client->request('GET', $this->router->generate('api_start_downloader_process'));
-
-        $response = $this->client->getResponse();
-
-        $this->assertFalse($response->isSuccessful());
-        $this->assertEquals(302, $response->getStatusCode());
-        $this->assertContains('login', $response->headers->get('location'));
+        $this->executeAnonymousUserRequest($this->client, 'api_start_downloader_process');
 
         // execute request as logged user;
         $this->loginUserIntoClient('stud3nt', $this->client);
-        $this->client->request('GET', $this->router->generate('api_start_downloader_process'), [
-            'auth' => ['stud3nt' => '1234567890']
-        ]);
+        $this->client->request('GET', $this->router->generate('api_start_downloader_process'));
 
         $response = $this->client->getResponse();
 
@@ -55,22 +46,11 @@ class DownloaderControllerTest extends BasicControllerTestcase
      */
     public function testStopDownload()
     {
-        $this->assertTrue(true);
-
-        // execute request as anonymous user;
-        $this->client->request('GET', $this->router->generate('api_stop_downloader_process'));
-
-        $response = $this->client->getResponse();
-
-        $this->assertFalse($response->isSuccessful());
-        $this->assertEquals(302, $response->getStatusCode());
-        $this->assertContains('login', $response->headers->get('location'));
+        $this->executeAnonymousUserRequest($this->client, 'api_stop_downloader_process');
 
         // execute request as logged user;
         $this->loginUserIntoClient('stud3nt', $this->client);
-        $this->client->request('GET', $this->router->generate('api_start_downloader_process'), [
-            'auth' => ['stud3nt' => '1234567890']
-        ]);
+        $this->client->request('GET', $this->router->generate('api_start_downloader_process'));
 
         $response = $this->client->getResponse();
 
