@@ -34,6 +34,7 @@ import { ParserToolbarComponent } from "./component/parser/parser-toolbar/parser
 import { TagsComponent } from './component/lists/tags/tags.component';
 import { CategoriesComponent } from './component/lists/categories/categories.component';
 import {NodeSettingsComponent} from "./component/parser/parser-toolbar/node-settings/node-settings.component";
+import { WebsocketConsoleComponent } from './component/_core/navbar/websocket-console/websocket-console.component';
 
 @NgModule({
 	declarations: [
@@ -66,7 +67,8 @@ import {NodeSettingsComponent} from "./component/parser/parser-toolbar/node-sett
 		DownloaderComponent,
 		ParserToolbarComponent,
 		TagsComponent,
-		CategoriesComponent
+		CategoriesComponent,
+		WebsocketConsoleComponent
 	],
 	imports: [
 		BrowserModule,

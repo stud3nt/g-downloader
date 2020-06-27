@@ -1,4 +1,4 @@
-app-download-mini-panel {
+app-download-mini-panel, app-websocket-console {
     .dropdown-menu {
         &.visible {
             display: block !important;
@@ -81,6 +81,24 @@ app-download-mini-panel {
             position: absolute;
             right: 0;
             left: auto;
+
+            &.console-dropdown-menu {
+                width: 480px;
+                min-height: 500px;
+
+                .console-body {
+                    width: 100%;
+
+                    div {
+                        width: 100%;
+
+                        iframe {
+                            width: 100%;
+                            border: 0;
+                        }
+                    }
+                }
+            }
 
             ul.files-list {
                 list-style-type: none;

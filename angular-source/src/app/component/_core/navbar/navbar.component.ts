@@ -30,10 +30,6 @@ export class NavbarComponent implements OnInit {
 		})
 	}
 
-	public openWebsocketConsole(): void {
-		this.websocketService.openWebsocketConsole();
-	}
-
 	toggleNavbar() {
 		return true;
 	}
