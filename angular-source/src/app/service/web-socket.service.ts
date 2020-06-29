@@ -66,4 +66,16 @@ export class WebSocketService {
 		});
 	}
 
+    /**
+     * Opens websocket console window;
+     */
+    public openWebsocketConsole(): void {
+        let console = window.open(
+            this.routerService.generateUrl('app_websocket_server', null, this.configService.websocketUrl),
+            'Websocket status console',
+            'width=300px,height=800px,resizable=yes,toolbar=no,top=30,left=100'
+        );
+        console.blur();
+    }
+
 }

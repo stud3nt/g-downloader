@@ -33,8 +33,7 @@ import { DownloaderComponent } from './component/tools/downloader/downloader.com
 import { ParserToolbarComponent } from "./component/parser/parser-toolbar/parser-toolbar.component";
 import { TagsComponent } from './component/lists/tags/tags.component';
 import { CategoriesComponent } from './component/lists/categories/categories.component';
-import {NodeSettingsComponent} from "./component/parser/parser-toolbar/node-settings/node-settings.component";
-import { WebsocketConsoleComponent } from './component/_core/navbar/websocket-console/websocket-console.component';
+import { NodeSettingsComponent } from "./component/parser/parser-toolbar/node-settings/node-settings.component";
 
 @NgModule({
 	declarations: [
@@ -67,8 +66,7 @@ import { WebsocketConsoleComponent } from './component/_core/navbar/websocket-co
 		DownloaderComponent,
 		ParserToolbarComponent,
 		TagsComponent,
-		CategoriesComponent,
-		WebsocketConsoleComponent
+		CategoriesComponent
 	],
 	imports: [
 		BrowserModule,

@@ -34,4 +34,8 @@ export class NavbarComponent implements OnInit {
 		return true;
 	}
 
+    public openWebsocketConsole(): void {
+        this.websocketService.openWebsocketConsole();
+    }
+
 }
