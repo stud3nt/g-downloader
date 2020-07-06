@@ -102,7 +102,7 @@ class RedditParser extends AbstractParser
      * @throws \Psr\Cache\InvalidArgumentException
      * @throws \Exception
      */
-    public function getBoardsListData(ParserRequest &$parserRequest) : ParserRequest
+    public function getBoardsListData(ParserRequest $parserRequest) : ParserRequest
     {
         $parserRequest->clearParsedData();
 
@@ -169,7 +169,7 @@ class RedditParser extends AbstractParser
      * @throws \ReflectionException
      * @throws \Exception
      */
-    public function getBoardData(ParserRequest &$parserRequest) : ParserRequest
+    public function getBoardData(ParserRequest $parserRequest) : ParserRequest
     {
         $parserRequest->clearParsedData()
             ->getPagination()
@@ -300,7 +300,7 @@ class RedditParser extends AbstractParser
         return $parsedFiles;
     }
 
-    public function getGalleryData(ParserRequest &$parserRequest = null) : ParserRequest
+    public function getGalleryData(ParserRequest $parserRequest = null) : ParserRequest
     {
         return $parserRequest;
     }
@@ -314,7 +314,7 @@ class RedditParser extends AbstractParser
      * @throws \PHPHtmlParser\Exceptions\NotLoadedException
      * @throws \PHPHtmlParser\Exceptions\StrictException
      */
-    public function getFileData(ParsedFile &$parsedFile) : ParsedFile
+    public function getFileData(ParsedFile $parsedFile) : ParsedFile
     {
         if ($parsedFile->getType() === FileType::Video) {
             if (GfycatParser::isGfycat($parsedFile))
@@ -344,7 +344,7 @@ class RedditParser extends AbstractParser
      * @throws \PHPHtmlParser\Exceptions\NotLoadedException
      * @throws \PHPHtmlParser\Exceptions\StrictException
      */
-    public function getFilePreview(ParsedFile &$parsedFile) : ParsedFile
+    public function getFilePreview(ParsedFile $parsedFile) : ParsedFile
     {
         $this->clearFileCache();
 

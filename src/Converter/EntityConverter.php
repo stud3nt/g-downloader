@@ -69,7 +69,7 @@ class EntityConverter extends BaseConverter
      * @return mixed
      * @throws \ReflectionException
      */
-    public function convert(&$entity, string $modelConvertName = null)
+    public function convert($entity, string $modelConvertName = null)
     {
         if (is_array($entity) || $entity instanceof \Doctrine\Common\Collections\ArrayCollection || $entity instanceof \Doctrine\ORM\PersistentCollection) {
             $arrayEntity = [];

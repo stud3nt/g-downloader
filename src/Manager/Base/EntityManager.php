@@ -38,9 +38,27 @@ abstract class EntityManager
         return $this->repository->findOneBy($criteria);
     }
 
+    public function getRandom(array $criteria = [])
+    {
+        $qb = $this->repository->createQueryBuilder('r')
+            ->select('r')
+            ->addSelect('RAND() as HIDDEN ord');
+
+        if ($criteria) {
+            foreach ($criteria as $cKey => $cValue) {
+                $qb->andWhere('r.'.$cKey.' = :kk_'.$cKey)->setParameter('kk_'.$cKey, $cValue);
+            }
+        }
+
+        return $qb->orderBy('ord', 'DESC')
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
+
     public function getCount()
     {
-        return $this->repository->getCount();
+        return $this->repository->count([]);
     }
 
     public function remove($entity)

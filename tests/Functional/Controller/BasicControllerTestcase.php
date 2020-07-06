@@ -2,8 +2,12 @@
 
 namespace App\Tests\Functional\Controller;
 
+use App\Entity\User;
+use App\Manager\Object\NodeManager;
 use App\Manager\UserManager;
+use App\Utils\StringHelper;
 use App\Utils\TestsHelper;
+use Doctrine\ORM\EntityManager;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\BrowserKit\Cookie;
@@ -29,51 +33,66 @@ class BasicControllerTestcase extends WebTestCase
         $this->client = $this->containerInstance->get('test.client');
     }
 
-    protected function executeAnonymousUserRequest(KernelBrowser &$client, string $route, string $method = 'GET', bool $expectLoginRedirection = true): ?Response
+    protected function executeAnonymousUserRequest(
+        KernelBrowser $client,
+        string $route,
+        string $method = 'GET',
+        bool $expectLoginRedirection = true
+    ): ?Response
     {
         $this->logoutUserFromClient($client);
 
         // execute request as anonymous user;
         $this->client->request($method, $this->router->generate($route));
 
-        $response = $this->client->getResponse();
-
-        $this->responseAssertions($response, $expectLoginRedirection);
-
-        return $response;
+        return $this->clientResponseAssertions($client, $expectLoginRedirection);
     }
 
-    protected function executeAdminUserRequest(KernelBrowser &$client, string $route, string $method = 'GET', bool $expectLoginRedirection = false): ?Response
+    protected function executeAdminUserRequest(
+        KernelBrowser $client,
+        string $route,
+        string $method = 'GET',
+        bool $expectLoginRedirection = false,
+        array $requestData = []
+    ): ?Response
     {
         $this->loginUserIntoClient(TestsHelper::$testAdminUser['username'], $client);
 
         // execute request as logged admin user
-        $this->client->request($method, $this->router->generate($route));
+        $this->client->request($method, $this->router->generate($route), $requestData);
 
-        $response = $this->client->getResponse();
-
-        $this->responseAssertions($response, $expectLoginRedirection);
-
-        return $this->client->getResponse();
+        return $this->clientResponseAssertions($client, $expectLoginRedirection);
     }
 
-    protected function responseAssertions(Response $response, bool $expectLoginRedirection = false)
+    protected function clientResponseAssertions(KernelBrowser $client, bool $expectLoginRedirection = false): ?Response
     {
+        $response = $client->getResponse();
+        $url = $client->getRequest()->getRequestUri();
+
         if ($expectLoginRedirection) {
-            $this->assertFalse($response->isSuccessful());
+            $this->assertFalse($response->isSuccessful(), 'URL: '.$url.' is not successfull :(');
             $this->assertEquals(302, $response->getStatusCode());
             $this->assertContains('login', $response->headers->get('location'));
         } else {
-            $this->assertTrue($response->isSuccessful());
+            $this->assertTrue($response->isSuccessful(), 'URL: '.$url.' is not successfull :(');
             $this->assertEquals(200, $response->getStatusCode());
             $this->assertIsString($response->getContent());
         }
+
+        return $response;
     }
 
-    protected function loginUserIntoClient(string $username, KernelBrowser &$client): KernelBrowser
+    protected function responseToObjectAssertions(Response $response): \stdClass
+    {
+        $this->assertTrue(StringHelper::isJson($response->getContent()));
+
+        return json_decode($response->getContent());
+    }
+
+    protected function loginUserIntoClient(string $username, KernelBrowser $client): KernelBrowser
     {
         $session = $this->containerInstance->get('session');
-        $user = $this->containerInstance->get(UserManager::class)->getByUsernameOrEmail($username);
+        $user = $this->loadUserByUsername($username);
 
         $firewallName = 'main';
         $firewallContext = 'main';
@@ -93,5 +112,20 @@ class BasicControllerTestcase extends WebTestCase
         $client->getCookieJar()->clear();
 
         return $client;
+    }
+
+    protected function loadUserByUsername(string $username): ?User
+    {
+        return $this->containerInstance->get(UserManager::class)->getByUsernameOrEmail($username);
+    }
+
+    protected function loadEntityManager(): EntityManager
+    {
+        return $this->containerInstance->get('doctrine.orm.entity_manager');
+    }
+
+    protected function loadNodeManager(): NodeManager
+    {
+        return $this->containerInstance->get(NodeManager::class);
     }
 }

@@ -33,7 +33,7 @@ class Boards4chanParser extends AbstractParser
      * @throws \ReflectionException
      * @throws \Exception
      */
-    public function getBoardsListData(ParserRequest &$parserRequest) : ParserRequest
+    public function getBoardsListData(ParserRequest $parserRequest) : ParserRequest
     {
         $parserRequest->clearParsedData();
 
@@ -93,7 +93,7 @@ class Boards4chanParser extends AbstractParser
      * @throws \ReflectionException
      * @throws \Exception
      */
-    public function getBoardData(ParserRequest &$parserRequest) : ParserRequest
+    public function getBoardData(ParserRequest $parserRequest) : ParserRequest
     {
         $parserRequest->clearParsedData();
         $parserRequest->getPagination()->disable();
@@ -214,7 +214,7 @@ class Boards4chanParser extends AbstractParser
      * @throws \ReflectionException
      * @throws \Exception
      */
-    public function getGalleryData(ParserRequest &$parserRequest) : ParserRequest
+    public function getGalleryData(ParserRequest $parserRequest) : ParserRequest
     {
         $parserRequest->clearParsedNodes()
             ->getCurrentNode()
@@ -309,7 +309,7 @@ class Boards4chanParser extends AbstractParser
         return $parserRequest;
     }
 
-    public function getFilePreview(ParsedFile &$parsedFile) : ParsedFile
+    public function getFilePreview(ParsedFile $parsedFile) : ParsedFile
     {
         $this->clearFileCache();
 

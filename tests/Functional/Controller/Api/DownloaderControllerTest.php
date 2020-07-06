@@ -31,8 +31,7 @@ class DownloaderControllerTest extends BasicControllerTestcase
         if ($filesForDownload) {
             /** @var File $file */
             foreach ($filesForDownload as $file) {
-                $file->setDownloadedAt(null)
-                    ->setDuplicateOf(null);
+                $file->setDownloadedAt(null)->setDuplicateOf(null);
                 $fileManager->save($file);
             }
         }

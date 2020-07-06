@@ -34,7 +34,7 @@ class ImagefapParser extends AbstractParser
      * @throws \ReflectionException
      * @throws \Exception
      */
-    public function getOwnersList(ParserRequest &$parserRequest) : ParserRequest
+    public function getOwnersList(ParserRequest $parserRequest) : ParserRequest
     {
         $cachedRequest = $this->getParserCache($parserRequest);
 
@@ -126,7 +126,7 @@ class ImagefapParser extends AbstractParser
      * @throws \Exception
      * @throws \ReflectionException
      */
-    public function getBoardsListData(ParserRequest &$parserRequest) : ParserRequest
+    public function getBoardsListData(ParserRequest $parserRequest) : ParserRequest
     {
         $parserRequest->getCurrentNode()->setAllowCategory(true)->setAllowTags(true);
 
@@ -219,7 +219,7 @@ class ImagefapParser extends AbstractParser
      * @throws \ReflectionException
      * @throws \Exception
      */
-    public function getBoardData(ParserRequest &$parserRequest) : ParserRequest
+    public function getBoardData(ParserRequest $parserRequest) : ParserRequest
     {
         $parserRequest->getCurrentNode()->setAllowCategory(true)->setAllowTags(true);
 
@@ -383,7 +383,7 @@ class ImagefapParser extends AbstractParser
      * @throws \ReflectionException
      * @throws \Exception
      */
-    public function getGalleryData(ParserRequest &$parserRequest) : ParserRequest
+    public function getGalleryData(ParserRequest $parserRequest) : ParserRequest
     {
         $cachedRequest = $this->getParserCache($parserRequest);
 
@@ -500,7 +500,7 @@ class ImagefapParser extends AbstractParser
      * @return ParserRequest
      * @throws \ReflectionException
      */
-    public function getFileData(ParsedFile &$parsedFile) : ParsedFile
+    public function getFileData(ParsedFile $parsedFile) : ParsedFile
     {
         $html1 = $this->loadHtmlFromUrl($parsedFile->getUrl());
         $html2 = substr($html1, strpos($html1, '<script type="application/ld+json">') + 35);
@@ -532,7 +532,7 @@ class ImagefapParser extends AbstractParser
      * @return ParsedFile
      * @throws \ReflectionException
      */
-    public function getFilePreview(ParsedFile &$parsedFile) : ParsedFile
+    public function getFilePreview(ParsedFile $parsedFile) : ParsedFile
     {
         $this->clearFileCache();
 

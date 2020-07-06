@@ -12,7 +12,6 @@ use App\Manager\Base\EntityManager;
 use App\Manager\Object\FileManager;
 use App\Model\Download\DownloadStatus;
 use App\Model\ParsedFile;
-use App\Model\Status;
 use App\Repository\FileRepository;
 use App\Utils\FilesHelper;
 

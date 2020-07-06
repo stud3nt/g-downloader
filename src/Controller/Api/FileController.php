@@ -36,15 +36,10 @@ class FileController extends Controller
      */
     public function toggleFileQueue(Request $request, ParserService $parserService, NodeManager $nodeManager, DownloadManager $downloadManager, FileManager $fileManager): JsonResponse
     {
-        $parsedFile = (new ParsedFileFactory())->buildFromRequestData(
-            $request->request->all()
-        );
+        $parsedFile = (new ParsedFileFactory())->buildFromRequestData($request->request->all());
         $user = $this->getCurrentUser();
 
-        $parser = $parserService->loadParser(
-            $parsedFile->getParser(),
-            $user
-        );
+        $parser = $parserService->loadParser($parsedFile->getParser(), $user);
         $parser->getFileData($parsedFile);
 
         if ($queuedFile = $fileManager->getFileEntityByParsedFile($parsedFile)) { // file exists => removing...

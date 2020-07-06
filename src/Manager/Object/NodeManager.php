@@ -15,7 +15,6 @@ use App\Model\ParsedNodeSettings;
 use App\Model\ParserRequest;
 use App\Repository\NodeRepository;
 use App\Utils\StringHelper;
-use Doctrine\Common\Util\Debug;
 use Doctrine\Persistence\ObjectManager;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use ReflectionException;
@@ -248,9 +247,10 @@ class NodeManager extends EntityManager
     /**
      * Updates node in database. If node does'nt exists - creates them;
      *
-     * @param array $nodeData
+     * @param ParsedNode $parsedNode
+     * @param bool $updateNodeData
      * @return ParsedNode
-     * @throws \ReflectionException
+     * @throws ReflectionException
      */
     public function updateNodeInDatabase(ParsedNode $parsedNode, bool $updateNodeData = true): ParsedNode
     {

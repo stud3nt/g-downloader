@@ -31,7 +31,6 @@ export class NodesListComponent implements OnInit {
 	public _ratingStars = [];
 
 	@Input() set tileHeight(tileHeight: number) {
-	    console.log(tileHeight);
 	    if (tileHeight > 0)
 	        this._tileHeight = tileHeight;
     }

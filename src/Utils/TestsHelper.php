@@ -2,11 +2,51 @@
 
 namespace App\Utils;
 
+use App\Enum\ParserType;
+use App\Enum\StatusCode;
+
 class TestsHelper
 {
     public static $testAdminUser = [
         'username' => 'stud3nt',
         'password' => '1234567890'
+    ];
+
+    public static $sampleParserFiles = [
+        [
+            'parser' => ParserType::HentaiFoundry,
+            'fileUrl' => 'https://pictures.hentai-foundry.com/0/0formant0/805018/0formant0-805018-The_Watchers_part_of_The_Trial.jpg',
+            'identifier' => '805018',
+            'description' => "TEST IMAGE - ".ParserType::Reddit,
+            'name' => '0formant0-805018-The_Watchers_part_of_The_Trial',
+            'thumbnail' => 'https://thumbs.hentai-foundry.com/thumb.php?pid=805018&size=350',
+            'url' => 'http://www.hentai-foundry.com/pictures/user/0formant0/805018/The-Watchers-part-of-The-Trial',
+            'parentNode' => [
+                'id' => 713
+            ]
+        ],
+        [
+            'parser' => ParserType::Reddit,
+            'fileUrl' => 'https://preview.redd.it/hgo298b4ux551.jpg?auto=webp&s=7e52902d0b0b5b7587688525f24b578334817745',
+            'identifier' => '3zuCb_fuYhpn0y-2IpKyy5VQjC3FGRJKCdB47KiMmLQ',
+            'name' => 'hgo298b4ux551',
+            'thumbnail' => 'https://preview.redd.it/hgo298b4ux551.jpg?width=216&crop=smart&auto=webp&s=a24cbd62ab01d528370e4af13f3405af8e5dcaaf',
+            'url' => 'https://preview.redd.it/hgo298b4ux551.jpg?auto=webp&s=7e52902d0b0b5b7587688525f24b578334817745',
+            'parentNode' => [
+                'id' => 889
+            ]
+        ],
+        [
+            'parser' => ParserType::Imagefap,
+            'fileUrl' => 'https://cdn.imagefap.com/images/full/68/182/1820504028.jpg?end=1593768627&secure=02798946142165c2c3022',
+            'identifier' => '1820504028',
+            'name' => '1820504028',
+            'thumbnail' => 'https://cdn.imagefap.com/images/thumb/68/182/1820504028.jpg?end=1593771771&secure=03cfbf8ff03e9563cd0be',
+            'url' => 'https://www.imagefap.com/photo/1820504028/?pgid=&gid=8855629&page=0&idx=15',
+            'parentNode' => [
+                'id' => 321
+            ]
+        ]
     ];
 
     public static function generateNodeArray(): array
@@ -116,7 +156,7 @@ class TestsHelper
         return $tagsArray;
     }
 
-    public static function generateParserRequestArray()
+    public static function generateParserRequestArray(): array
     {
         return [
             'actionName' => null,
@@ -151,6 +191,51 @@ class TestsHelper
             'tags' => self::generateTagsArray([
                 'BAD DRAGON', 'BBW', 'BIG TITS', 'HAIRY', 'CHUBBY', 'CURVY', 'DILDO', 'FAT', 'FIT', 'GANGBANG'
             ])
+        ];
+    }
+
+    public static function generateStatusArray(): array
+    {
+        return [
+            "code" => StatusCode::NoEffect,
+            "progress" => 0,
+            "description" => null
+        ];
+    }
+
+    public static function generateFileArray(): array
+    {
+        return [
+            "description" => "TEST IMAGE - ".ParserType::Reddit,
+            "dimensionRatio" => 0.75,
+            "domain" => null,
+            "downloadedAt" => null,
+            "extension" => "jpg",
+            "fileUrl" => "",
+            "height" => 3264,
+            "htmlPreview" => null,
+            "icon" => "reddit",
+            "identifier" => "3zuCb_fuYhpn0y-2IpKyy5VQjC3FGRJKCdB47KiMmLQ",
+            "length" => 0,
+            "localThumbnail" => null,
+            "localUrl" => null,
+            "mimeType" => "image/jpeg",
+            "miniPreview" => false,
+            "name" => "hgo298b4ux551",
+            "parentNode" => [],
+            "parser" => ParserType::Reddit,
+            "previewUrl" => null,
+            "rating" => 48,
+            "size" => 405005,
+            "status" => self::generateStatusArray(),
+            "statuses" => ["waiting", "queued"],
+            "textSize" => "0 B",
+            "thumbnail" => "https://preview.redd.it/hgo298b4ux551.jpg?width=216&crop=smart&auto=webp&s=a24cbd62ab01d528370e4af13f3405af8e5dcaaf",
+            "title" => "TEST IMAGE - ".ParserType::Reddit,
+            "type" => "image",
+            "uploadedAt" => "2 days ago",
+            "url" => "https://preview.redd.it/hgo298b4ux551.jpg?auto=webp&s=7e52902d0b0b5b7587688525f24b578334817745",
+            "width" => 2448
         ];
     }
 }

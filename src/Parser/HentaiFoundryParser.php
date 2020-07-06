@@ -36,7 +36,7 @@ class HentaiFoundryParser extends AbstractParser implements ParserInterface
      * @throws \ReflectionException
      * @throws \Exception
      */
-    public function getBoardData(ParserRequest &$parserRequest) : ParserRequest
+    public function getBoardData(ParserRequest $parserRequest) : ParserRequest
     {
         $cachedRequest = $this->getParserCache($parserRequest);
 
@@ -152,7 +152,7 @@ class HentaiFoundryParser extends AbstractParser implements ParserInterface
      * @return ParserRequest
      * @throws \Exception
      */
-    public function getGalleryData(ParserRequest &$parserRequest) : ParserRequest
+    public function getGalleryData(ParserRequest $parserRequest) : ParserRequest
     {
         $cachedRequest = $this->getParserCache($parserRequest);
 
@@ -300,7 +300,7 @@ class HentaiFoundryParser extends AbstractParser implements ParserInterface
      * @return array
      * @throws \Exception
      */
-    public function getFileData(ParsedFile &$parsedFile) : ParsedFile
+    public function getFileData(ParsedFile $parsedFile) : ParsedFile
     {
         $this->login($parsedFile);
 
@@ -340,7 +340,7 @@ class HentaiFoundryParser extends AbstractParser implements ParserInterface
      * @return ParserRequest
      * @throws \Exception
      */
-    public function getFilePreview(ParsedFile &$parsedFile) : ParsedFile
+    public function getFilePreview(ParsedFile $parsedFile) : ParsedFile
     {
         $this->login($parsedFile);
         $this->clearFileCache();

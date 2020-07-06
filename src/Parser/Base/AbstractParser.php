@@ -115,7 +115,7 @@ class AbstractParser implements ParserInterface
      * @param ParserRequest $parserRequest
      * @return ParserRequest
      */
-    public function getOwnersList(ParserRequest &$parserRequest): ParserRequest
+    public function getOwnersList(ParserRequest $parserRequest): ParserRequest
     {
         return $parserRequest;
     }
@@ -126,7 +126,7 @@ class AbstractParser implements ParserInterface
      * @param ParserRequest $parserRequest
      * @return ParserRequest
      */
-    public function getBoardsListData(ParserRequest &$parserRequest): ParserRequest
+    public function getBoardsListData(ParserRequest $parserRequest): ParserRequest
     {
         return $parserRequest;
     }
@@ -137,7 +137,7 @@ class AbstractParser implements ParserInterface
      * @param ParserRequest $parserRequest
      * @return ParserRequest
      */
-    public function getBoardData(ParserRequest &$parserRequest): ParserRequest
+    public function getBoardData(ParserRequest $parserRequest): ParserRequest
     {
         return $parserRequest;
     }
@@ -148,7 +148,7 @@ class AbstractParser implements ParserInterface
      * @param ParserRequest $parserRequest
      * @return ParserRequest
      */
-    public function getGalleryData(ParserRequest &$parserRequest): ParserRequest
+    public function getGalleryData(ParserRequest $parserRequest): ParserRequest
     {
         return $parserRequest;
     }
@@ -159,7 +159,7 @@ class AbstractParser implements ParserInterface
      * @param ParsedFile $parsedFile
      * @return ParsedFile
      */
-    public function getFileData(ParsedFile &$parsedFile): ParsedFile
+    public function getFileData(ParsedFile $parsedFile): ParsedFile
     {
         return $parsedFile;
     }
@@ -170,7 +170,7 @@ class AbstractParser implements ParserInterface
      * @param ParsedFile $parsedFile
      * @return ParsedFile
      */
-    public function getFilePreview(ParsedFile &$parsedFile): ParsedFile
+    public function getFilePreview(ParsedFile $parsedFile): ParsedFile
     {
         return $parsedFile;
     }
@@ -192,7 +192,7 @@ class AbstractParser implements ParserInterface
      * @param File $file
      * @return File
      */
-    public function prepareFileTargetDirectories(File &$file): File
+    public function prepareFileTargetDirectories(File $file): File
     {
         $ds = DIRECTORY_SEPARATOR;
         $fs = new Filesystem();
@@ -340,7 +340,7 @@ class AbstractParser implements ParserInterface
      * @param File $file
      * @return File
      */
-    public function generateFileCurlRequest(File &$file): File
+    public function generateFileCurlRequest(File $file): File
     {
         $this->prepareFileTargetDirectories($file);
 
@@ -526,7 +526,7 @@ class AbstractParser implements ParserInterface
      * @param int $expirationTime (0 - unlimited)
      * @throws \ReflectionException
      */
-    protected function setParserCache(ParserRequest &$parserRequest, $expirationTime = 10) : void
+    protected function setParserCache(ParserRequest $parserRequest, $expirationTime = 10) : void
     {
         $key = $this->determineCacheKey($parserRequest);
 

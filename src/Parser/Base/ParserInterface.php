@@ -16,23 +16,23 @@ use Ratchet\ConnectionInterface;
  */
 interface ParserInterface
 {
-    public function getOwnersList(ParserRequest &$parserRequest): ParserRequest;
+    public function getOwnersList(ParserRequest $parserRequest): ParserRequest;
 
-    public function getBoardsListData(ParserRequest &$parserRequest): ParserRequest;
+    public function getBoardsListData(ParserRequest $parserRequest): ParserRequest;
 
-    public function getBoardData(ParserRequest &$parserRequest): ParserRequest;
+    public function getBoardData(ParserRequest $parserRequest): ParserRequest;
 
-    public function getGalleryData(ParserRequest &$parserRequest): ParserRequest;
+    public function getGalleryData(ParserRequest $parserRequest): ParserRequest;
 
-    public function getFileData(ParsedFile &$parsedFile): ParsedFile;
+    public function getFileData(ParsedFile $parsedFile): ParsedFile;
 
-    public function getFilePreview(ParsedFile &$parsedFile): ParsedFile;
+    public function getFilePreview(ParsedFile $parsedFile): ParsedFile;
 
-    public function generateFileCurlRequest(File &$file): File;
+    public function generateFileCurlRequest(File $file): File;
 
     public function determineFileSubfolder(File $file): ?string;
 
     public function clearParserCache(ParserRequest $parserRequest): void;
 
-    public function prepareFileTargetDirectories(File &$file): File;
+    public function prepareFileTargetDirectories(File $file): File;
 }

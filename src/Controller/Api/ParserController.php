@@ -9,7 +9,6 @@ use App\Manager\Object\FileManager;
 use App\Manager\Object\NodeManager;
 use App\Manager\TagManager;
 use App\Service\ParserService;
-use Doctrine\Common\Util\Debug;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -37,16 +36,16 @@ class ParserController extends Controller
             $request->request->all()
         );
 
-        /*if ($parserRequest->getStatus()->checkIfRequestDuplicated())
+        if ($parserRequest->getStatus()->checkIfRequestDuplicated())
             return $this->jsonError('REQUEST_DUPLICATED');
-        else*/
+        else
             $parserRequest->getStatus()->start();
 
         $fileManager = $this->container->get(FileManager::class);
         $nodeManager = $this->container->get(NodeManager::class);
-        $nodeManager->completeCurrentNodeDataFromDb($parserRequest);
 
         try {
+            $nodeManager->completeCurrentNodeDataFromDb($parserRequest);
             $parserService->executeRequestedAction($parserRequest, $this->getCurrentUser());
 
             $nodeManager->completeParsedNodes($parserRequest); // complete nodes statuses from db data;
