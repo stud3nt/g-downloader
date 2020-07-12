@@ -2,7 +2,6 @@
 
 namespace App\Manager;
 
-use App\Converter\EntityConverter;
 use App\Converter\ModelConverter;
 use App\Entity\Category;
 use App\Manager\Base\EntityManager;
@@ -54,7 +53,7 @@ class CategoryManager extends EntityManager
      * @return ParserRequest
      * @throws \ReflectionException
      */
-    public function completeCategoriesList(ParserRequest &$parserRequest): ParserRequest
+    public function completeCategoriesList(ParserRequest $parserRequest): ParserRequest
     {
         $parserRequest->setCategories([]);
         $categories = $this->getCategoriesList();
@@ -70,39 +69,29 @@ class CategoryManager extends EntityManager
         return $parserRequest;
     }
 
-    public function createFromEntity(Category $category): bool
+    /**
+     * Save category as new entry if not exists or haven't specified ID
+     *
+     * @param Category $category
+     */
+    public function updateEntity(Category $category): void
     {
-        $searches = [];
+        $finalCategory = $this->repository->findOneBy(['id' => $category->getId()]);
 
-        if ($category->getId())
-            $searches['id'] = $category->getId();
-        else
-            $searches['name'] = $category->getName();
-
-        /** @var $checkedCategory|null */
-        $checkedCategory = $this->repository->findOneBy($searches);
-
-        if ($checkedCategory) {
-            $checkedCategory->setName(
-                $category->getName()
-            );
-
-            $this->save($checkedCategory);
-        } else {
+        if (!$finalCategory) { // category does not exists => save as new
             $this->save($category);
+        } else {
+            $finalCategory->setName($category->getName());
+            $this->save($finalCategory);
         }
-
-        return true;
     }
 
     public function removeEntity(Category $category): bool
     {
-        $properCategory = $this->repository->findOneBy([
-            'id' => $category->getId()
-        ]);
+        $finalCategory = $this->repository->findOneBy(['id' => $category->getId()]);
 
-        if ($properCategory)
-            $this->remove($properCategory);
+        if ($finalCategory)
+            $this->remove($finalCategory);
 
         return true;
     }

@@ -2,7 +2,6 @@
 
 namespace App\Manager;
 
-use App\Converter\EntityConverter;
 use App\Converter\ModelConverter;
 use App\Entity\Parser\File;
 use App\Entity\User;
@@ -14,6 +13,8 @@ use App\Model\Download\DownloadStatus;
 use App\Model\ParsedFile;
 use App\Repository\FileRepository;
 use App\Utils\FilesHelper;
+use Doctrine\ORM\NonUniqueResultException;
+use ReflectionException;
 
 class DownloadManager extends EntityManager
 {
@@ -28,9 +29,6 @@ class DownloadManager extends EntityManager
     /** @var ModelConverter */
     protected $modelConverter;
 
-    /** @var EntityConverter */
-    protected $entityConverter;
-
     /** @var \Predis\ClientInterface|\Redis|\RedisCluster */
     protected $redis;
 
@@ -39,7 +37,6 @@ class DownloadManager extends EntityManager
     {
         $this->fileManager = $fileManager;
         $this->modelConverter = new ModelConverter();
-        $this->entityConverter = new EntityConverter();
         $this->redis = (new RedisFactory())->initializeConnection();
     }
 
@@ -47,8 +44,8 @@ class DownloadManager extends EntityManager
      * @param User $user
      * @param File[] $queuedFiles
      * @return array
-     * @throws \Doctrine\ORM\NonUniqueResultException
-     * @throws \ReflectionException
+     * @throws NonUniqueResultException
+     * @throws ReflectionException
      */
     public function createStatusData(User $user, string $status = DownloaderStatus::Idle, array $queuedFiles = []): array
     {
@@ -90,8 +87,8 @@ class DownloadManager extends EntityManager
     /**
      * @param User $user
      * @param ParsedFile $parsedFile
-     * @throws \Doctrine\ORM\NonUniqueResultException
-     * @throws \ReflectionException
+     * @throws NonUniqueResultException
+     * @throws ReflectionException
      */
     public function increaseQueueByParsedFile(User $user, ParsedFile $parsedFile)
     {
@@ -111,8 +108,8 @@ class DownloadManager extends EntityManager
     /**
      * @param User $user
      * @param ParsedFile $parsedFile
-     * @throws \Doctrine\ORM\NonUniqueResultException
-     * @throws \ReflectionException
+     * @throws NonUniqueResultException
+     * @throws ReflectionException
      */
     public function decreaseQueueByParsedFile(User $user, ParsedFile $parsedFile)
     {
@@ -130,33 +127,39 @@ class DownloadManager extends EntityManager
     }
 
     /**
+     * Sets status data
+     *
+     * @param User $user
+     * @param $data
+     */
+    public function setStatusData(User $user, $data): void
+    {
+        $redisKey = $user->getDownloaderRedisKey();
+        $redisData = (!is_string($data) ? json_encode($data) : $data);
+
+        $this->redis->set($redisKey, $redisData);
+    }
+
+    /**
      * @param User $user
      * @return array
-     * @throws \Doctrine\ORM\NonUniqueResultException
-     * @throws \ReflectionException
+     * @throws NonUniqueResultException
+     * @throws ReflectionException
      */
     public function getStatusData(User $user): array
     {
-        $redisKey = 'downloader_data_'.$user->getApiToken();
+        $redisKey = $user->getDownloaderRedisKey();
 
-        if ($this->redis->exists($redisKey))
-            $cachedData = json_decode(
-                $this->redis->get($redisKey), true
-            );
-        else
+        if ($this->redis->exists($redisKey)) {
+            $redisData = $this->redis->get($redisKey);
+            $cachedData = json_decode($redisData, true);
+        } else {
             $cachedData = $this->createStatusData($user);
+        }
 
         $this->updateQueuedFilesStatuses($cachedData);
 
         return $cachedData;
-    }
-
-    public function setStatusData(User $user, $data): void
-    {
-        $redisKey = 'downloader_data_'.$user->getApiToken();
-        $redisData = (!is_string($data) ? json_encode($data) : $data);
-
-        $this->redis->set($redisKey, $redisData);
     }
 
     public function updateQueuedFilesStatuses(array &$cachedData = []): array

@@ -81,7 +81,7 @@ class DownloadService
         $parser = $this->parserService->loadParser($file->getParser(), $user);
         $parser->prepareFileTargetDirectories($file);
 
-        if (!file_exists($file->getTempFilePath()) || // if file does not exists
+        if (!file_exists($file->getTempFilePath()) || // if file not exists
             (
                 file_exists($file->getTempFilePath()) && // or if file exists AND:
                 (

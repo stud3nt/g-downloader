@@ -50,7 +50,7 @@ class TagManager extends EntityManager
      * @return ParserRequest
      * @throws \ReflectionException
      */
-    public function completeTagsList(ParserRequest &$parserRequest): ParserRequest
+    public function completeTagsList(ParserRequest $parserRequest): ParserRequest
     {
         $parserRequest->setTags([]);
         $tags = $this->getTagsList();

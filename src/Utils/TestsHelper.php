@@ -160,7 +160,7 @@ class TestsHelper
     {
         return [
             'actionName' => null,
-            'apiToken' => "oNX6aajXAl404gbuC5DMhawmJ8v877Jb",
+            'apiToken' => StringHelper::randomStr(32),
             'currentNode' => self::generateNodeArray(),
             'parsedNodes' => [],
             'nextNode' => null,

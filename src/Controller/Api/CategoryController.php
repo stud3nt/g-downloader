@@ -39,7 +39,7 @@ class CategoryController extends Controller
             $request->request->all()
         );
 
-        $this->get(CategoryManager::class)->createFromEntity($categoryEntity);
+        $this->get(CategoryManager::class)->updateEntity($categoryEntity);
 
         return $this->jsonSuccess();
     }

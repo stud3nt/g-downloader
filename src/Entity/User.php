@@ -316,4 +316,9 @@ class User extends AbstractEntity implements UserInterface, \Serializable
 
         return $this;
     }
+
+    public function getDownloaderRedisKey(): string
+    {
+        return 'downloader_data_'.$this->getApiToken();
+    }
 }

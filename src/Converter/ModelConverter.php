@@ -70,7 +70,7 @@ class ModelConverter
      * @return mixed
      * @throws \ReflectionException
      */
-    public function setData($data, &$model, bool $skipEmptyFields = false)
+    public function setData($data, $model, bool $skipEmptyFields = false)
     {
         if ($data) {
             $this->model = $model;
