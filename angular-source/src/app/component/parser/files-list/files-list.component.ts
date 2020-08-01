@@ -1,4 +1,4 @@
-import {Component, Input, OnDestroy, OnInit} from '@angular/core';
+import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { ParserRequest } from "../../../model/parser-request";
 import { ParsedFile } from "../../../model/parsed-file";
 import { NodeFileService } from "../../../service/node-file.service";

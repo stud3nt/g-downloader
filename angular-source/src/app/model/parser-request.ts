@@ -90,6 +90,7 @@ export class ParserRequest extends BaseModel {
 
 		let filesDataArray = [];
 
+
 		for (let file of this._files) {
 			if (typeof filesDataArray[file.identifier] === 'undefined')
 				filesDataArray[file.identifier] = 1;

@@ -11,7 +11,7 @@ import { Router } from "@angular/router";
 	encapsulation: ViewEncapsulation.None
 })
 
-export class IndexComponent implements OnInit{
+export class IndexComponent implements OnInit {
 
 	public authenticated: number = 0;
 

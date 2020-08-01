@@ -46,7 +46,7 @@ class GfycatParser
                 foreach ($sources as $source) {
                     $src = $source->getAttribute('src');
 
-                    if (strpos($src, 'thumbs.gfycat.com') && strpos($src, '.webm')) {
+                    if ((strpos($src, 'thumbs.gfycat.com') || strpos($src, 'redgifs.com')) && strpos($src, '.webm')) {
                         $parsedFile->setFileUrl($src);
                         $parsedFile->setExtension('webm');
                         break;

@@ -77,6 +77,7 @@ class RedditApi
             'after' => $parserRequest->tokens->after,
             'before' => null,
             'count' => 100,
+            'limit' => 100,
             'preview' => true,
             'thumbnail' => true,
             'show' => $selectorChildren,

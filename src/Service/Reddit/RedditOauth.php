@@ -107,27 +107,34 @@ class RedditOauth
      */
     private function requestAccessToken() : bool
     {
-        $url = "{$this->endpoint}/api/v1/access_token";
+        $url ='https://ssl.reddit.com/api/v1/access_token';
+        $clientId = $this->appId;
+        $clientSecret = $this->appSecret;
 
-        $params = array(
-            'grant_type' => 'password',
+        // post variables
+        $fields = array (
+            'grant_type' => 'client_credentials',
             'username' => $this->username,
             'password' => $this->password
         );
 
-        $options[CURLOPT_USERAGENT] = $this->userAgent;
-        $options[CURLOPT_USERPWD] = $this->appId.':'.$this->appSecret;
-        $options[CURLOPT_RETURNTRANSFER] = true;
-        $options[CURLOPT_CONNECTTIMEOUT] = 5;
-        $options[CURLOPT_TIMEOUT] = 10;
-        $options[CURLOPT_CUSTOMREQUEST] = 'POST';
-        $options[CURLOPT_POSTFIELDS] = $params;
+        $userAgent = 'sometext:appnamehere v0.1 by usernamehere';
 
-        $ch = curl_init($url);
-        curl_setopt_array($ch, $options);
-        $response_raw = curl_exec($ch);
-        $response = json_decode($response_raw);
-        curl_close($ch);
+        // prepare data for post
+        $field_string = http_build_query($fields);
+
+        $curl = curl_init($url);
+        curl_setopt($curl, CURLOPT_HTTPHEADER, array('Authorization: Basic ' . base64_encode($clientId . ':' . $clientSecret) ));
+        curl_setopt($curl,CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($curl,CURLOPT_USERAGENT, $userAgent);
+        curl_setopt($curl,CURLOPT_POST, 1);
+        curl_setopt($curl,CURLOPT_POSTFIELDS, $field_string);
+
+        $response = curl_exec($curl);
+        curl_close($curl);
+
+
+        $response = json_decode($response);
 
         if (!isset($response->access_token)) {
             if (isset($response->error)) {
