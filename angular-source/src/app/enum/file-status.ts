@@ -4,6 +4,7 @@ export class FileStatus {
 	static Waiting: string = 'waiting';
 	static Downloading: string = 'downloading';
 	static Downloaded: string = 'downloaded';
+	static Corrupted: string = 'corrupted';
 
 	public static getData() {
 		var data = {};
@@ -13,6 +14,7 @@ export class FileStatus {
 		data[FileStatus.Waiting] = 'In progress';
 		data[FileStatus.Downloading] = 'Downloading';
 		data[FileStatus.Downloaded] = 'Downloaded';
+		data[FileStatus.Corrupted] = 'Corrupted'
 
 		return data;
 	}
@@ -31,6 +33,9 @@ export class FileStatus {
 
 			case FileStatus.Downloaded:
 				return 'label-primary';
+
+            case FileStatus.Corrupted:
+                return 'label-danger';
 
 			default:
 				return 'label-default';

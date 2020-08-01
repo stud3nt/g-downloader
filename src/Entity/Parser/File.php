@@ -161,6 +161,12 @@ class File extends AbstractEntity
     protected $mainStatus;
 
     /**
+     * @ORM\Column(name="is_corrupted", type="boolean")
+     * @EntityVariable(convertable=true, writable=true, readable=true)
+     */
+    protected $corrupted = false;
+
+    /**
      * @EntityVariable(convertable=true, writable=false, readable=true)
      */
     protected $textSize = '0 bytes';
@@ -175,9 +181,6 @@ class File extends AbstractEntity
 
     /** @var NodeSettings|null */
     protected $nodeSettings = null;
-
-    /** @var boolean */
-    protected $corrupted = false;
 
     public function __construct()
     {

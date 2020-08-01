@@ -30,7 +30,8 @@ class FileRepository extends ServiceEntityRepository
             ->andWhere('f.identifier IN (:filesIdentifiers)')
             ->setParameter('parserName', $parserName)
             ->setParameter('filesIdentifiers', $filesIdentifiers)
-            ->getQuery()->getArrayResult();
+            ->getQuery()
+            ->getArrayResult();
     }
 
     public function getFilesCountData(string $status = FileStatus::Queued): array

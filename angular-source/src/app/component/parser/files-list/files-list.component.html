@@ -27,15 +27,18 @@
                     </div>
                     <div class="tile-header-icon bg-primary" *ngIf="file.hasStatus(FileStatus.Queued)">
                         <i class="fa fa-check-circle-o"></i> &nbsp; QUEUED
-                        &nbsp; &nbsp; <a [routerLink]="null" (click)="toggleFileQueue(file, true)">
+                    &nbsp; &nbsp; <a [routerLink]="null" (click)="toggleFileQueue(file, true)">
                             <i class="fa fa-remove"></i>
                         </a>
                     </div>
-                    <div class="tile-header-icon bg-success" *ngIf="file.hasStatus(FileStatus.Downloaded)">
+                    <div class="tile-header-icon bg-success" *ngIf="file.hasStatus(FileStatus.Downloaded) && !file.hasStatus(FileStatus.Corrupted)">
                         <i class="fa fa-save"></i> &nbsp; DOWNLOADED
-                        &nbsp; &nbsp; <a [routerLink]="null" (click)="toggleFileQueue(file, true)">
-                        <i class="fa fa-remove"></i>
-                    </a>
+                    &nbsp; &nbsp; <a [routerLink]="null" (click)="toggleFileQueue(file, true)">
+                            <i class="fa fa-remove"></i>
+                        </a>
+                    </div>
+                    <div class="tile-header-icon bg-danger" *ngIf="file.hasStatus(FileStatus.Corrupted)">
+                        <i class="fa fa-warning"></i> &nbsp; CORRUPTED
                     </div>
                     <div class="tile-header-icon bg-default" *ngIf="file.hasStatus(FileStatus.Waiting)">
                         <i class="fa fa-spinner fa-spin fa-fw"></i> &nbsp; WAITING...

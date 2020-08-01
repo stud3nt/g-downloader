@@ -52,15 +52,11 @@ class DownloadService
                 if ($downloadedFile) {
                     $downloadFileCount++;
 
-                    if ($downloadedFile->isCorrupted()) {
-                        $this->fileManager->remove($downloadedFile);
-                    } else {
-                        if (!$downloadedFile->getDuplicateOf()) {
-                            $downloadedFile->setDownloadedAt(new \DateTime('now'));
-                        }
-
-                        $this->fileManager->save($downloadedFile);
+                    if (!$downloadedFile->getDuplicateOf()) {
+                        $downloadedFile->setDownloadedAt(new \DateTime('now'));
                     }
+
+                    $this->fileManager->save($downloadedFile);
                 }
             }
         }

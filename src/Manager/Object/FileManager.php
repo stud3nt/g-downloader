@@ -74,9 +74,11 @@ class FileManager extends EntityManager
                         if ($storedFile['identifier'] == $file->getIdentifier()) {
                             $parserRequest->files[$fileIndex]->addStatus(FileStatus::Queued);
 
-                            if ($storedFile['downloadedAt']) {
+                            if ($storedFile['downloadedAt'])
                                 $parserRequest->files[$fileIndex]->addStatus(FileStatus::Downloaded);
-                            }
+
+                            if ($storedFile['corrupted'])
+                                $parserRequest->files[$fileIndex]->addStatus(FileStatus::Corrupted);
                         }
                     }
                 }
