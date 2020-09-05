@@ -247,7 +247,7 @@ class RedditParser extends AbstractParser
                 ->setRating($child->ups)
             ;
 
-            if ($child->domain === 'gfycat.com') {
+            if (in_array($child->domain, ['gfycat.com', 'redgifs.com'])) {
                 $fileType = FileType::Video;
                 $mimeType = 'video/mp4';
             } else {
@@ -264,9 +264,13 @@ class RedditParser extends AbstractParser
                 ->setUploadedAt($createdAt)
                 ->setType($fileType);
 
-            if ($child->domain === 'gfycat.com') {
-                $parsedFile->setUrl($child->url)
-                    ->setIcon(FileIcon::Gfycat);
+            if (in_array($child->domain, ['gfycat.com', 'redgifs.com'])) {
+                $parsedFile->setUrl($child->url);
+
+                if ($child->domain === 'gfycat.com')
+                    $parsedFile->setIcon(FileIcon::Gfycat);
+                elseif ($child->domain === 'redgifs.com')
+                    $parsedFile->setIcon(FileIcon::RedGifs);
 
                 if (property_exists($child->preview, 'reddit_video_preview')) {
                     $parsedFile->setLength(

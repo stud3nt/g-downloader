@@ -33,86 +33,86 @@ class Node extends AbstractEntity
      * @ORM\Column(name="level", type="string", length=20, nullable=false)
      * @EntityVariable(convertable=true, writable=true, readable=true)
      */
-    protected $level;
+    protected string $level;
 
     /**
      * @ORM\Column(name="personal_rating", type="integer", length=6, options={"unsigned"=true, "default":0})
      * @EntityVariable(convertable=true, writable=true, readable=true)
      */
-    protected $personalRating = 0;
+    protected int $personalRating = 0;
 
     /**
      * @ORM\Column(name="description", type="string", length=4096, nullable=true)
      * @EntityVariable(convertable=true, writable=true, readable=true)
      */
-    protected $description;
+    protected ?string $description;
 
     /**
      * @ORM\Column(name="personal_description", type="text", nullable=true)
      * @EntityVariable(convertable=true, writable=true, readable=true)
      */
-    protected $personalDescription;
+    protected ?string $personalDescription;
 
     /**
      * @ORM\Column(name="rating", type="integer", length=6, options={"unsigned"=true, "default":0})
      * @EntityVariable(convertable=true, writable=true, readable=true)
      */
-    protected $rating = 0;
+    protected int $rating = 0;
 
     /**
      * @ORM\Column(name="images_no", type="integer", options={"unsigned"=true, "default":0}, length=6)
      * @EntityVariable(convertable=true, writable=true, readable=true)
      */
-    protected $imagesNo = 0;
+    protected int $imagesNo = 0;
 
     /**
      * @ORM\Column(name="comments_no", type="integer", options={"unsigned"=true, "default":0}, length=4)
      * @EntityVariable(convertable=true, writable=true, readable=true)
      */
-    protected $commentsNo = 0;
+    protected int $commentsNo = 0;
 
     /**
      * @ORM\Column(name="thumbnails", type="array", nullable=true)
      * @EntityVariable(convertable=true, writable=true, readable=true)
      */
-    protected $thumbnails = [];
+    protected ?array $thumbnails = [];
 
     /**
      * @ORM\Column(name="local_thumbnails", type="array", nullable=true)
      * @EntityVariable(convertable=true, writable=true, readable=true)
      */
-    protected $localThumbnails = [];
+    protected ?array $localThumbnails = [];
 
     /**
      * @var \DateTime
      * @ORM\Column(name="last_viewed_at", type="datetime", options={"default"="CURRENT_TIMESTAMP"}, nullable=true)
      * @EntityVariable(convertable=true, writable=true, inAllConvertNames=false, readable=true, converter="DateTime")
      */
-    protected $lastViewedAt;
+    protected ?\DateTime $lastViewedAt;
 
     /**
      * @ORM\Column(name="saved", type="boolean", length=1, options={"unsigned"=true, "default":0})
      * @EntityVariable(convertable=true, writable=true, readable=true, type="boolean")
      */
-    protected $saved = false;
+    protected bool $saved = false;
 
     /**
      * @ORM\Column(name="blocked", type="boolean", length=1, options={"unsigned"=true, "default":0})
      * @EntityVariable(convertable=true, writable=true, readable=true, type="boolean")
      */
-    protected $blocked = false;
+    protected bool $blocked = false;
 
     /**
      * @ORM\Column(name="favorited", type="boolean", length=1, options={"unsigned"=true, "default":0})
      * @EntityVariable(convertable=true, writable=true, readable=true, type="boolean")
      */
-    protected $favorited = false;
+    protected bool $favorited = false;
 
     /**
      * @ORM\Column(name="finished", type="boolean", length=1, options={"unsigned"=true, "default":0})
      * @EntityVariable(convertable=true, writable=true, readable=true, type="boolean")
      */
-    protected $finished = false;
+    protected bool $finished = false;
 
     /**
      * @ORM\OneToOne(targetEntity="App\Entity\Parser\NodeSettings", mappedBy="node", cascade={"persist"})
@@ -120,30 +120,30 @@ class Node extends AbstractEntity
      *     "class":"App\Entity\Parser\NodeSettings"
      * })
      */
-    protected $settings;
+    protected ?NodeSettings $settings;
 
     /**
      * @ORM\OneToMany(targetEntity="App\Entity\Parser\File", mappedBy="parentNode")
      */
-    protected $files;
+    protected Collection $files;
 
     /**
      * @ORM\OneToMany(targetEntity="App\Entity\Parser\Node", mappedBy="parentNode")
      */
-    private $childrenNodes;
+    private Collection $childrenNodes;
 
     /**
      * @ORM\ManyToOne(targetEntity="App\Entity\Parser\Node", inversedBy="childrenNodes")
      * @ORM\JoinColumn(name="parent_node_id", referencedColumnName="id")
      */
-    private $parentNode;
+    private ?Node $parentNode;
 
     /**
      * @ORM\ManyToOne(targetEntity="App\Entity\Category", cascade={"persist"})
      * @ORM\JoinColumn(name="category_id", referencedColumnName="id")
      * @EntityVariable(convertable=true, writable=true, readable=true, converter="Entity", converterOptions={"class":"App\Entity\Category"})
      */
-    private $category;
+    private ?Category $category;
 
     /**
      * @ORM\ManyToMany(targetEntity="App\Entity\Tag", cascade={"persist"})
@@ -153,7 +153,7 @@ class Node extends AbstractEntity
      *      inverseJoinColumns={@ORM\JoinColumn(name="tag_id", referencedColumnName="id")}
      *  )
      */
-    private $tags;
+    private ?Collection $tags;
 
     public function __construct()
     {
@@ -385,7 +385,7 @@ class Node extends AbstractEntity
     /**
      * @return Collection|Tag[]
      */
-    public function getTags(): Collection
+    public function getTags(): ?Collection
     {
         return $this->tags;
     }

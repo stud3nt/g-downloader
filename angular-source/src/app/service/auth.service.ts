@@ -3,10 +3,8 @@ import { HttpClient } from "@angular/common/http";
 import { User } from "../model/user";
 import { CookieService } from "ngx-cookie-service";
 import { RouterService } from "./router.service";
-import { Router } from "@angular/router";
 import { LoginForm } from "../model/form/login-form";
 import { HttpService } from "./http.service";
-import { JsonResponse } from "../model/json-response";
 
 @Injectable({
   providedIn: 'root'

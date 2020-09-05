@@ -3,7 +3,6 @@
 namespace App\Model;
 
 use App\Annotation\ModelVariable;
-use App\Converter\ModelConverter;
 use App\Model\Interfaces\StatusInterface;
 
 class ParserRequest extends AbstractModel implements StatusInterface
@@ -118,8 +117,6 @@ class ParserRequest extends AbstractModel implements StatusInterface
     public function __construct()
     {
         $this->clearData();
-
-        $this->modelConverter = new ModelConverter();
         $this->status = new Status();
     }
 
@@ -260,11 +257,9 @@ class ParserRequest extends AbstractModel implements StatusInterface
                     switch (strtolower($sortingData['value'])) {
                         case 'asc':
                             return ($node1Value < $node2Value) ? -1 : 1;
-                            break;
 
                         case 'desc':
                             return ($node1Value > $node2Value) ? -1 : 1;
-                            break;
                     }
 
                     return 0;

@@ -44,6 +44,8 @@ export class IndexComponent implements OnInit {
 					this.cookie.set('X-CSRF-TOKEN', user.apiToken, 0);
 					this.router.navigate(['/']);
 				}
+
+				this.cookie.set('cache_token', user.cacheToken, 0);
 			} else { // used is logged out - deleting objects and clearing cookie;
 				this.authenticated = -1;
 				this.user = null;
@@ -52,6 +54,7 @@ export class IndexComponent implements OnInit {
 				this.authService.isLoggedIn = true;
 
 				this.cookie.delete('X-CSRF-TOKEN');
+				this.cookie.delete('cache_token');
 				this.router.navigate(['/']);
 			}
 		});

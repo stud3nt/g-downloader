@@ -4,6 +4,7 @@ namespace App\Entity\Traits;
 
 use App\Annotation\EntityVariable;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 trait UpdatedAtTrait
 {   
@@ -11,6 +12,7 @@ trait UpdatedAtTrait
      * @var \DateTime
      * @ORM\Column(name="updated_at", type="datetime", nullable=true)
      * @EntityVariable(convertable=true, writable=true, inAllConvertNames=false, readable=true, converter="DateTime")
+     * @Groups("user_data")
      */
     protected $updatedAt;
 

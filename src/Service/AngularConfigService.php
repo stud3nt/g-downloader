@@ -141,6 +141,12 @@ class AngularConfigService
                 ]
             ],
             [
+                'route' => 'app_download_list',
+                'label' => 'Downloads list',
+                'icon' => 'fa-download',
+                'childs' => []
+            ],
+            [
                 'route' => null,
                 'label' => 'Lists',
                 'icon' => 'fa-list',

@@ -7,7 +7,7 @@ import { FileType } from "../../../../enum/file-type";
 import { WebSocketService } from "../../../../service/web-socket.service";
 import { WebsocketOperation } from "../../../../enum/websocket-operation";
 import { AuthService } from "../../../../service/auth.service";
-import { DownloadStatus } from "../../../../model/download-status";
+import { QueueSettings } from "../../../../model/queue-settings";
 import { ToastrDataService } from "../../../../service/data/toastr-data.service";
 import { ParsedFile } from "../../../../model/parsed-file";
 
@@ -23,7 +23,7 @@ export class DownloadMiniPanelComponent implements OnInit {
 	public dropdownVisible: boolean = false;
 	public dropdownFilesQueue: ParsedFile[] = [];
 
-	public downloader: DownloadStatus = (new DownloadStatus());
+	public downloader: QueueSettings = (new QueueSettings());
 
 	public DownloaderStatus = DownloaderStatus;
 	public FileType = FileType;
@@ -45,10 +45,8 @@ export class DownloadMiniPanelComponent implements OnInit {
 		this.websocketService.createListener(
 			this._websocketName, (response: JsonResponse) => {
 				if (typeof response.data === 'object') {
-					this.downloader = new DownloadStatus(response.data);
+					this.downloader = new QueueSettings(response.data);
 
-					if (this.downloader.queuedFiles.length > 0)
-						this.dropdownFilesQueue = this.downloader.queuedFiles;
 
 					setTimeout(() => {
 						this.sendStatusRequest();

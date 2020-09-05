@@ -519,6 +519,14 @@ class File extends AbstractEntity
     }
 
     /**
+     * @return bool|null
+     */
+    public function getCorrupted(): ?bool
+    {
+        return $this->corrupted;
+    }
+
+    /**
      * @param bool $corrupted
      * @return File
      */

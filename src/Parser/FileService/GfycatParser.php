@@ -11,7 +11,9 @@ class GfycatParser
 {
     public static function isGfycat(ParsedFile $parsedFile): bool
     {
-        return (parse_url($parsedFile->getUrl())['host'] === 'gfycat.com');
+        $url = parse_url($parsedFile->getUrl())['host'];
+
+        return (in_array($url, ['gfycat.com', 'redgifs.com']));
     }
 
     /**

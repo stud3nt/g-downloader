@@ -79,6 +79,8 @@ export class ParserToolbarComponent implements OnInit, OnDestroy {
 
 	private _alphabet = Array.from(Array(26), (e, i) => String.fromCharCode(i + 97));
 
+	private _updateCurrentRequestTimeout = null;
+
 	constructor(
 		private cookies: CookieService,
         private modalService: ModalService
@@ -293,10 +295,17 @@ export class ParserToolbarComponent implements OnInit, OnDestroy {
 		this.updateCurrentRequest(ParserRequestAction.CurrentNodeUpdate);
 	}
 
+	public clearUpdateCurrentRequestTimeout(): void {
+        clearTimeout(this._updateCurrentRequestTimeout);
+    }
+
 	public updateCurrentRequest(action: string): void {
-		this.onRequestChange.next(
-			(new ParserRequestOperation(action, this._parserRequest))
-		);
+        this.clearUpdateCurrentRequestTimeout();
+		this._updateCurrentRequestTimeout = setTimeout(() => {
+		    this.onRequestChange.next(
+                (new ParserRequestOperation(action, this._parserRequest))
+            );
+        }, 2000);
 	}
 
 	public changeViewMode(mode: string) : void {

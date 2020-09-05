@@ -30,7 +30,6 @@ export class LoginComponent implements OnInit {
 
 			if (response.success()) {
 				this.onLogin.emit(true);
-				this.websocketService.openWebsocketConsole();
 			} else {
 				this.toastrDataService.addError('Login error', response.data);
 			}

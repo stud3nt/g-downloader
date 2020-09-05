@@ -2,7 +2,6 @@
 
 namespace App\Entity;
 
-use App\Annotation\EntityVariable;
 use App\Entity\Base\AbstractEntity;
 use App\Entity\Traits\CreatedAtTrait;
 use App\Entity\Traits\UpdatedAtTrait;
@@ -10,11 +9,13 @@ use App\Enum\UserRole;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 /**
  * @ORM\Table(name="users")
  * @ORM\Entity(repositoryClass="App\Repository\UsersRepository")
  * @ORM\HasLifecycleCallbacks()
+ *
  */
 class User extends AbstractEntity implements UserInterface, \Serializable
 {
@@ -22,89 +23,80 @@ class User extends AbstractEntity implements UserInterface, \Serializable
         UpdatedAtTrait;
 
     /**
-     * @var string
-     *
      * @ORM\Column(name="email", type="string", length=255, nullable=false, unique=true)
-     * @EntityVariable(writable=true, readable=true)
+     * @Groups("user_data")
      * @Assert\NotBlank()
      * @Assert\Email()
      */
-    protected $email;
+    protected string $email;
 
     /**
-     * @var string
-     *
      * @ORM\Column(name="username", type="string", length=40, nullable=false, unique=true)
-     * @EntityVariable(writable=true, readable=true)
+     * @Groups("user_data")
      */
-    protected $username;
+    protected string $username;
 
     /**
-     * @var string
-     *
      * @ORM\Column(name="name", type="string", length=40, nullable=false, unique=true)
-     * @EntityVariable(writable=true, readable=true)
+     * @Groups("user_data")
      */
-    protected $name;
+    protected string $name;
 
     /**
-     * @var string
-     *
      * @ORM\Column(name="surname", type="string", length=60, nullable=false, unique=true)
-     * @EntityVariable(writable=true, readable=true)
+     * @Groups("user_data")
      */
-    protected $surname;
+    protected ?string $surname;
 
     /**
-     * @var string
-     *
      * @ORM\Column(name="password", type="string", length=255, nullable=false)
      * @Assert\Length(min="6")
      */
-    protected $password;
+    protected string $password;
 
     /**
-     * @var string
-     *
-     * @ORM\Column(name="file_token", type="string", nullable=false, length=32)
-     * @EntityVariable(writable=false, readable=false)
+     * @ORM\Column(name="thumbnail", type="string", nullable=true, length=255)
+     * @Groups("user_data")
      */
-    protected $fileToken;
+    protected ?string $thumbnail;
 
     /**
-     * @var string
-     *
-     * @ORM\Column(name="api_token", type="string", nullable=false, length=32)
-     * @EntityVariable(writable=false, readable=true)
+     * @ORM\Column(name="file_token", type="string", nullable=true, length=32)
+     * @Groups("user_data")
      */
-    protected $apiToken;
+    protected ?string $fileToken;
 
     /**
-     * @var string
-     *
+     * @ORM\Column(name="api_token", type="string", nullable=true, length=32)
+     * @Groups("user_data")
+     */
+    protected ?string $apiToken;
+
+    /**
+     * @ORM\Column(name="cache_token", type="string", nullable=true, length=32)
+     * @Groups("user_data")
+     */
+    protected ?string $cacheToken;
+
+    /**
      * @ORM\Column(name="salt", type="string", nullable=false, length=64)
      */
-    protected $salt;
+    protected string $salt;
 
     /**
-     * @var array
-     *
      * @ORM\Column(name="roles", type="array", nullable=false)
      */
-    protected $roles = [UserRole::Admin];
+    protected array $roles = [UserRole::Admin];
 
     /**
-     * @var bool
-     *
      * @ORM\Column(name="is_active", type="boolean")
      */
-    protected $isActive = false;
+    protected bool $isActive = false;
 
     /**
-     * @var \DateTime
      * @ORM\Column(name="last_logged_at", type="datetime", nullable=true)
      */
-    protected $lastLoggedAt;
+    protected ?\DateTime $lastLoggedAt;
 
     public function __toString()
     {
@@ -298,7 +290,7 @@ class User extends AbstractEntity implements UserInterface, \Serializable
         return $this->fileToken;
     }
 
-    public function setFileToken(string $fileToken): self
+    public function setFileToken(?string $fileToken): self
     {
         $this->fileToken = $fileToken;
 
@@ -310,7 +302,7 @@ class User extends AbstractEntity implements UserInterface, \Serializable
         return $this->apiToken;
     }
 
-    public function setApiToken(string $apiToken): self
+    public function setApiToken(?string $apiToken): self
     {
         $this->apiToken = $apiToken;
 
@@ -320,5 +312,29 @@ class User extends AbstractEntity implements UserInterface, \Serializable
     public function getDownloaderRedisKey(): string
     {
         return 'downloader_data_'.$this->getApiToken();
+    }
+
+    public function getCacheToken(): ?string
+    {
+        return $this->cacheToken;
+    }
+
+    public function setCacheToken(?string $cacheToken): self
+    {
+        $this->cacheToken = $cacheToken;
+
+        return $this;
+    }
+
+    public function getThumbnail(): ?string
+    {
+        return $this->thumbnail;
+    }
+
+    public function setThumbnail(?string $thumbnail): self
+    {
+        $this->thumbnail = $thumbnail;
+
+        return $this;
     }
 }

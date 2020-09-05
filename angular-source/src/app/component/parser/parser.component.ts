@@ -167,8 +167,6 @@ export class ParserComponent implements OnInit {
             setTimeout(() => {
                 this.currentNode = node;
             }, 10)
-
-            this.toastrService.addSuccess('SUCCESS', 'Node has been updated.', 8);
 		}, (error) => {
             node.removeStatus(NodeStatus.Waiting);
             this.toastrService.addError('ERROR', error.message);

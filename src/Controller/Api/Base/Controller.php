@@ -5,6 +5,7 @@ namespace App\Controller\Api\Base;
 use App\Converter\EntityConverter;
 use App\Converter\ModelConverter;
 use App\Entity\User;
+use App\Factory\SerializerFactory;
 use App\Manager\CategoryManager;
 use App\Manager\Object\FileManager;
 use App\Manager\Object\NodeManager;
@@ -14,6 +15,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController as BaseControll
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Psr\Container\ContainerInterface;
+use Symfony\Component\Serializer\Serializer;
 
 class Controller extends BaseController
 {
@@ -32,10 +34,13 @@ class Controller extends BaseController
     /** @var NodeManager */
     protected $nodeManager;
 
+    /** @var Serializer */
+    protected $entitySerializer;
+
     /**
      * @param ContainerInterface $container
      */
-    public function __construct(ContainerInterface $container)
+    public function __construct(ContainerInterface $container, SerializerFactory $serializerFactory)
     {
         $this->container = $container;
 
@@ -46,6 +51,8 @@ class Controller extends BaseController
         $this->entityConverter->setEntityManager(
             $this->getDoctrine()->getManager()
         );
+
+        $this->entitySerializer = $serializerFactory->getEntityNormalizer();
     }
 
     /** @required */

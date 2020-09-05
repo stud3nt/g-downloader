@@ -10,6 +10,7 @@ import { GroupsComponent as UsersGroupsComponent } from "./component/users/group
 import { LoginComponent } from "./component/security/login/login.component";
 import { TagsComponent } from "./component/lists/tags/tags.component";
 import { CategoriesComponent } from "./component/lists/categories/categories.component";
+import { QueueComponent } from "./component/download/queue/queue.component";
 
 @NgModule({
 	imports: [
@@ -45,6 +46,10 @@ export const routes : Routes = [
 	{
 		path: 'parsers/:parserName/:nodeLevel/:nodeIdentifier',
 		component: ParserComponent
+	},
+	{
+		path: 'download/queue',
+		component: QueueComponent
 	},
 	{
 		path: 'users/list',

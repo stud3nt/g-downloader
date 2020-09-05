@@ -53,35 +53,46 @@ class StatusWebsocket extends BaseWebsocket implements MessageComponentInterface
         if ($user) {
             $response = null;
 
-            switch ($msg->_operation) {
-                case WebsocketOperation::ParserProgress:
-                    $parserRequest = (new ParserRequestFactory())->buildFromRequestData($msg->_data);
-                    $status = $parserRequest->getStatus()->read();
+            try {
+                switch ($msg->_operation) {
+                    case WebsocketOperation::ParserProgress:
+                        $parserRequest = (new ParserRequestFactory())->buildFromRequestData($msg->_data);
+                        $status = $parserRequest->getStatus()->read();
 
-                    if (!$status)
-                        $status = $this->modelConverter->convert((new Status()));
+                        if (!$status)
+                            $status = $this->modelConverter->convert((new Status()));
 
-                    $response = $status;
-                    break;
+                        $response = $status;
+                        break;
 
-                case WebsocketOperation::DownloadListStatus:
-                    $response = $this->container->get(DownloadManager::class)->getStatusData($user);
-                    break;
+                    case WebsocketOperation::DownloadListStatus:
+                        $response = $this->container->get(DownloadManager::class)->getStatusData($user);
+                        break;
 
-                case WebsocketOperation::DownloadFileStatus:
-                    $parsedFile = (new ParsedFileFactory())->buildFromRequestData($msg->_data);
-                    $status = $this->container->get(FileManager::class)->getFileDownloadStatus($parsedFile);
-                    $response = $this->modelConverter->convert($status);
-                    break;
+                    case WebsocketOperation::DownloadFileStatus:
+                        $parsedFile = (new ParsedFileFactory())->buildFromRequestData($msg->_data);
+                        $status = $this->container->get(FileManager::class)->getFileDownloadStatus($parsedFile);
+                        $response = $this->modelConverter->convert($status);
+                        break;
+
+                    default:
+                        $connection->send(
+                            $this->jsonError('WRONG PARSER REQUEST.')
+                        );
+                        break;
+                }
+            } catch (\Throwable $e) {
+                $this->jsonError([
+                    'errorCode' => $e->getCode(),
+                    'errorMessage' => $e->getMessage(),
+                    'errorLine' => $e->getLine(),
+                    'errorTrace' => $e->getTraceAsString()
+                ]);
             }
 
             if ($response) {
                 $connection->send(
                     $this->jsonSuccess($response)
-                );
-            } else {
-                $connection->send(
-                    $this->jsonError('WRONG PARSER REQUEST.')
                 );
             }
         } else {

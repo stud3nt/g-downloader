@@ -10,6 +10,7 @@ abstract class FileIcon extends Enum
     const Boards4Chan = 'boards_4chan';
     const HentaiFoundry = 'hentai_foundry';
     const Gfycat = 'gfycat';
+    const RedGifs = 'redgifs';
     const Imagebam = 'imagebam';
     const Imageavenue = 'imageavenue';
     const ImageFap = 'imagefap';
@@ -18,4 +19,5 @@ abstract class FileIcon extends Enum
     const PimpAndHost = 'pimpandhost';
     const Pixhost = 'pixhost';
     const Reddit = 'reddit';
+    const VintageErotica = 'vintage-erotica';
 }

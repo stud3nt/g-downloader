@@ -1,63 +1,43 @@
 import { Injectable } from '@angular/core';
+import {CookieService} from "ngx-cookie-service";
+import {HttpClient} from "@angular/common/http";
+import {Observable} from "rxjs";
 
 @Injectable({
 	providedIn: 'root'
 })
 export class CacheService {
 
-  	constructor() { }
+    private cookieFileUrl: string = null;
+
+  	constructor(
+  	    private cookie: CookieService,
+        private http: HttpClient
+    ) {
+  	    this.cookieFileUrl = './assets/'+this.cookie.get('cookie_file')+'.json';
+        this.getJSON().subscribe(data => {
+            this.storage = data;
+        });
+    }
 
   	// cache contents
   	protected storage = [];
 
-  	// cache lifetime data
-  	protected lifetimes = [];
+    public getJSON(): Observable<any> {
+        return this.http.get(
+            this.cookieFileUrl
+        );
+    }
 
-	/**
-	 * Save elements to cache storage;
-	 *
-	 * @param key
-	 * @param value
-	 * @param expiration in second (0 = never expires)
-	 */
-	public set(key: string, value: any, expiration: number = 0) : void {
-		let dateTime = new Date().getTime();
-		let expirationTime = (expiration > 0) ? dateTime + expiration : 0;
-
-		this.storage[key] = value;
-		this.lifetimes[key] = expirationTime;
-	}
-
-  	public get(key: string) : any {
-		if (this.has(key)) {
+  	public get(key: string): object|null {
+		if (typeof this.storage[key] !== 'undefined') {
 			return this.storage[key];
 		}
 
 		return null;
 	}
 
-	/**
-	 * Checks if current storage
-	 *
-	 * @param key
-	 */
-	public has(key: string) : boolean {
-		if (typeof this.lifetimes[key] !== 'undefined' && typeof this.storage[key] !== 'undefined') {
-			if (this.lifetimes[key] > 0) {
-				let currentTime = new Date().getTime();
-
-				if (this.lifetimes[key] >= currentTime) {
-					return true;
-				} else { // clear expired cache keys
-					delete this.lifetimes[key];
-					delete this.storage[key];
-				}
-			} else {
-				return true;
-			}
-		}
-
-		return false;
-	}
-
+	public clear(): void {
+        this.storage = [];
+    }
 }

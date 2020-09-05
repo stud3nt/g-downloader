@@ -76,6 +76,8 @@ class AbstractParser implements ParserInterface
     {
         $this->user = $user;
 
+        $fs = new Filesystem();
+
         $this->httpClient = new Client();
         $this->domLibrary = new Dom();
         $this->curlRequest = (new CurlRequest())->init($this->parserName);
@@ -86,19 +88,23 @@ class AbstractParser implements ParserInterface
 
         $ds = DIRECTORY_SEPARATOR;
 
-        $this->thumbnailFolder = 'temp'.$ds.'parsers'.$ds.$this->parserName.$ds;
+        $this->thumbnailFolder = 'temp'.$ds.'parsers'.$ds.$this->parserName;
         $this->thumbnailTempDir = AppHelper::getPublicDir().$this->thumbnailFolder;
 
-        $this->previewTempFolder = $this->thumbnailFolder.'preview'.$ds;
+        $this->previewTempFolder = $this->thumbnailFolder.$ds.'preview';
         $this->previewTempDir = AppHelper::getPublicDir().$this->previewTempFolder;
 
         if (!file_exists($this->thumbnailTempDir)) {
-            mkdir($this->thumbnailTempDir, 0777);
+            $fs->mkdir($this->thumbnailTempDir, 0777);
         }
 
         if (!file_exists($this->previewTempDir)) {
-            mkdir($this->previewTempDir, 0777);
+            $fs->mkdir($this->previewTempDir, 0777);
         }
+
+        $this->thumbnailTempDir .= $ds;
+        $this->previewTempDir .= $ds;
+        $this->previewTempFolder .= $ds;
     }
 
     /**

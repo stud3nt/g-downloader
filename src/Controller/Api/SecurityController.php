@@ -13,7 +13,6 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
-use Symfony\Component\Security\Guard\GuardAuthenticatorHandler;
 use Symfony\Component\Security\Http\Event\InteractiveLoginEvent;
 
 class SecurityController extends Controller
@@ -41,16 +40,17 @@ class SecurityController extends Controller
      * @throws NonUniqueResultException
      * @throws \ReflectionException
      */
-    public function loginCheck(Request $request, UserPasswordEncoderInterface $encoder, GuardAuthenticatorHandler $authenticatorHandler): JsonResponse
-    {
+    public function loginCheck(
+        Request $request,
+        UserPasswordEncoderInterface $encoder,
+        UserManager $userManager
+    ): JsonResponse {
         try {
             $username = $request->get('username');
             $password = $request->get('password');
 
-            $manager = $this->get(UserManager::class);
-
             /** @var User $user */
-            if ($user = $user = $manager->getByUsernameOrEmail($username)) {
+            if ($user = $user = $userManager->getByUsernameOrEmail($username)) {
                 if ($encoder->isPasswordValid($user, $password)) {
                     $token = new UsernamePasswordToken($user, $user->getPassword(), 'main', $user->getRoles());
                     $event = new InteractiveLoginEvent($request, $token);
@@ -61,13 +61,10 @@ class SecurityController extends Controller
 
                     $csrfToken = $this->get('security.csrf.token_manager')->getToken($user->getTokenId())->getValue();
 
-                    $user->setApiToken($csrfToken)->refreshLastLoggedAt();
-
-                    $manager->save($user);
+                    $userManager->afterLogin($user, $csrfToken);
 
                     return $this->jsonSuccess([
-                        'token' => $csrfToken,
-                        'user' => $this->get(EntityConverter::class)->convert($user)
+                        'user' => $this->entitySerializer->normalize($user, 'array')
                     ]);
                 } else {
                     return $this->jsonError(
