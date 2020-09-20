@@ -225,4 +225,15 @@ class FilesHelper
     {
         return self::fileNameFromString($rawString, true);
     }
+
+    public static function removeOldFiles(string $catalog, int $minTimestampDifference = 60, array $filters = []): void
+    {
+        foreach (scandir($catalog) as $file) {
+            if (!in_array($file, ['.', '..'])) {
+                if (filemtime($catalog.DIRECTORY_SEPARATOR.$file) < (time() - $minTimestampDifference)) {
+                    unlink($catalog.DIRECTORY_SEPARATOR.$file);
+                }
+            }
+        }
+    }
 }

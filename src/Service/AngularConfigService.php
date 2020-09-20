@@ -141,10 +141,19 @@ class AngularConfigService
                 ]
             ],
             [
-                'route' => 'app_download_list',
-                'label' => 'Downloads list',
+                'route' => null,
+                'label' => 'Downloading files',
                 'icon' => 'fa-download',
-                'childs' => []
+                'childs' => [
+                    [
+                        'route' => 'app_download_queue',
+                        'label' => 'Queue panel'
+                    ],
+                    [
+                        'route' => 'app_download_list',
+                        'label' => 'Downloaded list'
+                    ],
+                ]
             ],
             [
                 'route' => null,

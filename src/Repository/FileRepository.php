@@ -54,6 +54,16 @@ class FileRepository extends ServiceEntityRepository
             ->getResult(($asArray) ? AbstractQuery::HYDRATE_ARRAY : AbstractQuery::HYDRATE_OBJECT);
     }
 
+    public function countAllQueuedFiles(): int
+    {
+        $result = $this->getFilesQb(['status' => FileStatus::Queued, 'select' => 'COUNT(f.id) as queuedFilesCount'])
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getArrayResult();
+
+        return (int)$result['queuedFilesCount'];
+    }
+
     /**
      * Selects random file entities from database;
      *
@@ -77,8 +87,7 @@ class FileRepository extends ServiceEntityRepository
                 ->andWhere('f.binHash IS NOT NULL')
                 ->setParameter('imageType', FileType::Image);
 
-        return $qb
-            ->orderBy('rand')
+        return $qb->orderBy('rand')
             ->setMaxResults($limit)
             ->getQuery()
             ->getResult();
@@ -103,8 +112,8 @@ class FileRepository extends ServiceEntityRepository
         if ($file->getType() === FileType::Image) {
             $qb->andWhere('(f.hexHash IS NOT NULL)')
                 ->andWhere('(f.width = :imageWidth AND f.height = :imageHeight)
-                OR (f.dimensionRatio > :minDimensionRatio AND f.dimensionRatio < :maxDimensionRatio)            
-            ')->setParameters([
+                OR (f.dimensionRatio > :minDimensionRatio AND f.dimensionRatio < :maxDimensionRatio)'
+            )->setParameters([
                 'minDimensionRatio' => $minDimensionRatio,
                 'maxDimensionRatio' => $maxDimensionRatio,
                 'imageWidth' => $file->getWidth(),
@@ -180,7 +189,7 @@ class FileRepository extends ServiceEntityRepository
 
         if ($filters['select'])
             $qb->select($filters['select']);
-        if (!$filters['select'])
+        else
             $qb->select('f');
 
         $qb->from("App:Parser\File", 'f');
@@ -193,6 +202,10 @@ class FileRepository extends ServiceEntityRepository
 
                 case FileStatus::Downloaded:
                     $qb->where('f.downloadedAt IS NOT NULL AND f.duplicateOf IS NULL');
+                    break;
+
+                case FileStatus::Duplicated:
+                    $qb->where('f.duplicateOf IS NOT NULL');
                     break;
             }
         }

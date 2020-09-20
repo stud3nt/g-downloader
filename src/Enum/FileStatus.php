@@ -11,6 +11,7 @@ abstract class FileStatus extends Enum
     const Downloaded = 'downloaded';
     const Downloading = 'downloading';
     const Corrupted = 'corrupted';
+    const Duplicated = 'duplicated';
 
     public static function getData()
     {
@@ -19,7 +20,8 @@ abstract class FileStatus extends Enum
             self::Queued => 'Queued',
             self::Downloaded => 'Downloaded',
             self::Downloading => 'Downloading',
-            self::Corrupted => 'Corrupted'
+            self::Corrupted => 'Corrupted',
+            self::Duplicated => 'Duplicated'
         ];
     }
 }

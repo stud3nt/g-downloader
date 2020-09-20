@@ -11,6 +11,7 @@ import { LoginComponent } from "./component/security/login/login.component";
 import { TagsComponent } from "./component/lists/tags/tags.component";
 import { CategoriesComponent } from "./component/lists/categories/categories.component";
 import { QueueComponent } from "./component/download/queue/queue.component";
+import {DownloadedListComponent} from "./component/download/downloaded-list/downloaded-list.component";
 
 @NgModule({
 	imports: [
@@ -50,6 +51,10 @@ export const routes : Routes = [
 	{
 		path: 'download/queue',
 		component: QueueComponent
+	},
+	{
+		path: 'download/list',
+		component: DownloadedListComponent
 	},
 	{
 		path: 'users/list',

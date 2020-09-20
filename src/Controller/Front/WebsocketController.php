@@ -17,6 +17,8 @@ class WebsocketController extends Controller
      */
     public function server(KernelInterface $kernel)
     {
+        set_time_limit(0);
+
         $application = new Application($kernel);
         $application->setAutoExit(false);
 

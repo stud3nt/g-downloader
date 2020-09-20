@@ -1,20 +1,21 @@
 import { Injectable } from '@angular/core';
-import {CookieService} from "ngx-cookie-service";
-import {HttpClient} from "@angular/common/http";
-import {Observable} from "rxjs";
+import { CookieService } from "ngx-cookie-service";
+import { HttpClient } from "@angular/common/http";
+import { Observable } from "rxjs";
+import { KeysType } from "../enum/keys-type";
 
 @Injectable({
 	providedIn: 'root'
 })
-export class CacheService {
+export class DataExchangeService {
 
-    private cookieFileUrl: string = null;
+    private dataFileUrl: string = null;
 
   	constructor(
   	    private cookie: CookieService,
         private http: HttpClient
     ) {
-  	    this.cookieFileUrl = './assets/'+this.cookie.get('cookie_file')+'.json';
+  	    this.dataFileUrl = './app/assets/json/'+this.cookie.get(KeysType.InfoExchangeFile)+'.json';
         this.getJSON().subscribe(data => {
             this.storage = data;
         });
@@ -25,7 +26,7 @@ export class CacheService {
 
     public getJSON(): Observable<any> {
         return this.http.get(
-            this.cookieFileUrl
+            this.dataFileUrl
         );
     }
 

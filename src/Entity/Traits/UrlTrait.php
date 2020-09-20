@@ -2,14 +2,14 @@
 
 namespace App\Entity\Traits;
 
-use App\Annotation\EntityVariable;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 trait UrlTrait
 {
     /**
      * @ORM\Column(name="url", type="string", length=2048, nullable=false)
-     * @EntityVariable(convertable=true, writable=true, readable=true)
+     * @Groups("basic_data")
      */
     protected $url;
 

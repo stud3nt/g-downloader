@@ -4,6 +4,7 @@ import { JsonResponse } from "./model/json-response";
 import { User } from "./model/user";
 import { CookieService } from "ngx-cookie-service";
 import { Router } from "@angular/router";
+import {KeysType} from "./enum/keys-type";
 
 @Component({
 	selector: 'app-root',
@@ -45,7 +46,7 @@ export class IndexComponent implements OnInit {
 					this.router.navigate(['/']);
 				}
 
-				this.cookie.set('cache_token', user.cacheToken, 0);
+				this.cookie.set(KeysType.InfoExchangeFile, user.infoExchangeFile, 0);
 			} else { // used is logged out - deleting objects and clearing cookie;
 				this.authenticated = -1;
 				this.user = null;

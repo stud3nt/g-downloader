@@ -4,8 +4,8 @@ namespace App\Websocket;
 
 use App\Entity\User;
 use App\Enum\WebsocketOperation;
-use App\Factory\ParsedFileFactory;
-use App\Factory\ParserRequestFactory;
+use App\Factory\Model\ParsedFileFactory;
+use App\Factory\Model\ParserRequestFactory;
 use App\Manager\DownloadManager;
 use App\Manager\Object\FileManager;
 use App\Model\Status;

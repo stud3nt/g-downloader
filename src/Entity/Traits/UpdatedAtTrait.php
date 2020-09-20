@@ -12,7 +12,6 @@ trait UpdatedAtTrait
      * @var \DateTime
      * @ORM\Column(name="updated_at", type="datetime", nullable=true)
      * @EntityVariable(convertable=true, writable=true, inAllConvertNames=false, readable=true, converter="DateTime")
-     * @Groups("user_data")
      */
     protected $updatedAt;
 

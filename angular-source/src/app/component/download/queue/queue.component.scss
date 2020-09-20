@@ -1,0 +1,18 @@
+.distanced-buttons {
+    button {
+        margin-right: 12px;
+    }
+}
+
+.progress-cell {
+    .progress-info {
+        width: 20%;
+        display: inline-block;
+        font-size: 14px;
+        font-weight: bold;
+    }
+
+    .progress {
+        width: 80%;
+    }
+}

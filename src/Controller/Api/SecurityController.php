@@ -5,6 +5,7 @@ namespace App\Controller\Api;
 use App\Controller\Api\Base\Controller;
 use App\Converter\EntityConverter;
 use App\Entity\User;
+use App\Enum\NormalizationGroup;
 use App\Manager\UserManager;
 use App\Utils\StringHelper;
 use Doctrine\ORM\NonUniqueResultException;
@@ -26,9 +27,11 @@ class SecurityController extends Controller
     {
         /** @var User $user */
         if ($user = $this->getCurrentUser()) {
-            $userArray = $this->get(EntityConverter::class)->convert($user);
-
-            return $this->jsonSuccess($userArray);
+            return $this->jsonSuccess(
+                $this->entitySerializer->normalize($user, 'array', [
+                    'groups' => NormalizationGroup::UserData
+                ])
+            );
         }
 
         return $this->jsonError();
@@ -64,7 +67,9 @@ class SecurityController extends Controller
                     $userManager->afterLogin($user, $csrfToken);
 
                     return $this->jsonSuccess([
-                        'user' => $this->entitySerializer->normalize($user, 'array')
+                        'user' => $this->entitySerializer->normalize($user, 'array', [
+                            'groups' => NormalizationGroup::UserData
+                        ])
                     ]);
                 } else {
                     return $this->jsonError(

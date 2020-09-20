@@ -3,7 +3,7 @@
 namespace App\Controller\Api;
 
 use App\Controller\Api\Base\Controller;
-use App\Factory\ParserRequestFactory;
+use App\Factory\Model\ParserRequestFactory;
 use App\Manager\CategoryManager;
 use App\Manager\Object\FileManager;
 use App\Manager\Object\NodeManager;
@@ -36,9 +36,9 @@ class ParserController extends Controller
             $request->request->all()
         );
 
-        if ($parserRequest->getStatus()->checkIfRequestDuplicated())
+        /*if ($parserRequest->getStatus()->checkIfRequestDuplicated())
             return $this->jsonError('REQUEST_DUPLICATED');
-        else
+        else*/
             $parserRequest->getStatus()->start();
 
         $fileManager = $this->container->get(FileManager::class);

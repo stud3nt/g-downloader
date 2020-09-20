@@ -8,7 +8,8 @@ use App\Entity\Parser\File;
 use App\Entity\Parser\Node;
 use App\Entity\User;
 use App\Enum\FileStatus;
-use App\Enum\FileType;
+use App\Enum\NormalizationGroup;
+use App\Enum\RedisKey;
 use App\Factory\RedisFactory;
 use App\Manager\Base\EntityManager;
 use App\Manager\SettingsManager;
@@ -16,6 +17,7 @@ use App\Model\AbstractModel;
 use App\Model\Download\DownloadStatus;
 use App\Model\ParsedFile;
 use App\Model\ParserRequest;
+use App\Model\QueueSettings;
 use App\Model\Status;
 use App\Repository\FileRepository;
 use App\Utils\FilesHelper;
@@ -23,6 +25,8 @@ use Doctrine\ORM\NonUniqueResultException;
 
 class FileManager extends EntityManager
 {
+    const DownloadQueueRedisKey = 'download_queue';
+
     protected $entityName = 'Parser\File';
 
     /** @var FileRepository */
@@ -140,6 +144,60 @@ class FileManager extends EntityManager
     }
 
     /**
+     * Get queue data
+     *
+     * @param int $downloadingFilesCount (default 6)
+     * @return array|null
+     */
+    public function getQueueData(int $downloadingFilesCount = 6): ?array
+    {
+        if ($this->redis->exists(FileManager::DownloadQueueRedisKey)) { // get data from redis cache
+            return json_decode($this->redis->get(FileManager::DownloadQueueRedisKey), true);
+        }
+
+        $queueFiles = $this->repository->getFilesQb(['status' => FileStatus::Queued])
+            ->setMaxResults($downloadingFilesCount)
+            ->orderBy('f.id', 'ASC')
+            ->getQuery()
+            ->getResult();
+
+        if ($queueFiles) {
+            foreach ($queueFiles as $fileIndex => $queueFile) {
+                $queueFile->setStatus($queueFile->getStatus()->setDescription(FileStatus::Queued));
+                $queueFiles[$fileIndex] = $queueFile;
+            }
+
+            $queuedFilesJson = $this->serializer->serialize($queueFiles, 'json', [
+                'groups' => [NormalizationGroup::BasicData]
+            ]);
+            $queuedFilesArray = json_decode($queuedFilesJson, true);
+
+            $this->redis->set(FileManager::DownloadQueueRedisKey, $queuedFilesJson);
+        }
+
+        return $queuedFilesArray;
+    }
+
+    public function getFilesForDownload(int $limit = 6)
+    {
+        $queuedFilesIds = $this->redis->get(RedisKey::PreparedQueuedFilesListIds);
+        $filesIds = [];
+
+        foreach ($queuedFilesIds as $filesId) {
+            $filesIds[] = $filesId;
+
+            if (count($filesIds) >= $limit) {
+                break;
+            }
+        }
+
+        return $this->repository->getFilesQb(['status' => FileStatus::Queued, 'limit' => $limit])
+            ->where('f.id IN (:ids)', implode(',', $filesIds))
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
      * Gets queued files data (count and size);
      *
      * @return \stdClass
@@ -191,29 +249,6 @@ class FileManager extends EntityManager
         }
 
         return $status;
-    }
-
-    /**
-     * Gets queued files (waiting for download);
-     *
-     * @param int $limit
-     * @param bool $asArray
-     * @return array
-     */
-    public function getQueuedFiles(int $limit = 10, bool $asArray = false) : array
-    {
-        $queuedFiles = $this->repository->getQueuedFiles($limit, $asArray);
-
-        if ($queuedFiles) {
-            foreach ($queuedFiles as $key => $queuedFile) {
-                if ($asArray)
-                    $queuedFiles[$key]['textSize'] = FilesHelper::bytesToSize($queuedFile->getSize());
-                else
-                    $queuedFiles[$key]->setTextSize(FilesHelper::bytesToSize($queuedFile->getSize()));
-            }
-        }
-
-        return $queuedFiles;
     }
 
     public function getPotentialDuplicates(File $file): array

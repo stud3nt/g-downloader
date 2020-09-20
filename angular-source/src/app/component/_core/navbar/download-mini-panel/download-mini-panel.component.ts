@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { DownloaderStatus } from "../../../../enum/downloader-status";
+import { DownloadingStatus } from "../../../../enum/downloading-status";
 import { DownloaderService } from "../../../../service/downloader.service";
 import { JsonResponse } from "../../../../model/json-response";
 import { RouterService } from "../../../../service/router.service";
@@ -7,7 +7,7 @@ import { FileType } from "../../../../enum/file-type";
 import { WebSocketService } from "../../../../service/web-socket.service";
 import { WebsocketOperation } from "../../../../enum/websocket-operation";
 import { AuthService } from "../../../../service/auth.service";
-import { QueueSettings } from "../../../../model/queue-settings";
+import { QueueSettings } from "../../../../model/download-queue-settings";
 import { ToastrDataService } from "../../../../service/data/toastr-data.service";
 import { ParsedFile } from "../../../../model/parsed-file";
 
@@ -25,10 +25,10 @@ export class DownloadMiniPanelComponent implements OnInit {
 
 	public downloader: QueueSettings = (new QueueSettings());
 
-	public DownloaderStatus = DownloaderStatus;
+	public DownloaderStatus = DownloadingStatus;
 	public FileType = FileType;
 
-	public _downloaderStatus: string = DownloaderStatus.Idle;
+	public _downloaderStatus: string = DownloadingStatus.Idle;
 
 	private _websocketName: string = 'download_session';
 	private _websocketDelay: number = 1500;
@@ -67,7 +67,7 @@ export class DownloadMiniPanelComponent implements OnInit {
 		this.websocketService.sendRequest(
 			this._websocketName,
 			WebsocketOperation.DownloadListStatus,
-			this.auth.user.apiToken
+			this.auth.user ? this.auth.user.apiToken : null
 		);
 	}
 
@@ -76,25 +76,25 @@ export class DownloadMiniPanelComponent implements OnInit {
 	 */
 	public start(): void {
 		switch (this._downloaderStatus) {
-			case DownloaderStatus.Downloading:
+			case DownloadingStatus.Downloading:
 				this._websocketDelay = 1500;
 				return;
 
-			case DownloaderStatus.Breaking:
-			case DownloaderStatus.WaitingForResponse:
-				this._downloaderStatus = DownloaderStatus.Idle;
+			case DownloadingStatus.Breaking:
+			case DownloadingStatus.WaitingForResponse:
+				this._downloaderStatus = DownloadingStatus.Idle;
 				this._websocketDelay = 1500;
 				return;
 
-			case DownloaderStatus.Idle:
-			case DownloaderStatus.Continuation:
-				this._downloaderStatus = DownloaderStatus.Downloading;
+			case DownloadingStatus.Idle:
+			case DownloadingStatus.Continuation:
+				this._downloaderStatus = DownloadingStatus.Downloading;
 				this._websocketDelay = 250;
 		}
 
 		this.downloaderService.startDownloadProcess().subscribe((response: JsonResponse) => {
-			if (this._downloaderStatus === DownloaderStatus.Downloading && response.data !== null && response.data.filesCount > 0) {
-				this._downloaderStatus = DownloaderStatus.Continuation;
+			if (this._downloaderStatus === DownloadingStatus.Downloading && response.data !== null && response.data.filesCount > 0) {
+				this._downloaderStatus = DownloadingStatus.Continuation;
 				this.start();
 			} else {
 				this.stop();
@@ -106,10 +106,10 @@ export class DownloadMiniPanelComponent implements OnInit {
 	 * Stops downloading files process
 	 */
 	public stop(): void {
-		this._downloaderStatus = DownloaderStatus.Breaking;
+		this._downloaderStatus = DownloadingStatus.Breaking;
 		this.downloaderService.stopDownloadProcess().subscribe((response) => {
 			this._websocketDelay = 1500;
-			this._downloaderStatus = DownloaderStatus.Idle;
+			this._downloaderStatus = DownloadingStatus.Idle;
 			this.dropdownFilesQueue = [];
 		});
 	}
@@ -121,15 +121,15 @@ export class DownloadMiniPanelComponent implements OnInit {
 
 	protected determineClasses(): void {
 		switch (this.downloader.status) {
-			case DownloaderStatus.Idle:
+			case DownloadingStatus.Idle:
 				this.mainButtonClass = 'navbar-main-button inactive';
 				break;
 
-			case DownloaderStatus.Downloading:
+			case DownloadingStatus.Downloading:
 				this.mainButtonClass = 'navbar-main-button active';
 				break;
 
-			case DownloaderStatus.WaitingForResponse:
+			case DownloadingStatus.WaitingForResponse:
 				this.mainButtonClass = 'navbar-main-button waiting';
 				break;
 		}

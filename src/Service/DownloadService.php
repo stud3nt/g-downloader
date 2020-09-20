@@ -30,7 +30,7 @@ class DownloadService
      * @return array
      * @throws \Exception
      */
-    public function downloadQueuedParserFiles(array $filesList = [], User $user = null): int
+    public function downloadQueuedParserFiles(?array $filesList, ?User $user): int
     {
         $downloadFileCount = 0;
 
@@ -57,6 +57,8 @@ class DownloadService
                     }
 
                     $this->fileManager->save($downloadedFile);
+
+
                 }
             }
         }

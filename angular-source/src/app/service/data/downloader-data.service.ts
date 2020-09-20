@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject } from "rxjs";
-import { DownloaderStatus } from "../../enum/downloader-status";
+import { DownloadingStatus } from "../../enum/downloading-status";
 
 @Injectable({
 	providedIn: 'root'
@@ -8,18 +8,18 @@ import { DownloaderStatus } from "../../enum/downloader-status";
 
 export class DownloaderDataService {
 
-	private statusSource = new BehaviorSubject(<string>DownloaderStatus.Idle);
+	private statusSource = new BehaviorSubject(<string>DownloadingStatus.Idle);
 	private touchSource = new BehaviorSubject(<number>0);
 
 	public status = this.statusSource.asObservable();
 	public touchEvent = this.touchSource.asObservable();
 
 	public startDownloadProcess(): void {
-		this.statusSource.next(DownloaderStatus.Downloading);
+		this.statusSource.next(DownloadingStatus.Downloading);
 	}
 
 	public stopDownloadProcess(): void {
-		this.statusSource.next(DownloaderStatus.Idle);
+		this.statusSource.next(DownloadingStatus.Idle);
 	}
 
 	public getDownloadStatus(): void {

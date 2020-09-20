@@ -6,17 +6,20 @@ import { ParserRequest } from "../model/parser-request";
 import { ParserNode } from "../model/parser-node";
 import { HttpHelper } from "../helper/http-helper";
 import { map } from "rxjs/operators";
+import {HttpService} from "./http.service";
 
 @Injectable({
 	providedIn: 'root'
 })
-export class ParserService {
+export class ParserService extends HttpService {
 
 	constructor(
-		private http: HttpClient,
+		protected http: HttpClient,
 		private router: RouterService,
 		private auth: AuthService
-	) {}
+	) {
+	    super(http);
+    }
 
 	/**
 	 * Parser action request

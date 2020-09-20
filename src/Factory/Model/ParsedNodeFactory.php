@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Factory;
+namespace App\Factory\Model;
 
 use App\Converter\ModelConverter;
 use App\Factory\Base\RequestFactoryInterface;

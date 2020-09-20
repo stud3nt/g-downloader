@@ -2,6 +2,7 @@
 
 namespace App\Manager\Base;
 
+use App\Factory\SerializerFactory;
 use Doctrine\Persistence\ObjectManager;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 
@@ -17,10 +18,18 @@ abstract class EntityManager
     protected $repository;
     protected $namespace;
 
+    protected $serializer;
+
     public function __construct(ObjectManager $em, TokenStorageInterface $tokenStorage)
     {
         $this->em = $em;
         $this->repository = $this->em->getRepository(sprintf('App:%s%s', $this->namespace, $this->entityName));
+    }
+
+    /** @required */
+    public function initializeSerializer(SerializerFactory $serializerFactory)
+    {
+        $this->serializer = $serializerFactory->getEntityNormalizer();
     }
 
     public function getBy(Array $criteria = [], $orderBy = ['id' => 'desc'])

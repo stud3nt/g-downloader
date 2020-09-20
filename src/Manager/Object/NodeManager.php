@@ -63,7 +63,7 @@ class NodeManager extends EntityManager
      * @return ParserRequest
      * @throws ReflectionException
      */
-    public function completeCurrentNodeDataFromDb(ParserRequest &$parserRequest): ParserRequest
+    public function completeCurrentNodeDataFromDb(ParserRequest $parserRequest): ParserRequest
     {
         $node = $parserRequest->getCurrentNode();
 
@@ -91,7 +91,7 @@ class NodeManager extends EntityManager
      * @return ParserRequest
      * @throws ReflectionException
      */
-    public function updateCurrentNode(ParserRequest &$parserRequest): ParserRequest
+    public function updateCurrentNode(ParserRequest $parserRequest): ParserRequest
     {
         $currentNode = $parserRequest->getCurrentNode();
 
@@ -120,7 +120,7 @@ class NodeManager extends EntityManager
      * @throws \ReflectionException
      * @throws \Exception
      */
-    public function completeParsedNodes(ParserRequest &$parserRequest): ParserRequest
+    public function completeParsedNodes(ParserRequest $parserRequest): ParserRequest
     {
         $parentNode = $parserRequest->getCurrentNode();
         $parentNodeEntity = $this->repository->findOneByParsedNode($parentNode);
@@ -218,7 +218,7 @@ class NodeManager extends EntityManager
      * @param Node $savedNode
      * @throws \Exception
      */
-    public function updateNodeStatuses(ParsedNode &$parsedNode, Node &$savedNode): void
+    public function updateNodeStatuses(ParsedNode $parsedNode, Node $savedNode): void
     {
         if ($savedNode->getImagesNo() !== $parsedNode->getImagesNo()) {
             $savedNode->setImagesNo($parsedNode->getImagesNo());

@@ -5,12 +5,11 @@ import { AuthService } from "./auth.service";
 import { HttpService } from "./http.service";
 import { QueueRequest } from "../model/request/queue-request";
 import { HttpHelper } from "../helper/http-helper";
-import { map } from "rxjs/operators";
 
 @Injectable({
   providedIn: 'root'
 })
-export class DownloaderService extends HttpService {
+export class QueueService extends HttpService {
 
 	constructor(
 		protected http: HttpClient,
@@ -20,17 +19,11 @@ export class DownloaderService extends HttpService {
 		super(http);
 	}
 
-    public getDownladedFilesList() {
+	public getQueuedFilesPackage(queueRequest: QueueRequest) {
+	    let httpParams = HttpHelper.convert(queueRequest);
 
+        return this.post(
+            this.router.generateUrl('api_queue_prepare_queue_package'), httpParams
+        );
     }
-
-	public downloadProcess(downloadCount: number = 6) {
-		return this.get(this.router.generateUrl('api_downloader_process'), httpParams);
-	}
-
-	public stopDownload() {
-		return this.get(
-			this.router.generateUrl('api_downloader_stop')
-		);
-	}
 }

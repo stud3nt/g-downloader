@@ -16,7 +16,7 @@ export class User {
 
 	private _apiToken: string = null;
 
-	private _cacheToken: string = null;
+	private _infoExchangeFile: string = null;
 
     get username(): string {
         return this._username;
@@ -66,11 +66,11 @@ export class User {
         this._apiToken = value;
     }
 
-    get cacheToken(): string {
-        return this._cacheToken;
+    get infoExchangeFile(): string {
+        return this._infoExchangeFile;
     }
 
-    set cacheToken(value: string) {
-        this._cacheToken = value;
+    set infoExchangeFile(value: string) {
+        this._infoExchangeFile = value;
     }
 }

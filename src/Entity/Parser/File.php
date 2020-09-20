@@ -2,12 +2,13 @@
 
 namespace App\Entity\Parser;
 
-use App\Annotation\EntityVariable;
 use App\Entity\Base\AbstractEntity;
 use App\Enum\NodeLevel;
+use App\Model\Status;
+use App\Utils\FilesHelper;
 use App\Entity\Traits\{CreatedAtTrait, IdentifierTrait, ParserTrait, NameTrait, UpdatedAtTrait, UrlTrait };
-use Doctrine\Common\Util\Debug;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 /**
  * Files
@@ -29,103 +30,103 @@ class File extends AbstractEntity
 
     /**
      * @ORM\Column(name="file_url", type="string", length=2048, nullable=true)
-     * @EntityVariable(convertable=true, writable=true, readable=true)
+     * @Groups({"basic_data"})
      */
     protected $fileUrl = null;
 
     /**
      * @ORM\Column(name="description", type="string", length=4096, nullable=true)
-     * @EntityVariable(convertable=true, writable=true, readable=true)
+     * @Groups({"basic_data"})
      */
     protected $description;
 
     /**
      * @ORM\Column(name="bin_hash", type="string", length=64, nullable=true)
-     * @EntityVariable(convertable=false, writable=false, readable=false)
+     * @Groups({"basic_data"})
      */
     protected $binHash;
 
     /**
      * @ORM\Column(name="hex_hash", type="string", length=255, nullable=true)
-     * @EntityVariable(convertable=false, writable=false, readable=false)
+     * @Groups({"basic_data"})
      */
     protected $hexHash;
 
     /**
      * @ORM\Column(name="extension", type="string", length=8, nullable=false)
-     * @EntityVariable(convertable=true, writable=true, readable=true)
+     * @Groups({"basic_data"})
      */
     protected $extension;
 
     /**
      * @ORM\Column(name="thumbnail", type="string", length=1024, nullable=true)
-     * @EntityVariable(convertable=true, writable=true, readable=true)
+     * @Groups({"basic_data"})
      */
     protected $thumbnail;
 
     /**
-     * @EntityVariable(convertable=true, writable=false, readable=true)
+     * @Groups("basic_data")
      */
     protected $localThumbnail;
 
     /**
      * @ORM\Column(name="mime_type", type="string", length=16, nullable=false)
-     * @EntityVariable(convertable=true, writable=true, readable=true)
+     * @Groups({"basic_data"})
      */
     protected $mimeType;
 
     /**
      * @var \DateTime
      * @ORM\Column(name="uploaded_at", type="datetime", options={"default"="CURRENT_TIMESTAMP"}, nullable=true)
-     * @EntityVariable(convertable=true, writable=true, readable=true, converter="DateTime")
+     * @Groups({"basic_data"})
      */
     protected $uploadedAt;
 
     /**
      * @ORM\Column(name="type", columnDefinition="ENUM('image', 'video')", nullable=false)
-     * @EntityVariable(convertable=true, writable=true, readable=true)
+     * @Groups({"basic_data"})
      */
     protected $type;
 
     /**
      * @ORM\Column(name="icon", type="string", length=16, nullable=true)
-     * @EntityVariable(convertable=true, writable=true, readable=true)
+     * @Groups({"basic_data"})
      */
     protected $icon = null;
 
     /**
      * @ORM\Column(name="download_info", type="array", nullable=true)
-     * @EntityVariable(convertable=true, writable=true, readable=true)
+     * @Groups({"basic_data"})
     */
     protected $downloadInfo = [];
 
     /**
      * @ORM\Column(name="width", type="integer", nullable=true, length=4, options={"unsigned"=true, "default":0})
-     * @EntityVariable(convertable=true, writable=true, readable=true)
+     * @Groups({"basic_data"})
      */
     protected $width = 0;
 
     /**
      * @ORM\Column(name="height", type="integer", nullable=true, length=4, options={"unsigned"=true, "default":0})
-     * @EntityVariable(convertable=true, writable=true, readable=true)
+     * @Groups({"basic_data"})
      */
     protected $height = 0;
 
     /**
      * @ORM\Column(name="length", type="integer", nullable=true, length=8, options={"unsigned"=true, "default":0})
-     * @EntityVariable(convertable=true, writable=true, readable=true)
+     * @Groups({"basic_data"})
      */
     protected $length = 0;
 
     /**
      * @ORM\Column(name="size", type="integer", nullable=false, length=11, options={"unsigned"=true, "default":0})
-     * @EntityVariable(convertable=true, writable=true, readable=true)
+     * @Groups({"basic_data"})
      */
     protected $size = 0;
 
     /**
      * @ORM\Column(name="dimension_ratio", type="decimal", precision=5, scale=2, options={"default":0})
-     * @EntityVariable(convertable=true, writable=true, readable=true)
+     * @Groups({"basic_data"})
      */
     protected $dimensionRatio = 0;
 
@@ -133,41 +134,47 @@ class File extends AbstractEntity
      * @var \DateTime
      *
      * @ORM\Column(name="downloaded_at", type="datetime", nullable=true)
-     * @EntityVariable(convertable=true, converter="DateTime", writable=true, readable=true)
+     * @Groups({"basic_data"})
      */
     protected $downloadedAt;
 
     /**
      * @ORM\ManyToOne(targetEntity="App\Entity\Parser\File")
      * @ORM\JoinColumn(name="duplicate_of_id", referencedColumnName="id")
-     * @EntityVariable(convertable=false, writable=false, readable=false)
      */
     protected $duplicateOf;
 
     /**
      * @ORM\ManyToOne(targetEntity="App\Entity\Parser\Node", inversedBy="files")
      * @ORM\JoinColumn(name="node_id", referencedColumnName="id", nullable=true)
+     * @Groups({"basic_data"})
      */
     protected $parentNode;
 
     /**
-     * @EntityVariable(convertable=true, writable=false, readable=true)
+     * @Groups({"basic_data"})
      */
     protected $imageUrl;
 
     /**
-     * @EntityVariable(convertable=true, writable=false, readable=true)
+     * @Groups({"basic_data"})
      */
     protected $mainStatus;
 
     /**
+     * @var Status
+     * @Groups({"basic_data"})
+     */
+    protected $status;
+
+    /**
      * @ORM\Column(name="is_corrupted", type="boolean")
-     * @EntityVariable(convertable=true, writable=true, readable=true)
+     * @Groups({"basic_data"})
      */
     protected $corrupted = false;
 
     /**
-     * @EntityVariable(convertable=true, writable=false, readable=true)
+     * @Groups({"basic_data"})
      */
     protected $textSize = '0 bytes';
 
@@ -189,6 +196,7 @@ class File extends AbstractEntity
         }
 
         $this->updatedAt = new \DateTime();
+        $this->status = new Status();
     }
 
     public function getRedisDownloadKey()
@@ -339,7 +347,9 @@ class File extends AbstractEntity
      */
     public function getTextSize()
     {
-        return $this->textSize;
+        return $this->size > 0
+            ? FilesHelper::bytesToSize($this->size)
+            : 'unknown';
     }
 
     /**
@@ -696,6 +706,24 @@ class File extends AbstractEntity
     {
         $this->downloadInfo = $downloadInfo;
 
+        return $this;
+    }
+
+    /**
+     * @return Status|null
+     */
+    public function getStatus(): ?Status
+    {
+        return $this->status ?? (new Status());
+    }
+
+    /**
+     * @param Status|null $status
+     * @return File
+     */
+    public function setStatus(?Status $status): File
+    {
+        $this->status = $status;
         return $this;
     }
 }

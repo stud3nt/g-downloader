@@ -1,32 +1,68 @@
 
 <div class="row">
     <div class="col-md-12">
+        <div class="box">
+            <div class="box-header with-border">
+                SETTINGS
+            </div>
+            <div class="box-body">
+                <div class="form-group col-md-4">
+                    <label for="queue-package-size" class="col-form-label-sm">Processing files package size:</label>
+                    <input id="queue-package-size" type="number" class="form-control" [(ngModel)]="queueRequest.processingFilesCount">
+                </div>
+                <div class="form-group col-md-4">
+                    <label>Downloading package size:</label>
+                    <input type="number" class="form-control" [(ngModel)]="downloadingPackageSize">
+                </div>
+            </div>
+            <div class="box-footer with-border distanced-buttons">
+                <button type="button" class="btn btn-sm btn-default" (click)="getQueueFiles()" [disabled]="queueRequest.statusIdle()">
+                    <i class="fa fa-refresh"></i> &nbsp; RELOAD
+                </button>
+                <button type="button" class="btn btn-sm btn-default" *ngIf="queueRequest.statusIdle()" (click)="downloadFilePackage()">
+                    <i class="fa fa-play"></i> &nbsp; START DOWNLOADING
+                </button>
+                <button type="button" class="btn btn-sm btn-default" *ngIf="queueRequest.statusWaiting()" disabled>
+                    <i class="fa fa-spinner fa-spin"></i> &nbsp; WAITING...
+                </button>
+                <button type="button" class="btn btn-sm btn-default" *ngIf="queueRequest.statusDownloading()" (click)="endDownload()">
+                    <i class="fa fa-stop"></i> &nbsp; STOP DOWNLOADING
+                </button>
+            </div>
+        </div>
+
         <div class="box no-border">
             <div class="box-body no-padding">
                 <table class="table table-striped table-condensed">
                     <tr>
-                        <th style="width: 10px">#</th>
+                        <th>Parser</th>
                         <th>Type</th>
                         <th>Filename</th>
                         <th>Dimensions</th>
                         <th>Size</th>
                         <th>Status</th>
-                        <th>Progress</th>
+                        <th width="15%">Progress</th>
                     </tr>
-                    <tr *ngFor="let file of queueFiles">
-                        <td [innerText]="file.icon"></td>
-                        <td [innerText]="file.type"></td>
-                        <td [innerText]="file.name"></td>
-                        <td [innerText]="file.width + 'x' + file.height"></td>
+                    <tr *ngFor="let file of queueRequest.files">
+                        <td [innerText]="parserTypeData[file.parentNode.parser]"></td>
+                        <td [innerText]="file.type.toUpperCase()"></td>
+                        <td [innerHTML]="(file.name | truncateString:20) + '.' + file.extension"></td>
+                        <td [innerText]="file.width + ' x ' + file.height + ' px'"></td>
                         <td [innerText]="file.textSize"></td>
                         <td [innerText]="file.status.description"></td>
-                        <td>
+                        <td class="progress-cell">
+                            <div class="progress-info">
+                                {{ file.status.progress }}%
+                            </div>
                             <div class="progress progress-xs">
-                                <div class="progress-bar progress-bar-danger" [style]="{'width': file.status.progress}"></div>
+                                <div class="progress-bar progress-bar-primary" [style]="{'width': file.status.progress}"></div>
                             </div>
                         </td>
                     </tr>
-                    <tr *ngIf="queueFiles.length === 0">
+                    <tr *ngIf="loadingList">
+                        <td colspan="20"> LOADING LIST... </td>
+                    </tr>
+                    <tr *ngIf="!loadingList && queueRequest.files.length === 0">
                         <td colspan="20"> === NO FILES IN QUEUE === </td>
                     </tr>
                 </table>

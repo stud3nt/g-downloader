@@ -6,16 +6,32 @@ export class JsonResponse {
 		Object.assign(this, obj);
 	}
 
-	public status: number = ResponseStatus.Error;
+	private _status: number = ResponseStatus.Error;
 
-	public data: any = null;
+	private _data: any = null;
 
-	public success(): boolean {
-		return (this.status === ResponseStatus.Success);
+    get status(): number {
+        return this._status;
+    }
+
+    set status(value: number) {
+        this._status = value;
+    }
+
+    get data(): any {
+        return this._data;
+    }
+
+    set data(value: any) {
+        this._data = value;
+    }
+
+    public success(): boolean {
+		return (this._status === ResponseStatus.Success);
 	}
 
 	public error(): boolean {
-		return (this.status === ResponseStatus.Error);
+		return (this._status === ResponseStatus.Error);
 	}
 
 }

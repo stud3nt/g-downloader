@@ -75,7 +75,7 @@ class DownloadManager extends EntityManager
             }
         }
 
-        $data = $this->modelConverter->convert($downloadStatus);
+        $data = $this->serializer->normalize($downloadStatus);
 
         $this->updateQueuedFilesStatuses($data);
 

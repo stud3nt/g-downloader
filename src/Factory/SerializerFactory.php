@@ -3,10 +3,13 @@
 namespace App\Factory;
 
 use Doctrine\Common\Annotations\AnnotationReader;
+use Symfony\Component\Serializer\Encoder\JsonEncoder;
 use Symfony\Component\Serializer\Mapping\Factory\ClassMetadataFactory;
 use Symfony\Component\Serializer\Mapping\Loader\AnnotationLoader;
 use Symfony\Component\Serializer\Normalizer\DateTimeNormalizer;
+use Symfony\Component\Serializer\Normalizer\GetSetMethodNormalizer;
 use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
+use Symfony\Component\Serializer\Normalizer\PropertyNormalizer;
 use Symfony\Component\Serializer\Serializer;
 
 class SerializerFactory
@@ -27,15 +30,9 @@ class SerializerFactory
 
         return new Serializer([
             new DateTimeNormalizer(),
-            new ObjectNormalizer(
-                $classMetadataFactory,
-                null,
-                null,
-                null,
-                null,
-                null,
-                $defaultContext
-            )
+            new GetSetMethodNormalizer($classMetadataFactory),
+        ], [
+            new JsonEncoder()
         ]);
     }
 }

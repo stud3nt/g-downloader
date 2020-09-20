@@ -73,10 +73,10 @@ class User extends AbstractEntity implements UserInterface, \Serializable
     protected ?string $apiToken;
 
     /**
-     * @ORM\Column(name="cache_token", type="string", nullable=true, length=32)
+     * @ORM\Column(name="info_exchange_file", type="string", nullable=true, length=32)
      * @Groups("user_data")
      */
-    protected ?string $cacheToken;
+    protected ?string $infoExchangeFile;
 
     /**
      * @ORM\Column(name="salt", type="string", nullable=false, length=64)
@@ -314,18 +314,6 @@ class User extends AbstractEntity implements UserInterface, \Serializable
         return 'downloader_data_'.$this->getApiToken();
     }
 
-    public function getCacheToken(): ?string
-    {
-        return $this->cacheToken;
-    }
-
-    public function setCacheToken(?string $cacheToken): self
-    {
-        $this->cacheToken = $cacheToken;
-
-        return $this;
-    }
-
     public function getThumbnail(): ?string
     {
         return $this->thumbnail;
@@ -334,6 +322,18 @@ class User extends AbstractEntity implements UserInterface, \Serializable
     public function setThumbnail(?string $thumbnail): self
     {
         $this->thumbnail = $thumbnail;
+
+        return $this;
+    }
+
+    public function getInfoExchangeFile(): ?string
+    {
+        return $this->infoExchangeFile;
+    }
+
+    public function setInfoExchangeFile(?string $infoExchangeFile): self
+    {
+        $this->infoExchangeFile = $infoExchangeFile;
 
         return $this;
     }

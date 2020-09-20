@@ -3,7 +3,7 @@
 namespace App\Controller\Api;
 
 use App\Controller\Api\Base\Controller;
-use App\Factory\ParsedNodeFactory;
+use App\Factory\Model\ParsedNodeFactory;
 use App\Manager\Object\NodeManager;
 use Doctrine\ORM\ORMException;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;

@@ -5,7 +5,7 @@ namespace App\Controller\Api;
 use App\Controller\Api\Base\Controller;
 use App\Converter\ModelConverter;
 use App\Enum\FileStatus;
-use App\Factory\ParsedFileFactory;
+use App\Factory\Model\ParsedFileFactory;
 use App\Manager\DownloadManager;
 use App\Manager\Object\FileManager;
 use App\Manager\Object\NodeManager;
@@ -26,7 +26,6 @@ class FileController extends Controller
      * @IsGranted("ROLE_ADMIN")
      *
      * @param Request $request
-     * @param ParserService $parserService
      * @param DownloadManager $downloadManager
      * @param NodeManager $nodeManager
      * @param FileManager $fileManager
@@ -34,13 +33,10 @@ class FileController extends Controller
      * @throws \Exception
      * @throws \ReflectionException
      */
-    public function toggleFileQueue(Request $request, ParserService $parserService, NodeManager $nodeManager, DownloadManager $downloadManager, FileManager $fileManager): JsonResponse
+    public function toggleFileQueue(Request $request, NodeManager $nodeManager, DownloadManager $downloadManager, FileManager $fileManager): JsonResponse
     {
         $parsedFile = (new ParsedFileFactory())->buildFromRequestData($request->request->all());
         $user = $this->getCurrentUser();
-
-        $parser = $parserService->loadParser($parsedFile->getParser(), $user);
-        $parser->getFileData($parsedFile);
 
         if ($queuedFile = $fileManager->getFileEntityByParsedFile($parsedFile)) { // file exists => removing...
             $fileManager->removeParsedFileFromQueue($parsedFile, $queuedFile);
@@ -63,7 +59,7 @@ class FileController extends Controller
      * @Route("/api/file/toggle_preview", name="api_file_toggle_preview", options={"expose"=true}, methods={"POST"})
      * @throws \Exception
      */
-    public function toggleFilePreview(Request $request, ParserService $parserService) : JsonResponse
+    public function toggleFilePreview(Request $request, ParserService $parserService): JsonResponse
     {
         $parsedFile = $this->prepareParsedFilePreview($request, $parserService);
         $parsedFile->setHtmlPreview(

@@ -10,6 +10,7 @@ use App\Entity\Traits\{CreatedAtTrait, IdentifierTrait, NameTrait, ParserTrait, 
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 /**
  * Parsed nodes
@@ -32,6 +33,7 @@ class Node extends AbstractEntity
     /**
      * @ORM\Column(name="level", type="string", length=20, nullable=false)
      * @EntityVariable(convertable=true, writable=true, readable=true)
+     * @Groups({"basic_data"})
      */
     protected string $level;
 

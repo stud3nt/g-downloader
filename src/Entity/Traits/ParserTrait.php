@@ -3,12 +3,13 @@
 namespace App\Entity\Traits;
 
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 trait ParserTrait
 {
     /**
      * @ORM\Column(name="parser", type="string", length=20, nullable=true)
-     * @EntityVariable(convertable=true, writable=true, readable=true)
+     * @Groups("basic_data")
      */
     protected $parser;
 
