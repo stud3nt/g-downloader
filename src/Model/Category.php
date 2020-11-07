@@ -2,39 +2,24 @@
 
 namespace App\Model;
 
-use App\Annotation\ModelVariable;
+use App\Annotation\Serializer\ObjectVariable;
 
 class Category extends AbstractModel
 {
-    /**
-     * @var integer
-     * @ModelVariable(type="integer")
-     */
-    public $id;
+    /** @ObjectVariable(type="integer") */
+    public int $id = 0;
 
-    /**
-     * @var string
-     * @ModelVariable(type="string")
-     */
-    public $name;
+    /** @ObjectVariable(type="string") */
+    public ?string $name = null;
 
-    /**
-     * @var string
-     * @ModelVariable(type="string")
-     */
-    public $label;
+    /** @ObjectVariable(type="string") */
+    public ?string $label = null;
 
-    /**
-     * @var string
-     * @ModelVariable(type="string")
-     */
-    public $symbol;
+    /** @ObjectVariable(type="string") */
+    public ?string $symbol = null;
 
-    /**
-     * @var boolean
-     * @ModelVariable(type="boolean")
-     */
-    public $active;
+    /** @ObjectVariable(type="boolean") */
+    public bool $active = false;
 
     /**
      * @return int
@@ -56,9 +41,9 @@ class Category extends AbstractModel
     }
 
     /**
-     * @return string
+     * @return string|null
      */
-    public function getName(): string
+    public function getName(): ?string
     {
         return $this->name;
     }
@@ -75,9 +60,9 @@ class Category extends AbstractModel
     }
 
     /**
-     * @return string
+     * @return string|null
      */
-    public function getLabel(): string
+    public function getLabel(): ?string
     {
         return $this->label;
     }
@@ -94,9 +79,9 @@ class Category extends AbstractModel
     }
 
     /**
-     * @return string
+     * @return string|null
      */
-    public function getSymbol(): string
+    public function getSymbol(): ?string
     {
         return $this->symbol;
     }
@@ -113,9 +98,9 @@ class Category extends AbstractModel
     }
 
     /**
-     * @return string
+     * @return boolean
      */
-    public function getActive(): string
+    public function getActive(): bool
     {
         return $this->active;
     }

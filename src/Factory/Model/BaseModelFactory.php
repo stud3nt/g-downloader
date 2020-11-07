@@ -10,6 +10,6 @@ class BaseModelFactory
 
     public function __construct()
     {
-        $this->serializer = (new SerializerFactory())->getEntityNormalizer();
+        $this->serializer = SerializerFactory::getEntityNormalizer();
     }
 }

@@ -13,6 +13,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\PersistentCollection;
 use Doctrine\Persistence\ObjectManager;
 use Symfony\Component\Intl\Exception\MethodNotImplementedException;
+use App\Converter\Base\BaseConverter;
 
 class EntityConverter extends BaseConverter
 {
@@ -239,7 +240,7 @@ class EntityConverter extends BaseConverter
 
         /** @var BaseConverter $variableConverter */
         if ($value && $variableConfig->converter) {
-            $variableConverterClass = 'App\\Converter\\'.$variableConfig->converter.'Converter';
+            $variableConverterClass = 'App\\Serializer\\'.$variableConfig->converter.'Serializer';
             $variableConverter = new $variableConverterClass($variableConfig->converterOptions);
 
             if (method_exists($variableConverter, 'setEntityManager'))
@@ -286,7 +287,7 @@ class EntityConverter extends BaseConverter
 
         /** @var BaseConverter $variableConverter */
         if ($variableConfig->converter) {
-            $variableConverterClass = 'App\\Converter\\'.$variableConfig->converter.'Converter';
+            $variableConverterClass = 'App\\Serializer\\'.$variableConfig->converter.'Serializer';
             $variableConverter = new $variableConverterClass($variableConfig->converterOptions);
 
             if (method_exists($variableConverter, 'setEntityManager'))

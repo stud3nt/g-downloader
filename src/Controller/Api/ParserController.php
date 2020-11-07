@@ -36,9 +36,9 @@ class ParserController extends Controller
             $request->request->all()
         );
 
-        /*if ($parserRequest->getStatus()->checkIfRequestDuplicated())
-            return $this->jsonError('REQUEST_DUPLICATED');
-        else*/
+        //if ($parserRequest->getStatus()->checkIfRequestDuplicated())
+          //  return $this->jsonError('REQUEST_DUPLICATED');
+        //else
             $parserRequest->getStatus()->start();
 
         $fileManager = $this->container->get(FileManager::class);
@@ -55,8 +55,9 @@ class ParserController extends Controller
 
             $parserRequest->setIgnoreCache(false)->getStatus()->end();
 
+
             return $this->json(
-                $this->modelConverter->convert($parserRequest)
+                $this->objectSerializer->serialize($parserRequest)
             );
         } catch (\Exception $ex) {
             $parserRequest->getStatus()->end();

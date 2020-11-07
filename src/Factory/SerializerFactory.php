@@ -3,13 +3,13 @@
 namespace App\Factory;
 
 use Doctrine\Common\Annotations\AnnotationReader;
+use Symfony\Component\PropertyInfo\Extractor\ReflectionExtractor;
 use Symfony\Component\Serializer\Encoder\JsonEncoder;
 use Symfony\Component\Serializer\Mapping\Factory\ClassMetadataFactory;
 use Symfony\Component\Serializer\Mapping\Loader\AnnotationLoader;
 use Symfony\Component\Serializer\Normalizer\DateTimeNormalizer;
 use Symfony\Component\Serializer\Normalizer\GetSetMethodNormalizer;
 use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
-use Symfony\Component\Serializer\Normalizer\PropertyNormalizer;
 use Symfony\Component\Serializer\Serializer;
 
 class SerializerFactory
@@ -20,7 +20,7 @@ class SerializerFactory
      * @param array $defaultContext = [];
      * @return Serializer
      */
-    public function getEntityNormalizer(array $defaultContext = []): Serializer
+    static function getEntityNormalizer(array $defaultContext = []): Serializer
     {
         $classMetadataFactory = new ClassMetadataFactory(
             new AnnotationLoader(
@@ -28,11 +28,23 @@ class SerializerFactory
             )
         );
 
-        return new Serializer([
+        $normalizers = [
             new DateTimeNormalizer(),
-            new GetSetMethodNormalizer($classMetadataFactory),
-        ], [
+            new ObjectNormalizer(
+                null,
+                null,
+                null,
+                new ReflectionExtractor(),
+                null,
+                null,
+                $defaultContext
+            ),
+            //new GetSetMethodNormalizer($classMetadataFactory),
+        ];
+        $encoders = [
             new JsonEncoder()
-        ]);
+        ];
+
+        return new Serializer($normalizers, $encoders);
     }
 }

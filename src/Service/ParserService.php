@@ -7,6 +7,7 @@ use App\Entity\User;
 use App\Enum\NodeLevel;
 use App\Enum\ParserType;
 use App\Factory\RedisFactory;
+use App\Manager\Object\NodeManager;
 use App\Manager\SettingsManager;
 use App\Model\AbstractModel;
 use App\Model\ParserRequest;
@@ -22,11 +23,15 @@ class ParserService
     /** @var TokenStorageInterface */
     protected $tokenStorage;
 
-    public function __construct(SettingsManager $settingsManager, TokenStorageInterface $tokenStorage)
+    /** @var NodeManager */
+    protected $nodeManager;
+
+    public function __construct(SettingsManager $settingsManager, NodeManager $nodeManager, TokenStorageInterface $tokenStorage)
     {
         $this->settingsManager = $settingsManager;
         $this->tokenStorage = $tokenStorage;
         $this->redis = (new RedisFactory())->initializeConnection();
+        $this->nodeManager = $nodeManager;
     }
 
     /**
@@ -36,7 +41,7 @@ class ParserService
      * @throws \ReflectionException
      * @throws \Exception
      */
-    public function executeRequestedAction(ParserRequest &$parserRequest, User $user): ParserRequest
+    public function executeRequestedAction(ParserRequest $parserRequest, User $user): ParserRequest
     {
         $parser = $this->loadParser(
             $parserRequest->getCurrentNode()->getParser(), $user
@@ -98,9 +103,15 @@ class ParserService
         $parserClass = 'App\\Parser\\'.ucfirst(StringHelper::underscoreToCamelCase($parserName)).'Parser';
         $parserSettings = $this->settingsManager->getParserSettings($parserName);
 
-        return class_exists($parserClass)
+        $instance = class_exists($parserClass)
             ? new $parserClass($parserSettings, $user)
             : null;
+
+        if ($instance) {
+            $instance->setNodeManager($this->nodeManager);
+        }
+
+        return $instance;
     }
 
     protected function generateCurrentNodeName(ParserRequest $parserRequest): string

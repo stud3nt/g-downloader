@@ -2,6 +2,7 @@
 
 namespace App\Converter;
 
+use App\Converter\Base\BaseConverter;
 use App\Utils\DateTimeHelper;
 
 class DateTimeConverter extends BaseConverter
@@ -10,7 +11,7 @@ class DateTimeConverter extends BaseConverter
      * @param $value
      * @return string
      */
-    public function convertFromEntityValue($value) : string
+    public function convertFromObjectValue($value) : string
     {
         return $value->format('Y-m-d H:i:s');
     }
@@ -22,21 +23,18 @@ class DateTimeConverter extends BaseConverter
      * @return \DateTime|mixed
      * @throws \Exception
      */
-    public function convertToEntityValue($value) : ?\DateTime
+    public function convertToObjectValue($value) : ?\DateTime
     {
         if (is_numeric($value) || is_int($value)) { // timestamp integer
             $date = new \DateTime();
-            $date->setTimestamp($value);
-        } elseif ($value === 'null' || $value === null) {
-            $date = null;
+            return $date->setTimestamp($value);
+        } elseif (in_array($value, ['null', null, '---'])) {
+            return null;
         } else {
             if (DateTimeHelper::isDateStringValid($value))
-                $date = new \DateTime($value);
+                return new \DateTime($value);
             else
-                $date = null;
+                return null;
         }
-
-        return $date;
-
     }
 }

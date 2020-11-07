@@ -4,6 +4,7 @@ namespace App\Controller\Api\Base;
 
 use App\Converter\EntityConverter;
 use App\Converter\ModelConverter;
+use App\Converter\ObjectSerializer;
 use App\Entity\User;
 use App\Factory\SerializerFactory;
 use App\Manager\CategoryManager;
@@ -19,23 +20,20 @@ use Symfony\Component\Serializer\Serializer;
 
 class Controller extends BaseController
 {
-    /** @var SettingsManager */
-    protected $settingsManager;
-
     /** @var ContainerInterface */
     protected $container;
 
-    /** @var ModelConverter */
-    protected $modelConverter;
+    protected SettingsManager $settingsManager;
 
-    /** @var EntityConverter */
-    protected $entityConverter;
+    protected ModelConverter $modelConverter;
 
-    /** @var NodeManager */
-    protected $nodeManager;
+    protected EntityConverter $entityConverter;
 
-    /** @var Serializer */
-    protected $entitySerializer;
+    protected NodeManager $nodeManager;
+
+    protected Serializer $entitySerializer;
+
+    protected ObjectSerializer $objectSerializer;
 
     /**
      * @param ContainerInterface $container
@@ -52,7 +50,8 @@ class Controller extends BaseController
             $this->getDoctrine()->getManager()
         );
 
-        $this->entitySerializer = $serializerFactory->getEntityNormalizer();
+        $this->entitySerializer = SerializerFactory::getEntityNormalizer();
+        $this->objectSerializer = new ObjectSerializer();
     }
 
     /** @required */

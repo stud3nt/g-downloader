@@ -10,7 +10,7 @@ use App\Entity\Traits\{CreatedAtTrait, IdentifierTrait, NameTrait, ParserTrait, 
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
-use Symfony\Component\Serializer\Annotation\Groups;
+use App\Annotation\Serializer\ObjectVariable;
 
 /**
  * Parsed nodes
@@ -32,95 +32,91 @@ class Node extends AbstractEntity
 
     /**
      * @ORM\Column(name="level", type="string", length=20, nullable=false)
-     * @EntityVariable(convertable=true, writable=true, readable=true)
-     * @Groups({"basic_data"})
+     * @ObjectVariable(type="string")
      */
     protected string $level;
 
     /**
      * @ORM\Column(name="personal_rating", type="integer", length=6, options={"unsigned"=true, "default":0})
-     * @EntityVariable(convertable=true, writable=true, readable=true)
+     * @ObjectVariable(type="integer")
      */
     protected int $personalRating = 0;
 
     /**
      * @ORM\Column(name="description", type="string", length=4096, nullable=true)
-     * @EntityVariable(convertable=true, writable=true, readable=true)
+     * @ObjectVariable(type="string")
      */
     protected ?string $description;
 
     /**
      * @ORM\Column(name="personal_description", type="text", nullable=true)
-     * @EntityVariable(convertable=true, writable=true, readable=true)
+     * @ObjectVariable(type="string")
      */
     protected ?string $personalDescription;
 
     /**
      * @ORM\Column(name="rating", type="integer", length=6, options={"unsigned"=true, "default":0})
-     * @EntityVariable(convertable=true, writable=true, readable=true)
+     * @ObjectVariable(type="integer")
      */
     protected int $rating = 0;
 
     /**
      * @ORM\Column(name="images_no", type="integer", options={"unsigned"=true, "default":0}, length=6)
-     * @EntityVariable(convertable=true, writable=true, readable=true)
+     * @ObjectVariable(type="integer")
      */
     protected int $imagesNo = 0;
 
     /**
      * @ORM\Column(name="comments_no", type="integer", options={"unsigned"=true, "default":0}, length=4)
-     * @EntityVariable(convertable=true, writable=true, readable=true)
+     * @ObjectVariable(type="integer")
      */
     protected int $commentsNo = 0;
 
     /**
      * @ORM\Column(name="thumbnails", type="array", nullable=true)
-     * @EntityVariable(convertable=true, writable=true, readable=true)
+     * @ObjectVariable(type="integer")
      */
     protected ?array $thumbnails = [];
 
     /**
      * @ORM\Column(name="local_thumbnails", type="array", nullable=true)
-     * @EntityVariable(convertable=true, writable=true, readable=true)
+     * @ObjectVariable(type="integer")
      */
     protected ?array $localThumbnails = [];
 
     /**
      * @var \DateTime
      * @ORM\Column(name="last_viewed_at", type="datetime", options={"default"="CURRENT_TIMESTAMP"}, nullable=true)
-     * @EntityVariable(convertable=true, writable=true, inAllConvertNames=false, readable=true, converter="DateTime")
+     * @ObjectVariable(type="integer")
      */
     protected ?\DateTime $lastViewedAt;
 
     /**
      * @ORM\Column(name="saved", type="boolean", length=1, options={"unsigned"=true, "default":0})
-     * @EntityVariable(convertable=true, writable=true, readable=true, type="boolean")
+     * @ObjectVariable(type="boolean")
      */
     protected bool $saved = false;
 
     /**
      * @ORM\Column(name="blocked", type="boolean", length=1, options={"unsigned"=true, "default":0})
-     * @EntityVariable(convertable=true, writable=true, readable=true, type="boolean")
+     * @ObjectVariable(type="boolean")
      */
     protected bool $blocked = false;
 
     /**
      * @ORM\Column(name="favorited", type="boolean", length=1, options={"unsigned"=true, "default":0})
-     * @EntityVariable(convertable=true, writable=true, readable=true, type="boolean")
+     * @ObjectVariable(type="boolean")
      */
     protected bool $favorited = false;
 
     /**
      * @ORM\Column(name="finished", type="boolean", length=1, options={"unsigned"=true, "default":0})
-     * @EntityVariable(convertable=true, writable=true, readable=true, type="boolean")
+     * @ObjectVariable(type="boolean")
      */
     protected bool $finished = false;
 
     /**
      * @ORM\OneToOne(targetEntity="App\Entity\Parser\NodeSettings", mappedBy="node", cascade={"persist"})
-     * @EntityVariable(convertable=true, writable=true, readable=true, converter="Entity", converterOptions={
-     *     "class":"App\Entity\Parser\NodeSettings"
-     * })
      */
     protected ?NodeSettings $settings;
 
@@ -143,19 +139,18 @@ class Node extends AbstractEntity
     /**
      * @ORM\ManyToOne(targetEntity="App\Entity\Category", cascade={"persist"})
      * @ORM\JoinColumn(name="category_id", referencedColumnName="id")
-     * @EntityVariable(convertable=true, writable=true, readable=true, converter="Entity", converterOptions={"class":"App\Entity\Category"})
      */
     private ?Category $category;
 
     /**
      * @ORM\ManyToMany(targetEntity="App\Entity\Tag", cascade={"persist"})
-     * @EntityVariable(convertable=true, writable=true, type="array", readable=true, converter="Entity", converterOptions={"class":"App\Entity\Tag"})
      * @ORM\JoinTable(name="parsed_nodes_tags",
      *      joinColumns={@ORM\JoinColumn(name="parsed_node_id", referencedColumnName="id")},
      *      inverseJoinColumns={@ORM\JoinColumn(name="tag_id", referencedColumnName="id")}
-     *  )
+     * )
+     * @ObjectVariable(class="App\Entity\Tag")
      */
-    private ?Collection $tags;
+    private ?iterable $tags;
 
     public function __construct()
     {
@@ -171,7 +166,7 @@ class Node extends AbstractEntity
         $this->tags = new ArrayCollection();
     }
 
-    public function getLevel(): ?string
+    public function getLevel(): string
     {
         return $this->level;
     }
@@ -385,9 +380,9 @@ class Node extends AbstractEntity
     }
 
     /**
-     * @return Collection|Tag[]
+     * @return Tag[]|null
      */
-    public function getTags(): ?Collection
+    public function getTags(): ?iterable
     {
         return $this->tags;
     }
@@ -395,7 +390,7 @@ class Node extends AbstractEntity
     /**
      * @return $this
      */
-    public function setTags($tags): self
+    public function setTags(?iterable $tags): self
     {
         $this->tags = $tags;
 

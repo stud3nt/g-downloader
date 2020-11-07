@@ -2,31 +2,28 @@
 
 namespace App\Model;
 
-use App\Annotation\ModelVariable;
+use App\Annotation\Serializer\ObjectVariable;
 
 class PaginationSelector extends AbstractModel
 {
     /**
-     * @var string
-     * @ModelVariable()
+     * @ObjectVariable(type="string")
      */
-    public $label = 'A';
+    public string $label = 'A';
 
     /**
-     * @var string
-     * @ModelVariable()
+     * @ObjectVariable(type="string")
      */
-    public $value = '';
+    public string $value = '';
 
     /**
-     * @var bool
-     * @ModelVariable(type="boolean")
+     * @ObjectVariable(type="boolean")
      */
-    public $isActive = false;
+    public bool $isActive = false;
 
     /**
      * @var PaginationSelector[]
-     * @ModelVariable(converter="Model", converterOptions={"class":"App\Model\PaginationSelector"}, type="array")
+     * @ObjectVariable(class="App\Model\PaginationSelector")
      */
     public $childrens = [];
 

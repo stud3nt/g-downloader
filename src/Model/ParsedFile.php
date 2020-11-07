@@ -2,7 +2,7 @@
 
 namespace App\Model;
 
-use App\Annotation\ModelVariable;
+use App\Annotation\Serializer\ObjectVariable;
 use App\Model\Interfaces\StatusInterface;
 use App\Utils\DateTimeHelper;
 use App\Utils\FilesHelper;
@@ -10,178 +10,158 @@ use App\Utils\FilesHelper;
 class ParsedFile extends AbstractModel implements StatusInterface
 {
     /**
-     * @var string
-     * @ModelVariable()
+     * @ObjectVariable(type="string")
      */
-    public $name;
+    public string $name;
 
     /**
-     * @var string
-     * @ModelVariable()
+     * @ObjectVariable(type="string")
      */
-    public $title;
+    public string $title;
 
     /**
-     * @var string
-     * @ModelVariable()
+     * @ObjectVariable(type="string")
      */
-    public $description;
+    public string $description;
 
     /**
-     * @var string
-     * @ModelVariable()
+     * @ObjectVariable(type="string")
      */
-    public $domain;
+    public string $domain;
 
     /**
-     * @var string
-     * @ModelVariable()
+     * @ObjectVariable(type="string")
      */
-    public $extension;
+    public string $extension;
 
     /**
-     * @var string
-     * @ModelVariable()
+     * @ObjectVariable(type="string")
      */
-    public $url;
+    public string $url;
 
     /**
-     * @var string
-     * @ModelVariable()
+     * @ObjectVariable(type="string")
      */
-    public $fileUrl;
+    public string $fileUrl;
 
     /**
-     * @var string
-     * @ModelVariable()
+     * @ObjectVariable(type="string")
      */
-    public $localUrl;
+    public string $localUrl;
 
     /**
-     * @var string
-     * @ModelVariable()
+     * @ObjectVariable(type="string")
      */
-    public $previewUrl;
+    public string $previewUrl;
 
     /**
-     * @var string
-     * @ModelVariable()
+     * @ObjectVariable(type="string")
      */
-    public $mimeType;
+    public string $mimeType;
 
     /**
-     * @ModelVariable()
+     * @ObjectVariable(type="string")
      */
-    public $type;
+    public string $type;
 
     /**
-     * @ModelVariable()
+     * @ObjectVariable(type="datetime")
      */
-    public $uploadedAt;
+    public ?\DateTime $uploadedAt;
 
     /**
-     * @var integer
-     * @ModelVariable(type="integer")
+     * @ObjectVariable(type="integer")
      */
-    public $rating = -1;
+    public int $rating = -1;
 
     /**
-     * @ModelVariable()
+     * @ObjectVariable(type="datetime")
      */
-    public $downloadedAt;
+    public ?\DateTime $downloadedAt;
 
     /**
-     * @var integer
-     * @ModelVariable(type="integer")
+     * @ObjectVariable(type="integer")
      */
-    public $width = 0;
+    public int $width = 0;
 
     /**
-     * @var integer
-     * @ModelVariable(type="integer")
+     * @ObjectVariable(type="integer")
      */
-    public $height = 0;
+    public int $height = 0;
 
     /**
-     * @var integer
-     * @ModelVariable(type="integer")
+     * @ObjectVariable(type="integer")
      */
-    public $size = 0;
+    public int $size = 0;
 
     /**
-     * @ModelVariable(type="float")
+     * @ObjectVariable(type="float")
      */
-    public $dimensionRatio;
+    public float $dimensionRatio;
 
     /**
-     * @var integer
-     * @ModelVariable(type="integer")
+     * @ObjectVariable(type="integer")
      */
-    public $length = 0;
+    public int $length = 0;
 
     /**
-     * @var string
-     * @ModelVariable()
+     * @ObjectVariable(type="string")
      */
-    public $textSize = null;
+    public ?string $textSize = null;
 
     /**
-     * @var string
-     * @ModelVariable()
+     * @ObjectVariable(type="string")
      */
-    public $identifier;
+    public string $identifier;
 
     /**
-     * @ModelVariable()
+     * @ObjectVariable(type="string")
      */
     public $parser;
 
     /**
-     * @ModelVariable()
+     * @ObjectVariable(type="string")
      */
-    public $thumbnail;
+    public ?string $thumbnail = null;
 
     /**
-     * @var boolean
-     * @ModelVariable(type="boolean")
+     * @ObjectVariable(type="boolean")
      */
-    public $miniPreview = false;
+    public bool $miniPreview = false;
 
     /**
-     * @var string
-     * @ModelVariable()
+     * @ObjectVariable(type="string")
      */
-    public $icon = null;
+    public ?string $icon = null;
 
     /**
-     * @var string
-     * @ModelVariable()
+     * @ObjectVariable(type="string")
      */
-    public $localThumbnail = null;
+    public ?string $localThumbnail = null;
 
     /**
-     * @ModelVariable()
+     * @ObjectVariable(type="string")
      */
-    public $htmlPreview;
+    public ?string $htmlPreview = null;
 
     /**
-     * @ModelVariable(type="stdClass")
+     * @ObjectVariable(type="stdClass")
      */
-    public $statuses;
+    public \stdClass $statuses;
 
     /**
-     * @var ParsedNode
-     * @ModelVariable(converter="Model", converterOptions={"class":"App\Model\ParsedNode"})
+     * @ObjectVariable(class="App\Model\ParsedNode")
      */
-    public $parentNode = null;
+    public ?ParsedNode $parentNode = null;
 
     /**
-     * @var Status
-     * @ModelVariable(converter="Model", converterOptions={"class":"App\Model\Status"})
+     * @ObjectVariable(class="App\Model\Status")
      */
-    public $status;
+    public Status $status;
 
-    /** @var string */
+    /**
+     * @ObjectVariable(type="string")
+     */
     protected $previewFilePath = null;
 
     public function __construct(string $parser = null, string $type = null)

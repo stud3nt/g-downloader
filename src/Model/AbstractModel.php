@@ -2,8 +2,7 @@
 
 namespace App\Model;
 
-use App\Converter\EntityConverter;
-use App\Converter\ModelConverter;
+use App\Converter\ObjectSerializer;
 use App\Entity\Base\AbstractEntity;
 
 abstract class AbstractModel
@@ -13,17 +12,13 @@ abstract class AbstractModel
      * @throws \ReflectionException
      * @return $this;
      */
-    public function setFromEntity(AbstractEntity $entity = null): self
+    public function setFromEntity(AbstractEntity $entity, string $className): self
     {
-        if (!$entity)
-            return $this;
+        $objectSerializer = new ObjectSerializer();
 
-        $entityConverter = new EntityConverter();
-        $modelConverter = new ModelConverter();
+        $entityData = $objectSerializer->serialize($entity);
 
-        $entityData = $entityConverter->convert($entity);
-
-        $modelConverter->setData($entityData, $this);
+        $objectSerializer->deserializeObject($entityData, $className);
 
         return $this;
     }

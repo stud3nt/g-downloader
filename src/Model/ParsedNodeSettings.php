@@ -2,88 +2,76 @@
 
 namespace App\Model;
 
-use App\Annotation\ModelVariable;
+use App\Annotation\Serializer\ObjectVariable;
 use App\Enum\FolderType;
 use App\Enum\PrefixSufixType;
 
 class ParsedNodeSettings extends AbstractModel
 {
     /**
-     * @var integer
-     * @ModelVariable(type="integer")
+     * @ObjectVariable(type="integer")
      */
-    public $id;
+    public ?int $id = null;
 
     /**
-     * @var string
-     * @ModelVariable(type="string")
+     * @ObjectVariable(type="string")
      */
-    public $prefixType = PrefixSufixType::CustomText;
+    public string $prefixType = PrefixSufixType::CustomText;
 
     /**
-     * @var string
-     * @ModelVariable(type="string")
+     * @ObjectVariable(type="string")
      */
-    public $prefix = null;
+    public ?string $prefix = null;
 
     /**
-     * @var string
-     * @ModelVariable(type="string")
+     * @ObjectVariable(type="string")
      */
-    public $sufixType = PrefixSufixType::CustomText;
+    public string $sufixType = PrefixSufixType::CustomText;
 
     /**
-     * @var string
-     * @ModelVariable(type="string")
+     * @ObjectVariable(type="string")
      */
-    public $sufix = null;
+    public ?string $sufix = null;
 
     /**
-     * @var string
-     * @ModelVariable(type="string")
+     * @ObjectVariable(type="string")
      */
-    public $folderType = FolderType::CustomText;
+    public string $folderType = FolderType::CustomText;
 
     /**
-     * @var string
-     * @ModelVariable(type="string")
+     * @ObjectVariable(type="string")
      */
-    public $folder = null;
+    public ?string $folder = null;
 
     /**
-     * @var integer
-     * @ModelVariable(type="integer")
+     * @ObjectVariable(type="integer")
      */
-    public $maxWidth = 0;
+    public int $maxWidth = 0;
 
     /**
-     * @var integer
-     * @ModelVariable(type="integer")
+     * @ObjectVariable(type="integer")
      */
-    public $maxHeight = 0;
+    public int $maxHeight = 0;
 
     /**
-     * @var integer
-     * @ModelVariable(type="integer")
+     * @ObjectVariable(type="integer")
      */
-    public $maxSize = 0;
+    public int $maxSize = 0;
 
     /**
-     * @var integer
-     * @ModelVariable(type="integer")
+     * @ObjectVariable(type="integer")
      */
-    public $minLength = 0;
+    public int $minLength = 0;
 
     /**
-     * @var string
-     * @ModelVariable(type="string")
+     * @ObjectVariable(type="string")
      */
-    public $sizeUnit = 'B';
+    public string $sizeUnit = 'B';
 
     /**
-     * @return int
+     * @return int|null
      */
-    public function getId(): int
+    public function getId(): ?int
     {
         return $this->id;
     }

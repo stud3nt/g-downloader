@@ -61,7 +61,7 @@ class CategoryManager extends EntityManager
         if ($categories) {
             foreach ($categories as $categoryEntity) {
                 $parserRequest->addCategory(
-                    (new \App\Model\Category())->setFromEntity($categoryEntity)
+                    (new \App\Model\Category())->setFromEntity($categoryEntity, \App\Model\Category::class)
                 );
             }
         }

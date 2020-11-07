@@ -6,6 +6,7 @@ use App\Converter\EntityConverter;
 use App\Converter\ModelConverter;
 use App\Entity\Parser\Node;
 use App\Enum\NodeStatus;
+use App\Factory\SerializerFactory;
 use App\Manager\Base\EntityManager;
 use App\Manager\CategoryManager;
 use App\Manager\TagManager;
@@ -38,8 +39,15 @@ class NodeManager extends EntityManager
     /** @var CategoryManager */
     protected $categoryManager;
 
-    public function __construct(ObjectManager $em, TokenStorageInterface $tokenStorage, EntityConverter $entityConverter, TagManager $tagManager, CategoryManager $categoryManager)
-    {
+    protected $serializer;
+
+    public function __construct(
+        ObjectManager $em,
+        TokenStorageInterface $tokenStorage,
+        EntityConverter $entityConverter,
+        TagManager $tagManager,
+        CategoryManager $categoryManager
+    ) {
         parent::__construct($em, $tokenStorage);
 
         $this->entityConverter = $entityConverter;
@@ -49,6 +57,8 @@ class NodeManager extends EntityManager
 
         $this->tagManager = $tagManager;
         $this->categoryManager = $categoryManager;
+
+        $this->serializer = SerializerFactory::getEntityNormalizer();
     }
 
     public function getOneByParsedNode(ParsedNode $node): ?Node
@@ -199,10 +209,9 @@ class NodeManager extends EntityManager
 
             if ($parsedNodesForSave) { // save new parsed nodes to database;
                 foreach ($parsedNodesForSave as $parsedNodeForSave) {
-                    $nodeEntity = new Node();
+                    $nodeEntity = $this->serializer->denormalize($parsedNodeForSave, Node::class);
                     $nodeEntity->setParentNode($parentNodeEntity);
 
-                    $this->entityConverter->setData($parsedNodeForSave, $nodeEntity);
                     $this->em->persist($nodeEntity);
                 }
             }

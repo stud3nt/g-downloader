@@ -74,7 +74,7 @@ class RedditOauth
 
     public function getHttpHeader()
     {
-        return "Authorization: ".$this->tokenType." ".$this->accessToken;
+        return "Authorization: ".ucfirst($this->tokenType)." ".$this->accessToken;
     }
 
     /**
@@ -132,7 +132,6 @@ class RedditOauth
 
         $response = curl_exec($curl);
         curl_close($curl);
-
 
         $response = json_decode($response);
 

@@ -4,7 +4,7 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
-    "build": "ng build",
+    "build": "ng build --prod --watch",
     "test": "ng test",
     "lint": "ng lint",
     "e2e": "ng e2e"
@@ -25,6 +25,7 @@
     "core-js": "^2.5.4",
     "jquery": "^3.4.1",
     "ngx-cookie-service": "^2.2.0",
+    "rimraf": "^3.0.2",
     "rxjs": "~6.2.0",
     "zone.js": "~0.8.26"
   },

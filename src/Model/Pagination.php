@@ -2,88 +2,76 @@
 
 namespace App\Model;
 
-use App\Annotation\ModelVariable;
+use App\Annotation\Serializer\ObjectVariable;
 use App\Enum\PaginationMode;
 
 class Pagination extends AbstractModel
 {
     /**
-     * @var boolean
-     * @ModelVariable(type="boolean")
+     * @ObjectVariable(type="boolean")
      */
-    public $active = false;
+    public bool $active = false;
 
     /**
-     * @var integer
-     * @ModelVariable(type="integer")
+     * @ObjectVariable(type="integer")
      */
-    public $currentPage = 1;
+    public int $currentPage = 1;
 
     /**
-     * @var integer
-     * @ModelVariable(type="integer")
+     * @ObjectVariable(type="integer")
      */
-    public $pagesPackageSize = 2;
+    public int $pagesPackageSize = 2;
 
     /**
-     * @var string
-     * @ModelVariable(type="string")
+     * @ObjectVariable(type="string")
      */
-    public $currentLetter = 'A';
+    public string $currentLetter = 'A';
 
     /**
-     * @var string
-     * @ModelVariable(type="string")
+     * @ObjectVariable(type="string")
      */
-    public $mode = PaginationMode::Numbers;
+    public string $mode = PaginationMode::Numbers;
 
     /**
-     * @var integer
-     * @ModelVariable(type="integer")
+     * @ObjectVariable(type="integer")
      */
-    public $totalPages = 1;
+    public int $totalPages = 1;
 
     /**
-     * @var integer
-     * @ModelVariable(type="integer")
+     * @ObjectVariable(type="integer")
      */
-    public $pageShift = 0;
+    public int $pageShift = 0;
 
     /**
-     * @var integer
-     * @ModelVariable(type="integer")
+     * @ObjectVariable(type="integer")
      */
-    public $packageStep = 100;
+    public int $packageStep = 100;
 
     /**
-     * @var integer
-     * @ModelVariable(type="integer")
+     * @ObjectVariable(type="integer")
      */
-    public $minPackage = 1;
+    public int $minPackage = 1;
 
     /**
-     * @var integer
-     * @ModelVariable(type="integer")
+     * @ObjectVariable(type="integer")
      */
-    public $maxPackage = 10;
+    public int $maxPackage = 10;
 
     /**
-     * @var integer
-     * @ModelVariable(type="integer")
+     * @ObjectVariable(type="integer")
      */
-    public $currentPackage = 1;
+    public int $currentPackage = 1;
 
     /**
-     * @var integer
-     * @ModelVariable(type="integer")
+     * @ObjectVariable(type="integer")
      */
-    public $packageSize = 100;
+    public int $packageSize = 100;
 
     /**
-     * @var PaginationSelector[]
-     * @ModelVariable(converter="Model", converterOptions={"class":"App\Model\PaginationSelector"}, type="array")
+     * @var PaginationSelector[]|null
+     * @ObjectVariable(class="App\Model\PaginationSelector")
      */
-    public $selectors;
+    public ?array $selectors = [];
 
     public function reset() : Pagination
     {
@@ -97,11 +85,9 @@ class Pagination extends AbstractModel
         return $this;
     }
 
-    public function disable() : Pagination
+    public function disable(): Pagination
     {
-        $this->reset();
-
-        return $this;
+        return $this->reset();
     }
 
     /**

@@ -3,9 +3,6 @@ import { HttpClient } from "@angular/common/http";
 import { RouterService } from "./router.service";
 import { AuthService } from "./auth.service";
 import { HttpService } from "./http.service";
-import { QueueRequest } from "../model/request/queue-request";
-import { HttpHelper } from "../helper/http-helper";
-import { map } from "rxjs/operators";
 
 @Injectable({
   providedIn: 'root'
@@ -24,8 +21,10 @@ export class DownloaderService extends HttpService {
 
     }
 
-	public downloadProcess(downloadCount: number = 6) {
-		return this.get(this.router.generateUrl('api_downloader_process'), httpParams);
+	public downloadProcess(downloadedFilesNumber: number = 6) {
+		return this.get(this.router.generateUrl('api_downloader_process', {
+		    downloadedFileNumber: downloadedFilesNumber
+        }));
 	}
 
 	public stopDownload() {

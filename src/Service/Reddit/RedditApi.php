@@ -5,7 +5,6 @@ namespace App\Service\Reddit;
 use App\Model\ParserRequest;
 use App\Model\SettingsModel;
 use GuzzleHttp\Client;
-use Symfony\Component\Cache\CacheItem;
 
 class RedditApi
 {

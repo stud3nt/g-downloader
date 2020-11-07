@@ -58,7 +58,7 @@ class TagManager extends EntityManager
         if ($tags) {
             foreach ($tags as $tag) {
                 $parserRequest->addTag(
-                    (new \App\Model\Tag())->setFromEntity($tag)
+                    (new \App\Model\Tag())->setFromEntity($tag, \App\Model\Tag::class)
                 );
             }
         }

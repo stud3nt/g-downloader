@@ -2,172 +2,147 @@
 
 namespace App\Model;
 
-use App\Annotation\ModelVariable;
+use App\Annotation\Serializer\ObjectVariable;
 use App\Enum\NodeStatus;
 use App\Utils\DateTimeHelper;
 
 class ParsedNode extends AbstractModel
 {
     /**
-     * @var string
-     * @ModelVariable(type="string")
+     * @ObjectVariable(type="string")
      */
-    public $name;
+    public ?string $name = null;
 
     /**
-     * @var string
-     * @ModelVariable(type="string")
+     * @ObjectVariable(type="string")
      */
-    public $label;
+    public ?string $label = null;
 
     /**
-     * @var string
-     * @ModelVariable(type="string")
+     * @ObjectVariable(type="string")
      */
-    public $identifier;
+    public ?string $identifier = null;
 
     /**
-     * @var string
-     * @ModelVariable(type="string")
+     * @ObjectVariable(type="string")
      */
-    public $parser;
+    public ?string $parser = null;
 
     /**
-     * @var string
-     * @ModelVariable(type="string")
+     * @ObjectVariable(type="string")
      */
-    public $level;
+    public ?string $level = null;
 
     /**
-     * @var string
-     * @ModelVariable(type="string")
+     * @ObjectVariable(type="string")
      */
-    public $description;
+    public ?string $description = null;
 
     /**
-     * @var string
-     * @ModelVariable(type="string")
+     * @ObjectVariable(type="string")
      */
-    public $personalDescription = null;
+    public ?string $personalDescription = null;
 
     /**
-     * @var string
-     * @ModelVariable(type="string")
+     * @ObjectVariable(type="string")
      */
-    public $url;
+    public ?string $url = null;
 
     /**
-     * @var integer
-     * @ModelVariable(type="integer")
+     * @ObjectVariable(type="integer")
      */
-    public $rating = 0;
+    public int $rating = 0;
 
     /**
-     * @var integer
-     * @ModelVariable(type="integer")
+     * @ObjectVariable(type="integer")
      */
-    public $personalRating = 0;
+    public int $personalRating = 0;
 
     /**
-     * @var integer
-     * @ModelVariable(type="integer")
+     * @ObjectVariable(type="integer")
      */
-    public $imagesNo = 0;
+    public int $imagesNo = 0;
 
     /**
-     * @var integer
-     * @ModelVariable(type="integer")
+     * @ObjectVariable(type="integer")
      */
-    public $commentsNo = 0;
+    public int $commentsNo = 0;
 
     /**
-     * @var array
-     * @ModelVariable(type="array")
+     * @ObjectVariable(type="array")
      */
-    public $thumbnails = [];
+    public ?array $thumbnails = [];
 
     /**
-     * @var array
-     * @ModelVariable(type="array")
+     * @ObjectVariable(type="array")
      */
-    public $localThumbnails = [];
+    public ?array $localThumbnails = [];
 
     /**
-     * @var array
-     * @ModelVariable(type="array")
+     * @ObjectVariable(type="array")
      */
-    public $statuses = [];
+    public ?array $statuses = [];
 
     /**
-     * @var bool
-     * @ModelVariable(type="boolean")
+     * @ObjectVariable(type="boolean")
      */
-    public $noImage = false;
+    public bool $noImage = false;
 
     /**
-     * @var bool
-     * @ModelVariable(type="boolean")
+     * @ObjectVariable(type="boolean")
      */
-    public $queued = false;
+    public bool $queued = false;
 
     /**
-     * @var bool
-     * @ModelVariable(type="boolean")
+     * @ObjectVariable(type="boolean")
      */
-    public $blocked = false;
+    public bool $blocked = false;
 
     /**
-     * @var bool
-     * @ModelVariable(type="boolean")
+     * @ObjectVariable(type="boolean")
      */
-    public $favorited = false;
+    public bool $favorited = false;
 
     /**
-     * @var bool
-     * @ModelVariable(type="boolean")
+     * @ObjectVariable(type="boolean")
      */
-    public $finished = false;
+    public bool $finished = false;
 
     /**
-     * @var integer
-     * @ModelVariable(type="integer")
+     * @ObjectVariable(type="integer")
      */
-    public $expirationTime = 0;
+    public ?int $expirationTime = 0;
 
     /**
-     * @ModelVariable()
+     * @ObjectVariable(type="string")
      */
     public $lastViewedAt = null;
 
     /**
-     * @var boolean
-     * @ModelVariable(type="boolean")
+     * @ObjectVariable(type="boolean")
      */
-    public $allowCategory = false;
+    public bool $allowCategory = false;
 
     /**
-     * @var boolean
-     * @ModelVariable(type="boolean")
+     * @ObjectVariable(type="boolean")
      */
-    public $allowTags = false;
+    public bool $allowTags = false;
 
     /**
-     * @var Category|null
-     * @ModelVariable(converter="Model", converterOptions={"class":"App\Model\Category"})
+     * @ObjectVariable(class="App\Model\Category")
      */
-    public $category = null;
+    public ?Category $category = null;
 
     /**
      * @var Tag[]|null
-     * @ModelVariable(converter="Model", converterOptions={"class":"App\Model\Tag"}, type="array")
+     * @ObjectVariable(class="App\Model\Tag")
      */
-    public $tags = [];
+    public array $tags = [];
 
     /**
-     * @var ParsedNodeSettings
-     * @ModelVariable(converter="Model", converterOptions={"class":"App\Model\ParsedNodeSettings"})
+     * @ObjectVariable(class="App\Model\ParsedNodeSettings")
      */
-    public $settings = null;
+    public ?ParsedNodeSettings $settings = null;
 
     private $statusesNames = [
         NodeStatus::Queued,
@@ -304,10 +279,9 @@ class ParsedNode extends AbstractModel
     }
 
     /**
-     * @param string $parser
      * @return $this;
      */
-    public function setParser(string $parser = null): self
+    public function setParser(?string $parser = null): self
     {
         $this->parser = $parser;
 

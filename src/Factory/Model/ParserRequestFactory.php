@@ -2,7 +2,9 @@
 
 namespace App\Factory\Model;
 
+use App\Annotation\Serializer\ObjectVariable;
 use App\Converter\ModelConverter;
+use App\Converter\ObjectSerializer;
 use App\Factory\Base\RequestFactoryInterface;
 use App\Model\ParserRequest;
 
@@ -15,13 +17,11 @@ class ParserRequestFactory implements RequestFactoryInterface
      */
     public function buildFromRequestData($requestData = []): ParserRequest
     {
-        $parserRequest = new ParserRequest();
-
         if (!is_array($requestData))
             $requestData = json_decode(json_encode($requestData), true);
 
-        $modelConverter = new ModelConverter();
-        $modelConverter->setData($requestData, $parserRequest, true);
+        $objectVariable = new ObjectSerializer();
+        $parserRequest = $objectVariable->deserialize($requestData, ParserRequest::class);
 
         return $parserRequest;
     }

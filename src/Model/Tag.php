@@ -2,21 +2,15 @@
 
 namespace App\Model;
 
-use App\Annotation\ModelVariable;
+use App\Annotation\Serializer\ObjectVariable;
 
 class Tag extends AbstractModel
 {
-    /**
-     * @var integer
-     * @ModelVariable(type="integer")
-     */
-    public $id;
+    /** @ObjectVariable(type="integer") */
+    public ?int $id;
 
-    /**
-     * @var string
-     * @ModelVariable(type="string")
-     */
-    public $name;
+    /** @ObjectVariable (type="string") */
+    public ?string $name = null;
 
     /**
      * @return int

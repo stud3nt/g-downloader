@@ -2,115 +2,90 @@
 
 namespace App\Model;
 
-use App\Annotation\ModelVariable;
+use App\Annotation\Serializer\ObjectVariable;
 use App\Model\Interfaces\StatusInterface;
 
 class ParserRequest extends AbstractModel implements StatusInterface
 {
     /**
-     * @var string
-     * @ModelVariable()
+     * @ObjectVariable(type="string")
      */
-    public $actionName;
+    public ?string $actionName = null;
 
     /**
-     * @var string
-     * @ModelVariable()
+     * @ObjectVariable(type="string")
      */
-    public $apiToken;
+    public ?string $apiToken = null;
 
     /**
-     * @var ParsedNode
-     * @ModelVariable(converter="Model", converterOptions={"class":"App\Model\ParsedNode"})
+     * @ObjectVariable(class="App\Model\ParsedNode")
      */
-    public $currentNode = null;
+    public ?ParsedNode $currentNode = null;
 
     /**
-     * @ModelVariable(converter="Model", converterOptions={"class":"App\Model\ParsedNode"}, type="array")
+     * @ObjectVariable(class="App\Model\ParsedNode", type="array")
+     */
+    public ?array $parsedNodes = [];
+
+    /**
+     * @ObjectVariable(class="App\Model\ParsedNode", type="array")
      * @var ParsedNode[]
      */
-    public $parsedNodes;
+    public ?array $breadcrumbNodes = [];
 
     /**
-     * @var ParsedNode
-     * @ModelVariable(converter="Model", converterOptions={"class":"App\Model\ParsedNode"})
-     */
-    public $nextNode = null;
-
-    /**
-     * @var ParsedNode
-     * @ModelVariable(converter="Model", converterOptions={"class":"App\Model\ParsedNode"})
-     */
-    public $previousNode = null;
-
-    /**
-     * @ModelVariable(converter="Model", converterOptions={"class":"App\Model\ParsedNode"}, type="array")
-     * @var ParsedNode[]
-     */
-    public $breadcrumbNodes = [];
-
-    /**
-     * @ModelVariable(converter="Model", converterOptions={"class":"App\Model\ParsedFile"}, type="array")
+     * @ObjectVariable(class="App\Model\ParsedFile", type="array")
      * @var ParsedFile[]
      */
-    public $files = [];
+    public ?array $files = [];
 
     /**
-     * @ModelVariable(type="stdClass")
+     * @ObjectVariable(type="stdClass")
      */
-    public $fileData;
+    public ?\stdClass $fileData = null;
 
     /**
-     * @var Pagination
-     * @ModelVariable(converter="Model", converterOptions={"class":"App\Model\Pagination"})
+     * @ObjectVariable(class="App\Model\Pagination")
      */
-    public $pagination;
+    public Pagination $pagination;
 
     /**
-     * @var \stdClass
-     * @ModelVariable(type="stdClass")
+     * @ObjectVariable(type="stdClass")
      */
-    public $tokens;
+    public ?\stdClass $tokens = null;
 
     /**
-     * @var boolean
-     * @ModelVariable(type="boolean")
+     * @ObjectVariable(type="boolean")
      */
-    public $ignoreCache = false;
+    public bool $ignoreCache = false;
 
     /**
-     * @var boolean
-     * @ModelVariable()
+     * @ObjectVariable(type="boolean")
      */
-    public $cachedData = false;
+    public bool $cachedData = false;
 
     /**
-     * @var array
-     * @ModelVariable(type="array")
+     * @ObjectVariable(type="array")
      */
-    public $sorting = [];
+    public array $sorting = [];
 
     /**
-     * @var Status
-     * @ModelVariable(converter="Model", converterOptions={"class":"App\Model\Status"})
+     * @ObjectVariable(class="App\Model\Status")
      */
-    public $status;
+    public Status $status;
 
     /**
-     * @var string
-     * @ModelVariable(type="string")
+     * @ObjectVariable(type="string")
      */
-    public $requestIdentifier = null;
+    public ?string $requestIdentifier = null;
 
     /**
-     * @var array
-     * @ModelVariable(converter="Model", converterOptions={"class":"App\Model\Category"}, type="array")
+     * @ObjectVariable(class="App\Model\Category")
      */
-    public $categories = [];
+    public ?array $categories = [];
 
     /**
-     * @var array
-     * @ModelVariable(converter="Model", converterOptions={"class":"App\Model\Tag"}, type="array")
+     * @ObjectVariable(class="App\Model\Tag", type="array")
      */
     public $tags = [];
 
@@ -268,33 +243,6 @@ class ParserRequest extends AbstractModel implements StatusInterface
         }
 
         return $this;
-    }
-
-    /**
-     * @return ParsedNode
-     */
-    public function getNextNode(): ParsedNode
-    {
-        return $this->nextNode;
-    }
-
-    /**
-     * @param ParsedNode $nextNode
-     * @return self
-     */
-    public function setNextNode(ParsedNode $nextNode = null): self
-    {
-        $this->nextNode = $nextNode;
-
-        return $this;
-    }
-
-    /**
-     * @return ParsedNode
-     */
-    public function getPreviousNode(): ?ParsedNode
-    {
-        return $this->previousNode;
     }
 
     /**

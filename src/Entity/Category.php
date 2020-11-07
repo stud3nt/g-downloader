@@ -2,7 +2,7 @@
 
 namespace App\Entity;
 
-use App\Annotation\EntityVariable;
+use App\Annotation\Serializer\ObjectVariable;
 use App\Entity\Base\AbstractEntity;
 use App\Utils\StringHelper;
 use App\Entity\Traits\{CreatedAtTrait, DescriptionTrait};
@@ -23,34 +23,34 @@ class Category extends AbstractEntity
      *
      * @ORM\Column(name="id", type="integer", length=8, nullable=false, options={"unsigned"=true})
      * @ORM\Id
-     * @EntityVariable(convertable=true, writable=true, readable=true, inAllConvertNames=true)
      * @ORM\GeneratedValue(strategy="IDENTITY")
+     * @ObjectVariable(type="integer", writable=false)
      */
     protected $id;
 
     /**
      * @ORM\Column(name="name", type="string", length=100, nullable=false)
-     * @EntityVariable(convertable=true, writable=true, readable=true)
+     * @ObjectVariable(type="string")
      */
-    protected $name;
+    protected ?string $name = null;
 
     /**
      * @ORM\Column(name="label", type="string", length=100, nullable=true)
-     * @EntityVariable(convertable=true, writable=true, readable=true)
+     * @ObjectVariable(type="string")
      */
-    protected $label;
+    protected ?string $label = null;
 
     /**
      * @ORM\Column(name="symbol", type="string", length=100, nullable=false)
-     * @EntityVariable(convertable=true, writable=true, readable=true)
+     * @ObjectVariable(type="string")
      */
-    protected $symbol;
+    protected ?string $symbol = null;
 
     /**
      * @ORM\Column(name="active", type="boolean", length=1, options={"unsigned"=true, "default":0})
-     * @EntityVariable(convertable=true, writable=true, readable=true, type="boolean")
+     * @ObjectVariable(type="boolean")
      */
-    protected $active = false;
+    protected bool $active = false;
 
     public function __construct()
     {

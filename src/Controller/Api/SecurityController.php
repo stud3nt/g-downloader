@@ -28,9 +28,7 @@ class SecurityController extends Controller
         /** @var User $user */
         if ($user = $this->getCurrentUser()) {
             return $this->jsonSuccess(
-                $this->entitySerializer->normalize($user, 'array', [
-                    'groups' => NormalizationGroup::UserData
-                ])
+                $this->objectSerializer->serialize($user)
             );
         }
 
@@ -53,7 +51,7 @@ class SecurityController extends Controller
             $password = $request->get('password');
 
             /** @var User $user */
-            if ($user = $user = $userManager->getByUsernameOrEmail($username)) {
+            if ($user = $userManager->getByUsernameOrEmail($username)) {
                 if ($encoder->isPasswordValid($user, $password)) {
                     $token = new UsernamePasswordToken($user, $user->getPassword(), 'main', $user->getRoles());
                     $event = new InteractiveLoginEvent($request, $token);
@@ -67,9 +65,7 @@ class SecurityController extends Controller
                     $userManager->afterLogin($user, $csrfToken);
 
                     return $this->jsonSuccess([
-                        'user' => $this->entitySerializer->normalize($user, 'array', [
-                            'groups' => NormalizationGroup::UserData
-                        ])
+                        'user' => $this->objectSerializer->serialize($user)
                     ]);
                 } else {
                     return $this->jsonError(

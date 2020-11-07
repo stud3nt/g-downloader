@@ -4,11 +4,9 @@ namespace App\Converter;
 
 use App\Annotation\ModelVariable;
 use App\Entity\Base\AbstractEntity;
-use App\Entity\Parser\Node;
 use App\Model\AbstractModel;
 use App\Utils\StringHelper;
 use Doctrine\Common\Annotations\AnnotationReader;
-use Doctrine\Common\Util\Debug;
 use Doctrine\Persistence\ObjectManager;
 use Symfony\Component\Intl\Exception\MethodNotImplementedException;
 
@@ -189,7 +187,7 @@ class ModelConverter
 
         /** @var BaseConverter $variableConverter */
         if ($value && $variableConfig->converter) { // convert model to array (if variable is a model);
-            $variableConverterClass = 'App\\Converter\\'.$variableConfig->converter.'Converter';
+            $variableConverterClass = 'App\\Serializer\\'.$variableConfig->converter.'Serializer';
             $variableConverter = new $variableConverterClass($variableConfig->converterOptions);
 
             if ($variableConfig->type === 'array') {
@@ -218,7 +216,7 @@ class ModelConverter
         $setter = 'set'.ucfirst($variableName);
 
         if ($variableConfig->converter) { // convert data to model (if variable is a model);
-            $variableConverterClass = 'App\\Converter\\'.$variableConfig->converter.'Converter';
+            $variableConverterClass = 'App\\Serializer\\'.$variableConfig->converter.'Serializer';
             $variableConverter = new $variableConverterClass($variableConfig->converterOptions);
 
             if (!is_array($value))

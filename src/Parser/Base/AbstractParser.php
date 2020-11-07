@@ -12,6 +12,7 @@ use App\Enum\FolderType;
 use App\Enum\PaginationMode;
 use App\Enum\PrefixSufixType;
 use App\Factory\RedisFactory;
+use App\Manager\Object\NodeManager;
 use App\Model\ParsedFile;
 use App\Model\ParserRequest;
 use App\Model\SettingsModel;
@@ -47,6 +48,9 @@ class AbstractParser implements ParserInterface
 
     /** @var User */
     private $user;
+
+    /** @var NodeManager */
+    protected $nodeManager;
 
     // local folders
     protected $thumbnailTempDir;
@@ -113,6 +117,11 @@ class AbstractParser implements ParserInterface
     public function __destruct()
     {
         $this->clearFileCache();
+    }
+
+    public function setNodeManager(NodeManager $nodeManager)
+    {
+        $this->nodeManager = $nodeManager;
     }
 
     /**

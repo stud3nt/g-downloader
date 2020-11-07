@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Converter;
+namespace App\Converter\Base;
 
 class BaseConverter
 {

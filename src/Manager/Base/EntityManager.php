@@ -24,12 +24,7 @@ abstract class EntityManager
     {
         $this->em = $em;
         $this->repository = $this->em->getRepository(sprintf('App:%s%s', $this->namespace, $this->entityName));
-    }
-
-    /** @required */
-    public function initializeSerializer(SerializerFactory $serializerFactory)
-    {
-        $this->serializer = $serializerFactory->getEntityNormalizer();
+        $this->serializer = SerializerFactory::getEntityNormalizer();
     }
 
     public function getBy(Array $criteria = [], $orderBy = ['id' => 'desc'])

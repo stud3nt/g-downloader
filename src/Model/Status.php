@@ -2,41 +2,37 @@
 
 namespace App\Model;
 
-use App\Converter\ModelConverter;
+use App\Annotation\Serializer\ObjectVariable;
 use App\Enum\StatusCode;
 use App\Factory\RedisFactory;
-use Symfony\Component\Serializer\Annotation\Groups;
 
 class Status extends AbstractModel
 {
     /**
-     * @Groups("basic_data")
+     * @ObjectVariable(type="integer")
      */
     public int $code = StatusCode::NoEffect;
 
     /**
-     * @Groups("basic_data")
+     * @ObjectVariable(type="integer")
      */
     public int $progress = 0;
 
     /**
-     * @Groups("basic_data")
+     * @ObjectVariable(type="string")
      */
     public ?string $description = '';
 
     /** @var \Predis\ClientInterface|\Redis|\RedisCluster */
     protected $redis;
 
-    protected ModelConverter $modelConverter;
-
-    protected string $requestIdentifier;
+    protected ?string $requestIdentifier = null;
 
     protected ?array $steppedProgressData = [];
 
     public function __construct()
     {
         $this->redis = (new RedisFactory())->initializeConnection();
-        $this->modelConverter = new ModelConverter();
     }
 
     /**
@@ -263,9 +259,11 @@ class Status extends AbstractModel
 
         $this->redis->set(
             $this->requestIdentifier,
-            json_encode(
-                $this->modelConverter->convert($this)
-            )
+            json_encode([
+                'code' => $this->getCode(),
+                'progress' => $this->getProgress(),
+                'description' => $this->getDescription()
+            ])
         );
 
         if ($expire > 0)

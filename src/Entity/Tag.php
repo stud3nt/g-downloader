@@ -3,6 +3,7 @@
 namespace App\Entity;
 
 use App\Annotation\EntityVariable;
+use App\Annotation\Serializer\ObjectVariable;
 use App\Entity\Base\AbstractEntity;
 use App\Entity\Traits\{
     CreatedAtTrait
@@ -22,16 +23,16 @@ class Tag extends AbstractEntity
      *
      * @ORM\Column(name="id", type="integer", length=8, nullable=false, options={"unsigned"=true})
      * @ORM\Id
-     * @EntityVariable(convertable=true, writable=true, readable=true, inAllConvertNames=true)
+     * @ObjectVariable(type="integer")
      * @ORM\GeneratedValue(strategy="IDENTITY")
      */
     protected $id;
 
     /**
      * @ORM\Column(name="name", type="string", length=28, nullable=false)
-     * @EntityVariable(convertable=true, writable=true, readable=true)
+     * @ObjectVariable(type="string")
      */
-    protected $name;
+    protected ?string $name = null;
 
     /**
      * Get id

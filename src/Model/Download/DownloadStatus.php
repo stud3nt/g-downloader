@@ -2,7 +2,7 @@
 
 namespace App\Model\Download;
 
-use App\Annotation\ModelVariable;
+use App\Annotation\Serializer\ObjectVariable;
 use App\Enum\DownloaderStatus;
 use App\Model\AbstractModel;
 use App\Model\ParsedFile;
@@ -10,53 +10,32 @@ use App\Utils\FilesHelper;
 
 class DownloadStatus extends AbstractModel
 {
-    /**
-     * @var string
-     * @ModelVariable(type="string")
-     */
-    public $status = DownloaderStatus::Idle;
+    /** @ObjectVariable(type="string") */
+    public string $status = DownloaderStatus::Idle;
 
-    /**
-     * @var integer
-     * @ModelVariable(type="integer")
-     */
-    public $queuedFilesCount = 0;
+    /** @ObjectVariable(type="integer") */
+    public int $queuedFilesCount = 0;
 
-    /**
-     * @var integer
-     * @ModelVariable(type="integer")
-     */
-    public $queuedFilesSize = 0;
+    /** @ObjectVariable(type="integer") */
+    public int $queuedFilesSize = 0;
 
-    /**
-     * @var string
-     * @ModelVariable(type="string")
-     */
-    public $queuedFilesTextSize = null;
+    /** @ObjectVariable(type="string") */
+    public ?string $queuedFilesTextSize = null;
 
-    /**
-     * @var integer
-     * @ModelVariable(type="integer")
-     */
-    public $downloadedFilesCount = 0;
+    /** @ObjectVariable(type="integer") */
+    public int $downloadedFilesCount = 0;
 
-    /**
-     * @var integer
-     * @ModelVariable(type="integer")
-     */
-    public $downloadedFilesSize = 0;
+    /** @ObjectVariable(type="integer") */
+    public int $downloadedFilesSize = 0;
 
-    /**
-     * @var string
-     * @ModelVariable(type="string")
-     */
-    public $downloadedFilesTextSize = null;
+    /** @ObjectVariable(type="string") */
+    public ?string $downloadedFilesTextSize = null;
 
     /**
      * @var ParsedFile[]
-     * @ModelVariable(converter="Model", converterOptions={"class":"App\Model\ParsedFile"}, type="array")
+     * @ObjectVariable(class="App\Model\ParsedFile")
      */
-    public $queuedFiles = [];
+    public array $queuedFiles = [];
 
     public function increaseByParsedFile(ParsedFile $parsedFile)
     {

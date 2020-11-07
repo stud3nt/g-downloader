@@ -7,7 +7,6 @@ import { FileType } from "../../../../enum/file-type";
 import { WebSocketService } from "../../../../service/web-socket.service";
 import { WebsocketOperation } from "../../../../enum/websocket-operation";
 import { AuthService } from "../../../../service/auth.service";
-import { QueueSettings } from "../../../../model/download-queue-settings";
 import { ToastrDataService } from "../../../../service/data/toastr-data.service";
 import { ParsedFile } from "../../../../model/parsed-file";
 
@@ -22,8 +21,6 @@ export class DownloadMiniPanelComponent implements OnInit {
 
 	public dropdownVisible: boolean = false;
 	public dropdownFilesQueue: ParsedFile[] = [];
-
-	public downloader: QueueSettings = (new QueueSettings());
 
 	public DownloaderStatus = DownloadingStatus;
 	public FileType = FileType;
@@ -45,8 +42,6 @@ export class DownloadMiniPanelComponent implements OnInit {
 		this.websocketService.createListener(
 			this._websocketName, (response: JsonResponse) => {
 				if (typeof response.data === 'object') {
-					this.downloader = new QueueSettings(response.data);
-
 
 					setTimeout(() => {
 						this.sendStatusRequest();
@@ -91,15 +86,6 @@ export class DownloadMiniPanelComponent implements OnInit {
 				this._downloaderStatus = DownloadingStatus.Downloading;
 				this._websocketDelay = 250;
 		}
-
-		this.downloaderService.startDownloadProcess().subscribe((response: JsonResponse) => {
-			if (this._downloaderStatus === DownloadingStatus.Downloading && response.data !== null && response.data.filesCount > 0) {
-				this._downloaderStatus = DownloadingStatus.Continuation;
-				this.start();
-			} else {
-				this.stop();
-			}
-		});
 	}
 
 	/**
@@ -107,11 +93,6 @@ export class DownloadMiniPanelComponent implements OnInit {
 	 */
 	public stop(): void {
 		this._downloaderStatus = DownloadingStatus.Breaking;
-		this.downloaderService.stopDownloadProcess().subscribe((response) => {
-			this._websocketDelay = 1500;
-			this._downloaderStatus = DownloadingStatus.Idle;
-			this.dropdownFilesQueue = [];
-		});
 	}
 
 	public toggleMiniPanel(): void {
@@ -120,20 +101,6 @@ export class DownloadMiniPanelComponent implements OnInit {
 	}
 
 	protected determineClasses(): void {
-		switch (this.downloader.status) {
-			case DownloadingStatus.Idle:
-				this.mainButtonClass = 'navbar-main-button inactive';
-				break;
-
-			case DownloadingStatus.Downloading:
-				this.mainButtonClass = 'navbar-main-button active';
-				break;
-
-			case DownloadingStatus.WaitingForResponse:
-				this.mainButtonClass = 'navbar-main-button waiting';
-				break;
-		}
-
 		this.miniPanelClass = 'dropdown-menu' + ((this.dropdownVisible) ? ' visible' : ' hidden');
 	}
 

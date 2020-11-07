@@ -9,7 +9,7 @@ use App\Enum\UserRole;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Validator\Constraints as Assert;
-use Symfony\Component\Serializer\Annotation\Groups;
+use App\Annotation\Serializer\ObjectVariable;
 
 /**
  * @ORM\Table(name="users")
@@ -24,27 +24,27 @@ class User extends AbstractEntity implements UserInterface, \Serializable
 
     /**
      * @ORM\Column(name="email", type="string", length=255, nullable=false, unique=true)
-     * @Groups("user_data")
      * @Assert\NotBlank()
      * @Assert\Email()
+     * @ObjectVariable(type="string")
      */
     protected string $email;
 
     /**
      * @ORM\Column(name="username", type="string", length=40, nullable=false, unique=true)
-     * @Groups("user_data")
+     * @ObjectVariable(type="string")
      */
     protected string $username;
 
     /**
      * @ORM\Column(name="name", type="string", length=40, nullable=false, unique=true)
-     * @Groups("user_data")
+     * @ObjectVariable(type="string")
      */
     protected string $name;
 
     /**
      * @ORM\Column(name="surname", type="string", length=60, nullable=false, unique=true)
-     * @Groups("user_data")
+     * @ObjectVariable(type="string")
      */
     protected ?string $surname;
 
@@ -56,25 +56,25 @@ class User extends AbstractEntity implements UserInterface, \Serializable
 
     /**
      * @ORM\Column(name="thumbnail", type="string", nullable=true, length=255)
-     * @Groups("user_data")
+     * @ObjectVariable(type="string")
      */
     protected ?string $thumbnail;
 
     /**
      * @ORM\Column(name="file_token", type="string", nullable=true, length=32)
-     * @Groups("user_data")
+     * @ObjectVariable(type="string")
      */
     protected ?string $fileToken;
 
     /**
      * @ORM\Column(name="api_token", type="string", nullable=true, length=32)
-     * @Groups("user_data")
+     * @ObjectVariable(type="string")
      */
     protected ?string $apiToken;
 
     /**
      * @ORM\Column(name="info_exchange_file", type="string", nullable=true, length=32)
-     * @Groups("user_data")
+     * @ObjectVariable(type="string")
      */
     protected ?string $infoExchangeFile;
 

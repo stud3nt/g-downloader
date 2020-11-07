@@ -26,10 +26,9 @@ class QueueController extends Controller
     public function prepareQueuePackage(
         Request $request,
         QueueManager $queueManager,
-        QueueRequestFactory $queueSettingsFactory,
-        SerializerFactory $serializerFactory
+        QueueRequestFactory $queueSettingsFactory
     ): JsonResponse {
-        $serializer = $serializerFactory->getEntityNormalizer();
+        $serializer = SerializerFactory::getEntityNormalizer();
         $queueRequest = $queueSettingsFactory->buildFromRequestData($request);
         $queueManager->getQueuedFiles($queueRequest);
 

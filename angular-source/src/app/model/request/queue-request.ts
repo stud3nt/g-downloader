@@ -8,7 +8,7 @@ export class QueueRequest {
 
         this._files = [];
 
-        if (typeof obj.files !== 'undefined') {
+        if (obj && typeof obj.files !== 'undefined') {
             for (let file in obj.files) {
                 this._files.push(new ParsedFile(obj.files[file]));
             }

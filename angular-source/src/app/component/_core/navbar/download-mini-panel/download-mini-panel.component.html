@@ -2,15 +2,15 @@
     <a [ngClass]="mainButtonClass" data-toggle="dropdown">
         <i class="fa fa-fw fa-cloud-download"></i>
         <span class="label label-info">
-            {{ downloader.queuedFilesCount }}
+
         </span>
     </a>
     <ul [ngClass]="miniPanelClass" (click)="$event.stopPropagation()">
         <li class="header">
             Files in queue:
             <b>
-                {{ downloader.queuedFilesCount }}
-                <span *ngIf="downloader && downloader.queuedFilesCount > 0"></span>
+
+
             </b>
         </li>
         <li>
