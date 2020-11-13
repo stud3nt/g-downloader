@@ -23,7 +23,7 @@ class PaginationSelector extends AbstractModel
 
     /**
      * @var PaginationSelector[]
-     * @ObjectVariable(class="App\Model\PaginationSelector")
+     * @ObjectVariable(class="App\Model\PaginationSelector[]")
      */
     public $childrens = [];
 

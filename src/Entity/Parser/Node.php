@@ -74,20 +74,20 @@ class Node extends AbstractEntity
 
     /**
      * @ORM\Column(name="thumbnails", type="array", nullable=true)
-     * @ObjectVariable(type="integer")
+     * @ObjectVariable(type="array")
      */
     protected ?array $thumbnails = [];
 
     /**
      * @ORM\Column(name="local_thumbnails", type="array", nullable=true)
-     * @ObjectVariable(type="integer")
+     * @ObjectVariable(type="array")
      */
     protected ?array $localThumbnails = [];
 
     /**
      * @var \DateTime
      * @ORM\Column(name="last_viewed_at", type="datetime", options={"default"="CURRENT_TIMESTAMP"}, nullable=true)
-     * @ObjectVariable(type="integer")
+     * @ObjectVariable(type="datetime")
      */
     protected ?\DateTime $lastViewedAt;
 
@@ -148,7 +148,7 @@ class Node extends AbstractEntity
      *      joinColumns={@ORM\JoinColumn(name="parsed_node_id", referencedColumnName="id")},
      *      inverseJoinColumns={@ORM\JoinColumn(name="tag_id", referencedColumnName="id")}
      * )
-     * @ObjectVariable(class="App\Entity\Tag")
+     * @ObjectVariable(class="App\Entity\Tag[]")
      */
     private ?iterable $tags;
 

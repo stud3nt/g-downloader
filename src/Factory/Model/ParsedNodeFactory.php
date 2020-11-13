@@ -2,11 +2,11 @@
 
 namespace App\Factory\Model;
 
-use App\Converter\ModelConverter;
+use App\Factory\Base\BaseFactory;
 use App\Factory\Base\RequestFactoryInterface;
 use App\Model\ParsedNode;
 
-class ParsedNodeFactory implements RequestFactoryInterface
+class ParsedNodeFactory extends BaseFactory implements RequestFactoryInterface
 {
     /**
      * @param array $requestData
@@ -15,11 +15,6 @@ class ParsedNodeFactory implements RequestFactoryInterface
      */
     public function buildFromRequestData(array $requestData = []): ParsedNode
     {
-        $parsedNode = new ParsedNode();
-
-        $modelConverter = new ModelConverter();
-        $modelConverter->setData($requestData, $parsedNode);
-
-        return $parsedNode;
+        return $this->objectSerializer->deserialize($requestData, ParsedNode::class);
     }
 }

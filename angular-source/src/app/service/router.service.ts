@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { ConfigService } from "./config.service";
-import {ParserNode} from "../model/parser-node";
+import {ParsedNode} from "../model/parsed-node";
 
 @Injectable({
   	providedIn: 'root'
@@ -50,7 +50,7 @@ export class RouterService {
 	 * Helper function - generates url address for specified node;
 	 * @param node
 	 */
-	public generateNodeUrl(node: ParserNode): string {
+	public generateNodeUrl(node: ParsedNode): string {
 		return this.generateUrl('app_parser', {
 			'parserName': node.parser,
 			'nodeLevel': node.level,

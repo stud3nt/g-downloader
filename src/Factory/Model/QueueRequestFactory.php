@@ -2,12 +2,12 @@
 
 namespace App\Factory\Model;
 
-use App\Enum\NormalizationGroup;
+use App\Factory\Base\BaseFactory;
 use App\Factory\Base\RequestFactoryInterface;
 use App\Model\ParsedFile;
 use App\Model\Request\QueueRequest;
 
-class QueueRequestFactory extends BaseModelFactory implements RequestFactoryInterface
+class QueueRequestFactory extends BaseFactory implements RequestFactoryInterface
 {
     /**
      * @param $requestData
@@ -16,11 +16,6 @@ class QueueRequestFactory extends BaseModelFactory implements RequestFactoryInte
      */
     public function buildFromRequestData($requestData = []): QueueRequest
     {
-        /** @var QueueRequest $queueRequest */
-        $queueRequest = $this->serializer->denormalize($requestData, QueueRequest::class, 'json', [
-            'groups' => NormalizationGroup::QueuedFile
-        ]);
-
-        return $queueRequest;
+        return $this->objectSerializer->deserialize($requestData, QueueRequest::class);
     }
 }

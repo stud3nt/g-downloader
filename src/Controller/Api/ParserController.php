@@ -55,7 +55,6 @@ class ParserController extends Controller
 
             $parserRequest->setIgnoreCache(false)->getStatus()->end();
 
-
             return $this->json(
                 $this->objectSerializer->serialize($parserRequest)
             );

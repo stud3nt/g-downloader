@@ -2,7 +2,6 @@
 
 namespace App\Entity;
 
-use App\Annotation\EntityVariable;
 use App\Annotation\Serializer\ObjectVariable;
 use App\Entity\Base\AbstractEntity;
 use App\Entity\Traits\{

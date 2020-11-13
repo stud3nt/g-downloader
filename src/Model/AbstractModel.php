@@ -12,13 +12,13 @@ abstract class AbstractModel
      * @throws \ReflectionException
      * @return $this;
      */
-    public function setFromEntity(AbstractEntity $entity, string $className): self
+    public function setFromEntity(AbstractEntity $entity): self
     {
         $objectSerializer = new ObjectSerializer();
 
         $entityData = $objectSerializer->serialize($entity);
 
-        $objectSerializer->deserializeObject($entityData, $className);
+        $objectSerializer->deserialize($entityData, $this);
 
         return $this;
     }

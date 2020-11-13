@@ -2,14 +2,14 @@
 
 namespace App\Entity\Traits;
 
+use App\Annotation\Serializer\ObjectVariable;
 use Doctrine\ORM\Mapping as ORM;
-use Symfony\Component\Serializer\Annotation\Groups;
 
 trait NameTrait
 {
     /**
      * @ORM\Column(name="name", type="string", length=255, nullable=true)
-     * @Groups("basic_data")
+     * @ObjectVariable(type="string")
      */
     protected $name;
 

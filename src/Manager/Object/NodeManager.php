@@ -4,6 +4,7 @@ namespace App\Manager\Object;
 
 use App\Converter\EntityConverter;
 use App\Converter\ModelConverter;
+use App\Converter\ObjectSerializer;
 use App\Entity\Parser\Node;
 use App\Enum\NodeStatus;
 use App\Factory\SerializerFactory;
@@ -16,6 +17,7 @@ use App\Model\ParsedNodeSettings;
 use App\Model\ParserRequest;
 use App\Repository\NodeRepository;
 use App\Utils\StringHelper;
+use Doctrine\Common\Util\Debug;
 use Doctrine\Persistence\ObjectManager;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use ReflectionException;
@@ -81,13 +83,14 @@ class NodeManager extends EntityManager
             $savedNode = $this->repository->findOneByParsedNode($node);
 
             if ($savedNode) {
-                $nodeArray = $this->entityConverter->convert($savedNode);
-                $this->modelConverter->setData($nodeArray, $node);
+                $objectSerializer = new ObjectSerializer();
+                $nodeArray = $objectSerializer->serialize($savedNode);
+                $objectSerializer->deserialize($nodeArray, $node);
 
                 if (!$node->getSettings())
                     $node->setSettings(new ParsedNodeSettings());
 
-                $parserRequest->currentNode = $node;
+                $parserRequest->setCurrentNode($node);
             }
         }
 
@@ -254,7 +257,7 @@ class NodeManager extends EntityManager
     }
 
     /**
-     * Updates node in database. If node does'nt exists - creates them;
+     * Updates node in database. If node doesn't exists - creates them;
      *
      * @param ParsedNode $parsedNode
      * @param bool $updateNodeData
@@ -276,7 +279,7 @@ class NodeManager extends EntityManager
             $lastViewedAt = $dbNode->getLastViewedAt();
         }
 
-        $this->entityConverter->setData($parsedNode, $dbNode);
+        $this->objectSerializer->deserialize($parsedNode, $dbNode);
 
         $dbNode->setLastViewedAt($lastViewedAt);
 

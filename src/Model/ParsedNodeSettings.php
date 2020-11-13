@@ -90,7 +90,7 @@ class ParsedNodeSettings extends AbstractModel
     /**
      * @return string
      */
-    public function getPrefix(): string
+    public function getPrefix(): ?string
     {
         return $this->prefix;
     }
@@ -109,7 +109,7 @@ class ParsedNodeSettings extends AbstractModel
     /**
      * @return string
      */
-    public function getSufix(): string
+    public function getSufix(): ?string
     {
         return $this->sufix;
     }
@@ -128,7 +128,7 @@ class ParsedNodeSettings extends AbstractModel
     /**
      * @return string
      */
-    public function getFolder(): string
+    public function getFolder(): ?string
     {
         return $this->folder;
     }
@@ -166,7 +166,7 @@ class ParsedNodeSettings extends AbstractModel
     /**
      * @return int
      */
-    public function getMaxHeight(): int
+    public function getMaxHeight(): ?int
     {
         return $this->maxHeight;
     }
@@ -185,7 +185,7 @@ class ParsedNodeSettings extends AbstractModel
     /**
      * @return int
      */
-    public function getMaxSize(): int
+    public function getMaxSize(): ?int
     {
         return $this->maxSize;
     }
@@ -213,7 +213,7 @@ class ParsedNodeSettings extends AbstractModel
      * @param string $prefixType
      * @return self
      */
-    public function setPrefixType(?string $prefixType): self
+    public function setPrefixType(string $prefixType = PrefixSufixType::CustomText): self
     {
         $this->prefixType = $prefixType;
 
@@ -232,7 +232,7 @@ class ParsedNodeSettings extends AbstractModel
      * @param string $sufixType
      * @return self
      */
-    public function setSufixType(?string $sufixType): self
+    public function setSufixType(string $sufixType = PrefixSufixType::CustomText): self
     {
         $this->sufixType = $sufixType;
 
@@ -251,7 +251,7 @@ class ParsedNodeSettings extends AbstractModel
      * @param string $folderType
      * @return self
      */
-    public function setFolderType(?string $folderType): self
+    public function setFolderType(string $folderType = PrefixSufixType::CustomText): self
     {
         $this->folderType = $folderType;
 
@@ -270,7 +270,7 @@ class ParsedNodeSettings extends AbstractModel
     /**
      * @param string $sizeUnit
      */
-    public function setSizeUnit(?string $sizeUnit): self
+    public function setSizeUnit(string $sizeUnit = 'B'): self
     {
         $this->sizeUnit = $sizeUnit;
 

@@ -1,7 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { PageLoaderDataService } from "../../../service/data/page-loader-data.service";
-import { HttpClient } from "@angular/common/http";
-import { PreloaderData } from "../../../model/preloader-data";
+import { PageLoaderData } from "../../../model/page-loader-data";
 
 @Component({
   	selector: 'app-page-loader',
@@ -10,53 +9,28 @@ import { PreloaderData } from "../../../model/preloader-data";
 })
 export class PageLoaderComponent implements OnInit {
 
-	public preloaderData: PreloaderData = new PreloaderData();
+    public progress: number = 0;
 
-	public statusTimeout = null;
+    public visible: boolean = false;
+
+    public hidingTimeout = null;
 
 	constructor(
-		private pageLoaderDataService: PageLoaderDataService,
-		protected http: HttpClient
+		private pageLoaderDataService: PageLoaderDataService
 	) {}
 
 	ngOnInit() {
-		let title = document.title;
+		this.pageLoaderDataService.data.subscribe((data: PageLoaderData) => {
+			this.progress = data.progress;
+			this.visible = data.visible;
 
-		// loader data listener service - PreloaderData object
-		this.pageLoaderDataService.loaderData.subscribe((preloaderData: PreloaderData) => { // listening for loader data changes
-			this.preloaderData = preloaderData;
-		});
-
-		// progress listener service - number
-		this.pageLoaderDataService.loaderProgress.subscribe((progress: number) => {
-			this.preloaderData.progress = progress;
-
-			if (progress > 0)
-				document.title = '['+progress+'%] '+title;
-		});
-
-		// description listener service - string
-		this.pageLoaderDataService.loaderDescription.subscribe((description: string) => {
-			this.preloaderData.description = description;
-		});
-
-		// loader status - show/hide listener service
-		this.pageLoaderDataService.loaderStatus.subscribe((status: any) => { // listen forced loader status
-			clearTimeout(this.statusTimeout);
-
-			this.statusTimeout = setTimeout(() => {
-				switch (status.status) {
-					case 'hide':
-						this.preloaderData.visible = false;
-						this.preloaderData.reset();
-						document.title = title;
-						break;
-
-					case 'show':
-						this.preloaderData.visible = true;
-						break;
-				}
-			}, status.timeout);
+			// hide request or 100% reached;
+			if (!data.visible || (this.progress === 100 && data.autoClose)) {
+                this.hidingTimeout = setTimeout(() => {
+                    this.progress = 0;
+                    this.visible = false;
+                }, data.autoCloseTimeout);
+            }
 		});
 	}
 }

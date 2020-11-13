@@ -3,7 +3,7 @@ import { HttpClient } from "@angular/common/http";
 import { RouterService } from "./router.service";
 import { AuthService } from "./auth.service";
 import { ParserRequest } from "../model/parser-request";
-import { ParserNode } from "../model/parser-node";
+import { ParsedNode } from "../model/parsed-node";
 import { HttpHelper } from "../helper/http-helper";
 import { map } from "rxjs/operators";
 import {HttpService} from "./http.service";
@@ -39,13 +39,13 @@ export class ParserService extends HttpService {
 	/**
 	 * Update and save existing node data
 	 *
-	 * @param node: ParserNode
+	 * @param node: ParsedNode
 	 */
-	public updateNode(node: ParserNode) {
+	public updateNode(node: ParsedNode) {
 		let formData = HttpHelper.convert(node);
 
 		return this.http.post(this.router.generateUrl('api_node_update'), formData).pipe(
-			map((response:Response) => new ParserNode(response))
+			map((response:Response) => new ParsedNode(response))
 		);
 	}
 

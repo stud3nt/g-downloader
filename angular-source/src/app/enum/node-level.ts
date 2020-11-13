@@ -1,5 +1,5 @@
 import { ParserLevelData } from "../model/parser-level-data";
-import {ParserNode} from "../model/parser-node";
+import {ParsedNode} from "../model/parsed-node";
 
 export class NodeLevel {
 
@@ -68,7 +68,7 @@ export class NodeLevel {
 		}
 	}
 
-	static getNodeIntLevel(node: ParserNode) : number {
+	static getNodeIntLevel(node: ParsedNode) : number {
 		if (node.nextLevel) {
 			return this.getIntLevel(node.nextLevel);
 		}

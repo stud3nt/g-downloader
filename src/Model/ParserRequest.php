@@ -23,18 +23,18 @@ class ParserRequest extends AbstractModel implements StatusInterface
     public ?ParsedNode $currentNode = null;
 
     /**
-     * @ObjectVariable(class="App\Model\ParsedNode", type="array")
+     * @ObjectVariable(class="App\Model\ParsedNode[]")
      */
     public ?array $parsedNodes = [];
 
     /**
-     * @ObjectVariable(class="App\Model\ParsedNode", type="array")
+     * @ObjectVariable(class="App\Model\ParsedNode[]")
      * @var ParsedNode[]
      */
     public ?array $breadcrumbNodes = [];
 
     /**
-     * @ObjectVariable(class="App\Model\ParsedFile", type="array")
+     * @ObjectVariable(class="App\Model\ParsedFile[]")
      * @var ParsedFile[]
      */
     public ?array $files = [];
@@ -80,14 +80,14 @@ class ParserRequest extends AbstractModel implements StatusInterface
     public ?string $requestIdentifier = null;
 
     /**
-     * @ObjectVariable(class="App\Model\Category")
+     * @ObjectVariable(class="App\Model\Category[]")
      */
-    public ?array $categories = [];
+    public ?iterable $categories = [];
 
     /**
-     * @ObjectVariable(class="App\Model\Tag", type="array")
+     * @ObjectVariable(class="App\Model\Tag[]")
      */
-    public $tags = [];
+    public ?iterable $tags = [];
 
     public function __construct()
     {

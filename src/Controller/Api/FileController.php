@@ -5,6 +5,7 @@ namespace App\Controller\Api;
 use App\Controller\Api\Base\Controller;
 use App\Converter\ModelConverter;
 use App\Enum\FileStatus;
+use App\Factory\ClassByRequestFactory;
 use App\Factory\Model\ParsedFileFactory;
 use App\Manager\DownloadManager;
 use App\Manager\Object\FileManager;
@@ -12,6 +13,7 @@ use App\Manager\Object\NodeManager;
 use App\Model\ParsedFile;
 use App\Service\DownloadService;
 use App\Service\ParserService;
+use Doctrine\Common\Util\Debug;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -35,7 +37,7 @@ class FileController extends Controller
      */
     public function toggleFileQueue(Request $request, NodeManager $nodeManager, DownloadManager $downloadManager, FileManager $fileManager): JsonResponse
     {
-        $parsedFile = (new ParsedFileFactory())->buildFromRequestData($request->request->all());
+        $parsedFile = (new ClassByRequestFactory())->buildClassFromRequestData($request->request->all(), ParsedFile::class);
         $user = $this->getCurrentUser();
 
         if ($queuedFile = $fileManager->getFileEntityByParsedFile($parsedFile)) { // file exists => removing...
@@ -48,7 +50,7 @@ class FileController extends Controller
         }
 
         return $this->json(
-            $this->get(ModelConverter::class)->convert($parsedFile)
+            $this->objectSerializer->serialize($parsedFile)
         );
     }
 
@@ -69,7 +71,7 @@ class FileController extends Controller
         );
 
         return $this->json(
-            $this->get(ModelConverter::class)->convert($parsedFile)
+            $this->objectSerializer->serialize($parsedFile)
         );
     }
 
@@ -85,8 +87,13 @@ class FileController extends Controller
      * @throws \ReflectionException
      * @throws \Exception
      */
-    public function savePreviewedFile(Request $request, ParserService $parserService, DownloadService $downloadService, FileManager $fileManager, NodeManager $nodeManager): JsonResponse
-    {
+    public function savePreviewedFile(
+        Request $request,
+        ParserService $parserService,
+        DownloadService $downloadService,
+        FileManager $fileManager,
+        NodeManager $nodeManager
+    ): JsonResponse {
         $parsedFile = $this->prepareParsedFilePreview($request, $parserService);
         $parsedFile->addStatus(FileStatus::Queued);
 
@@ -103,7 +110,7 @@ class FileController extends Controller
         $fileManager->save($fileEntity);
 
         return $this->json(
-            $this->get(ModelConverter::class)->convert($parsedFile)
+            $this->objectSerializer->serialize($parsedFile)
         );
     }
 
@@ -115,9 +122,7 @@ class FileController extends Controller
      */
     protected function prepareParsedFilePreview(Request $request, ParserService $parserService): ParsedFile
     {
-        $parsedFile = (new ParsedFileFactory())->buildFromRequestData(
-            $request->request->all()
-        );
+        $parsedFile = (new ClassByRequestFactory())->buildClassFromRequestData($request->request->all(), ParsedFile::class);
         $parser = $parserService->loadParser(
             $parsedFile->getParser(),
             $this->getCurrentUser()

@@ -3,6 +3,10 @@
 <app-toastr></app-toastr>
 <!-- END toastr -->
 
+<!-- BEGIN preloader -->
+<app-page-loader></app-page-loader>
+<!-- END preloader -->
+
 <!-- BEGIN main page preloader -->
 <div class="wrapper" *ngIf="authenticated === 0">
     <div class="main-page-loader">
@@ -16,10 +20,6 @@
 <!-- END login panel -->
 
 <div class="wrapper" *ngIf="authenticated === 1">
-    <!-- BEGIN preloader -->
-    <app-page-loader></app-page-loader>
-    <!-- END preloader -->
-
     <!-- BEGIN header -->
     <header class="main-header">
         <app-navbar [user]="user" (onLogout)="checkAuthentication()"></app-navbar>

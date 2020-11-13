@@ -31,9 +31,6 @@ class SettingsController extends Controller
      */
     public function save(Request $request) : JsonResponse
     {
-        var_dump($request->request->all());
-        die();
-
         return $this->json($this->get(DownloadManager::class)->addFileToQueue());
     }
 }

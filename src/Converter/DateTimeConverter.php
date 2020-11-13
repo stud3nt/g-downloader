@@ -11,9 +11,12 @@ class DateTimeConverter extends BaseConverter
      * @param $value
      * @return string
      */
-    public function convertFromObjectValue($value) : string
+    public function convertFromObjectValue($value = null): ?string
     {
-        return $value->format('Y-m-d H:i:s');
+        if ($value)
+            return $value->format('Y-m-d H:i:s');
+        else
+            return null;
     }
 
     /**
@@ -23,7 +26,7 @@ class DateTimeConverter extends BaseConverter
      * @return \DateTime|mixed
      * @throws \Exception
      */
-    public function convertToObjectValue($value) : ?\DateTime
+    public function convertToObjectValue($value): ?\DateTime
     {
         if (is_numeric($value) || is_int($value)) { // timestamp integer
             $date = new \DateTime();

@@ -7,15 +7,15 @@ use App\Annotation\Serializer\ObjectVariable;
 class Tag extends AbstractModel
 {
     /** @ObjectVariable(type="integer") */
-    public ?int $id;
+    public ?int $id = null;
 
     /** @ObjectVariable (type="string") */
     public ?string $name = null;
 
     /**
-     * @return int
+     * @return int|null
      */
-    public function getId(): int
+    public function getId(): ?int
     {
         return $this->id;
     }
@@ -32,9 +32,9 @@ class Tag extends AbstractModel
     }
 
     /**
-     * @return string
+     * @return string|null
      */
-    public function getName(): string
+    public function getName(): ?string
     {
         return $this->name;
     }

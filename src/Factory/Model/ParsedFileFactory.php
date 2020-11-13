@@ -2,11 +2,11 @@
 
 namespace App\Factory\Model;
 
-use App\Converter\ModelConverter;
+use App\Factory\Base\BaseFactory;
 use App\Factory\Base\RequestFactoryInterface;
 use App\Model\ParsedFile;
 
-class ParsedFileFactory implements RequestFactoryInterface
+class ParsedFileFactory extends BaseFactory implements RequestFactoryInterface
 {
     /**
      * @param $requestData
@@ -15,11 +15,6 @@ class ParsedFileFactory implements RequestFactoryInterface
      */
     public function buildFromRequestData($requestData = []): ParsedFile
     {
-        $parserFile = new ParsedFile();
-
-        $modelConverter = new ModelConverter();
-        $modelConverter->setData($requestData, $parserFile, true);
-
-        return $parserFile;
+        return $this->objectSerializer->deserialize($requestData, ParsedFile::class);
     }
 }

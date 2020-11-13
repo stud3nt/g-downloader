@@ -6,6 +6,10 @@ use App\Annotation\Serializer\ObjectVariable;
 use App\Converter\Base\SerializerOptions;
 use App\Utils\StringHelper;
 use Doctrine\Common\Annotations\AnnotationReader;
+use Doctrine\Common\Util\Debug;
+use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\Persistence\ObjectManager;
+use stringEncode\Exception;
 use Symfony\Component\PropertyAccess\Exception\NoSuchPropertyException;
 use Symfony\Component\VarExporter\Exception\ClassNotFoundException;
 
@@ -34,9 +38,12 @@ class ObjectSerializer
     // formatting options;
     private SerializerOptions $options;
 
-    public function __construct()
+    private ?ObjectManager $em = null;
+
+    public function __construct(ObjectManager $em = null)
     {
         $this->annotationReader = new AnnotationReader();
+        $this->em = $em;
     }
 
     /**
@@ -89,12 +96,16 @@ class ObjectSerializer
      * Converts serialized data to target object;
      *
      * @param $serializedData
-     * @param string $objectClass
+     * @param mixed $objectClass - class string or object entity
      * @throws ClassNotFoundException|\ReflectionException
      * @return mixed
      */
-    public function deserialize($serializedData, string $objectClass, bool $array = false)
+    public function deserialize($serializedData, $objectClass, bool $array = false)
     {
+        if (is_object($serializedData)) {
+            $serializedData = $this->serialize($serializedData);
+        }
+
         if (!$array) {
             return $this->deserializeObject($serializedData, $objectClass);
         } else {
@@ -112,9 +123,9 @@ class ObjectSerializer
         }
     }
 
-    public function deserializeObject($serializedData, string $objectClass)
+    public function deserializeObject($serializedData, $objectClass)
     {
-        if (!class_exists($objectClass)) {
+        if (is_string($objectClass) && !class_exists($objectClass)) {
             throw new ClassNotFoundException('Class '.$objectClass.' does not exists.');
         }
 
@@ -124,7 +135,12 @@ class ObjectSerializer
             $this->serializedData = $serializedData;
         }
 
-        $this->object = new $objectClass();
+        if (is_object($objectClass)) {
+            $this->object = $objectClass;
+        } else {
+            $this->object = new $objectClass();
+        }
+
         $this->getObjectProperties();
 
         if ($this->objectVariables) {
@@ -195,18 +211,20 @@ class ObjectSerializer
         } elseif ($variableConfig->class) { // convert class using serializer;
             $serializer = new ObjectSerializer();
 
-            if (is_array($rawObjectValue) || is_iterable($rawObjectValue)) {
-                foreach ($rawObjectValue as $rawItem) {
-                    $convertedValue[] = $serializer->serialize($rawItem, $this->format);
+            if ($rawObjectValue) {
+                if (substr($variableConfig->class, -2, 2) === '[]') { // array of classes
+                    $convertedValue = [];
+
+                    if ($rawObjectValue) {
+                        foreach ($rawObjectValue as $rawItem) {
+                            $convertedValue[] = $serializer->serialize($rawItem, $this->format);
+                        }
+                    }
+                } else {
+                    $convertedValue = $serializer->serialize($rawObjectValue, $this->format);
                 }
-            } else {
-                $convertedValue = $serializer->serialize($rawObjectValue, $this->format);
             }
         } else {
-            if ((is_null($rawObjectValue) || !$rawObjectValue) && $variableConfig->nullable) {
-                return null;
-            }
-
             if (!$variableConfig->type) {
                 $variableConfig->type = $this->tryDetectDataType($rawObjectValue, self::MODE_SERIALIZE);
             }
@@ -218,6 +236,8 @@ class ObjectSerializer
                     case ObjectVariable::TYPE_STDCLASS:
                         if (!is_array($rawObjectValue)) {
                             $convertedValue = json_decode(json_encode($rawObjectValue), true);
+                        } else {
+                            $convertedValue = $rawObjectValue;
                         }
                         break;
 
@@ -228,19 +248,29 @@ class ObjectSerializer
                         break;
 
                     case ObjectVariable::TYPE_INT:
-                        $convertedValue = (int)$rawObjectValue;
+                        $convertedValue = (!is_int($rawObjectValue) && !is_null($rawObjectValue))
+                            ? (int)$rawObjectValue
+                            : $rawObjectValue;
                         break;
 
                     case ObjectVariable::TYPE_FLOAT:
-                        $convertedValue = (float)$rawObjectValue;
+                        $convertedValue = (!is_float($rawObjectValue) && !is_null($rawObjectValue))
+                            ? (float)$rawObjectValue
+                            : $rawObjectValue;
                         break;
 
                     case ObjectVariable::TYPE_STRING:
-                        $convertedValue = (string)$rawObjectValue;
+                        $convertedValue = (!is_string($rawObjectValue) && !is_null($rawObjectValue))
+                            ? (string)$rawObjectValue
+                            : $rawObjectValue;
                         break;
 
                     case ObjectVariable::TYPE_BOOLEAN:
-                        $convertedValue = ($rawObjectValue === true) ? 'true' : 'false';
+                        if (is_string($rawObjectValue)) {
+                            $convertedValue = ($rawObjectValue === 'true');
+                        } else {
+                            $convertedValue = $rawObjectValue;
+                        }
                 }
             } else { // no action
                 $convertedValue = $rawObjectValue;
@@ -258,30 +288,36 @@ class ObjectSerializer
     private function setObjectValue(string $variableName, ObjectVariable $variableConfig): void
     {
         $setter = 'set'.ucfirst($variableName);
-        $getter = 'get'.ucfirst($variableName);
-        $isser = 'is'.ucfirst($variableName);
         $adder = 'add'.ucfirst($variableName);
 
         if (array_key_exists($variableName, $this->serializedData) && $this->serializedData[$variableName]) {
             $rawObjectValue = $this->serializedData[$variableName];
+
+            if (!$rawObjectValue) {
+                return;
+            } elseif ($rawObjectValue === 'null' || $rawObjectValue === 'NULL') {
+                $rawObjectValue = null;
+            }
 
             if ($variableConfig->converter) { // value must be converted
                 $converterClass = new $variableConfig->converter();
                 $convertedValue = $converterClass->convertToObjectValue($rawObjectValue);
             } elseif ($variableConfig->class) { // value is an class
                 $serializer = new ObjectSerializer();
+                $className = $variableConfig->class;
 
-                if (StringHelper::isJson($rawObjectValue)) {
-                    $rawObjectValue = json_decode($rawObjectValue, true);
+                if ($rawObjectValue && StringHelper::isJson($rawObjectValue)) {
+                    $rawObjectValue = json_decode($rawObjectValue, true); // convert json data to associative array
                 }
 
-                if (is_array($rawObjectValue) && (empty($rawObjectValue) || array_key_first($rawObjectValue) === 0)) {
+                if (substr($className, -2, 2) === '[]') { // array of classes
+                    $convertedValue = [];
+                    $className = substr($variableConfig->class, 0, strlen($variableConfig->class) - 2);
+
                     if ($rawObjectValue) {
                         foreach ($rawObjectValue as $rawItem) {
-                            $convertedValue[] = $serializer->deserialize($rawItem, $variableConfig->class);
+                            $convertedValue[] = $serializer->deserialize($rawItem, $className);
                         }
-                    } else {
-                        $convertedValue = [];
                     }
                 } else {
                     $convertedValue = $serializer->deserialize($rawObjectValue, $variableConfig->class);
@@ -295,7 +331,11 @@ class ObjectSerializer
                     switch ($variableConfig->type) {
                         case ObjectVariable::TYPE_ARRAY:
                         case ObjectVariable::TYPE_ITERABLE:
-                            $convertedValue = json_decode($rawObjectValue, true);
+                            if (is_array($rawObjectValue)) {
+                                $convertedValue = $rawObjectValue;
+                            } else {
+                                $convertedValue = json_decode($rawObjectValue, true);
+                            }
                             break;
 
                         case ObjectVariable::TYPE_STDCLASS:
@@ -317,7 +357,9 @@ class ObjectSerializer
                             break;
 
                         case ObjectVariable::TYPE_STRING:
-                            $convertedValue = (string)$rawObjectValue;
+                            $convertedValue = (!is_string($rawObjectValue) && !is_null($rawObjectValue))
+                                ? (string)$rawObjectValue
+                                : $rawObjectValue;
                             break;
 
                         case ObjectVariable::TYPE_BOOLEAN:
@@ -335,7 +377,7 @@ class ObjectSerializer
             $convertedValue = null;
         }
 
-        if ($convertedValue) {
+        if ($convertedValue !== null) {
             if (
                 ($variableConfig->type === ObjectVariable::TYPE_ITERABLE && method_exists($this->object, $adder)) ||
                 method_exists($this->object, $setter)

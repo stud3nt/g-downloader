@@ -135,7 +135,7 @@ class ParsedNode extends AbstractModel
 
     /**
      * @var Tag[]|null
-     * @ObjectVariable(class="App\Model\Tag")
+     * @ObjectVariable(class="App\Model\Tag[]")
      */
     public array $tags = [];
 

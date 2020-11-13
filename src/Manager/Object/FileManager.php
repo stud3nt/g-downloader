@@ -21,6 +21,7 @@ use App\Model\QueueSettings;
 use App\Model\Status;
 use App\Repository\FileRepository;
 use App\Utils\FilesHelper;
+use Doctrine\Common\Util\Debug;
 use Doctrine\ORM\NonUniqueResultException;
 
 class FileManager extends EntityManager
@@ -107,7 +108,7 @@ class FileManager extends EntityManager
 
         if (!$file && $createIfNotExists) {
             $file = new File();
-            $this->entityConverter->setData($parsedFile, $file);
+            $this->objectSerializer->deserialize($parsedFile, $file);
         }
 
         /** @var File $file */
@@ -119,12 +120,9 @@ class FileManager extends EntityManager
      * @return bool
      * @throws \ReflectionException
      */
-    public function addParsedFileToQueue(ParsedFile &$parsedFile, Node $parentNode = null): ParsedFile
+    public function addParsedFileToQueue(ParsedFile $parsedFile, Node $parentNode = null): ParsedFile
     {
-        $dbFile = new File();
-
-        $this->entityConverter->setData($parsedFile, $dbFile);
-
+        $dbFile = $this->objectSerializer->deserialize($parsedFile, File::class);
         $dbFile->setParentNode($parentNode);
 
         if ($this->save($dbFile)) {
@@ -134,7 +132,7 @@ class FileManager extends EntityManager
         return $parsedFile;
     }
 
-    public function removeParsedFileFromQueue(ParsedFile &$parsedFile, File $dbFile): ParsedFile
+    public function removeParsedFileFromQueue(ParsedFile $parsedFile, File $dbFile): ParsedFile
     {
         $this->remove($dbFile);
 
@@ -167,9 +165,7 @@ class FileManager extends EntityManager
                 $queueFiles[$fileIndex] = $queueFile;
             }
 
-            $queuedFilesJson = $this->serializer->serialize($queueFiles, 'json', [
-                'groups' => [NormalizationGroup::BasicData]
-            ]);
+            $queuedFilesJson = $this->objectSerializer->serialize($queueFiles, 'json');
             $queuedFilesArray = json_decode($queuedFilesJson, true);
 
             $this->redis->set(FileManager::DownloadQueueRedisKey, $queuedFilesJson);
@@ -276,7 +272,7 @@ class FileManager extends EntityManager
             ->setDownloadedFilesSize(FilesHelper::bytesToSize($downloadedCounts['totalSize']))
         ;
 
-        $data = $this->modelConverter->convert($downloadStatus);
+        $data = $this->objectSerializer->serialize($downloadStatus);
 
         $this->redis->set($redisKey, json_encode($data));
 

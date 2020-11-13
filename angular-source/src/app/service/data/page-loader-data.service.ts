@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject } from "rxjs";
-import {PreloaderData} from "../../model/preloader-data";
+import { PageLoaderData } from "../../model/page-loader-data";
 
 @Injectable({
 	providedIn: 'root'
@@ -8,54 +8,51 @@ import {PreloaderData} from "../../model/preloader-data";
 
 export class PageLoaderDataService {
 
-	private loaderDataSource = new BehaviorSubject(new PreloaderData());
-	private loaderStatusSource = new BehaviorSubject(<object>{
-		status: null, timeout: 0
-	});
-	private loaderProgressSource = new BehaviorSubject(<number>0);
-	private loaderDescriptionSource = new BehaviorSubject(<string>'');
-	private loaderProgressFromApiSource = new BehaviorSubject(<boolean>true);
+    private pageLoaderData: PageLoaderData = new PageLoaderData();
 
-	public loaderData = this.loaderDataSource.asObservable();
-	public loaderStatus = this.loaderStatusSource.asObservable();
-	public loaderProgress = this.loaderProgressSource.asObservable();
-	public loaderDescription = this.loaderDescriptionSource.asObservable();
-	public loaderProgressFromApi = this.loaderProgressFromApiSource.asObservable();
+	private loaderSource = new BehaviorSubject(new PageLoaderData());
+	public data = this.loaderSource.asObservable();
 
-  	constructor() { }
+    /**
+     * Shows loader belt
+     */
+	public show(): PageLoaderDataService {
+        this.pageLoaderData.visible = true;
+        this.pageLoaderData.autoCloseTimeout = 200;
+		this.loaderSource.next(this.pageLoaderData);
 
-	public getProgress() : number {
-		let currentLoaderData: PreloaderData = this.loaderDataSource.getValue();
-		return currentLoaderData.progress;
-	}
-
-	public setLoaderData(preloaderData: PreloaderData): PageLoaderDataService {
-		this.loaderDataSource.next(preloaderData);
-		return this;
-	}
-
-	public show(initial: boolean = false) : PageLoaderDataService {
-		this.loaderStatusSource.next({
-			status: 'show', initial: initial, timeout: 0
-		});
   		return this;
 	}
 
-	public hide(timeout: number = 0) : PageLoaderDataService {
-  		this.loaderStatusSource.next({
-			status: 'hide', initial: false, timeout: timeout
-		});
+    /**
+     * Hide loader belt
+     * @param timeout
+     */
+	public hide(timeout: number = 0): PageLoaderDataService {
+	    this.pageLoaderData.visible = false;
+	    this.pageLoaderData.autoCloseTimeout = timeout;
+  		this.loaderSource.next(this.pageLoaderData);
+
   		return this;
 	}
 
-	public setProgress(progress: number = 0): PageLoaderDataService {
-		this.loaderProgressSource.next(progress);
+    /**
+     * Set progress percentage value
+     * @param progress
+     */
+	public setProgress(progress: number = 0.00): PageLoaderDataService {
+        this.pageLoaderData.progress = progress;
+        this.pageLoaderData.visible = true;
+		this.loaderSource.next(this.pageLoaderData);
+
 		return this;
 	}
 
-	public setDescription(description: string = null) : PageLoaderDataService {
-		this.loaderDescriptionSource.next(description);
-		return this;
-	}
+    /**
+     * Gets current progress value;
+     */
+	public getProgress(): number {
+  	    return this.loaderSource.getValue().progress;
+    }
 
 }

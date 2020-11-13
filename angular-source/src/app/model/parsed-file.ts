@@ -1,4 +1,4 @@
-import { ParserNode } from "./parser-node";
+import { ParsedNode } from "./parsed-node";
 import { BaseModel } from "./base/base-model";
 import {Status} from "./status";
 
@@ -72,7 +72,7 @@ export class ParsedFile extends BaseModel {
 	// request status
 	private _status: Status = null;
 
-	private _parentNode: ParserNode = null;
+	private _parentNode: ParsedNode = null;
 
 	/**
 	 * Adds status to library
@@ -122,6 +122,20 @@ export class ParsedFile extends BaseModel {
 
 		return false;
 	}
+
+	public hasThumbnail(): boolean {
+	    return (
+	        this._thumbnail !== null && this._thumbnail !== 'null' &&
+            this._thumbnail !== '' && this._thumbnail.length > 3
+        );
+    }
+
+	public hasLocalThumbnail(): boolean {
+	    return (
+	        this._localThumbnail !== null && this._localThumbnail !== 'null' &&
+            this._localThumbnail !== '' && this._localThumbnail.length > 3
+        );
+    }
 
 	get name(): string {
 		return this._name;
@@ -283,11 +297,11 @@ export class ParsedFile extends BaseModel {
 		this._statuses = value;
 	}
 
-	get parentNode(): ParserNode {
+	get parentNode(): ParsedNode {
 		return this._parentNode;
 	}
 
-	set parentNode(value: ParserNode) {
+	set parentNode(value: ParsedNode) {
 		this._parentNode = value;
 	}
 

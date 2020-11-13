@@ -33,7 +33,7 @@ class DownloadStatus extends AbstractModel
 
     /**
      * @var ParsedFile[]
-     * @ObjectVariable(class="App\Model\ParsedFile")
+     * @ObjectVariable(class="App\Model\ParsedFile[]")
      */
     public array $queuedFiles = [];
 

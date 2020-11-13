@@ -257,7 +257,7 @@ class Boards4chanParser extends AbstractParser
                             $thumbnailUrl = 'http:'.$thumbnail->getAttribute('src');
 
                             $fileData = $this->extractFileInfoFromText($div->find('div.fileText')->text());
-                            $date = (new \DateTime())->setTimeZone(new \DateTimeZone('UTC'))
+                            $uploadedAt = (new \DateTime())->setTimeZone(new \DateTimeZone('UTC'))
                                 ->setTimestamp(
                                     (int)$div->find('span.dateTime')->getAttribute('data-utc')
                                 )
@@ -276,7 +276,7 @@ class Boards4chanParser extends AbstractParser
                                 ->setTextSize($fileData['textSize'])
                                 ->setWidth($fileData['width'])
                                 ->setHeight($fileData['height'])
-                                ->setUploadedAt($date)
+                                ->setUploadedAt($uploadedAt)
                             ;
 
                             $localThumbnailUrl = $this->thumbnailTempDir.FilesHelper::getFileName($thumbnailUrl, true);

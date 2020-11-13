@@ -2,7 +2,7 @@ import { Component, Input, OnInit } from '@angular/core';
 import { ParserRequest } from "../../../model/parser-request";
 import { NodeStatus } from "../../../enum/node-status";
 import { ParserService } from "../../../service/parser.service";
-import { ParserNode } from "../../../model/parser-node";
+import { ParsedNode } from "../../../model/parsed-node";
 import { RouterService } from "../../../service/router.service";
 import { NodeLevel } from "../../../enum/node-level";
 import {ToastrDataService} from "../../../service/data/toastr-data.service";
@@ -20,7 +20,7 @@ export class NodesListComponent implements OnInit {
 	public NodeStatus = NodeStatus;
 	public NodeLevel = NodeLevel;
 
-	public hoverRatingNode: ParserNode = null;
+	public hoverRatingNode: ParsedNode = null;
 	public hoverRatingValue: number = 0;
 
 	// controller - if true, all tiles are locked (non-clickable);
@@ -59,7 +59,7 @@ export class NodesListComponent implements OnInit {
 	 * @param node
 	 * @param status
 	 */
-	public markNode(node: ParserNode, status: string): void {
+	public markNode(node: ParsedNode, status: string): void {
 		if (status === null || node.hasStatus(NodeStatus.Waiting))
 			return;
 		else
@@ -78,7 +78,7 @@ export class NodesListComponent implements OnInit {
         });
 	}
 
-	public rateNode(node: ParserNode, rating: number) {
+	public rateNode(node: ParsedNode, rating: number) {
         if (node.hasStatus(NodeStatus.Waiting))
             return;
 
@@ -93,27 +93,9 @@ export class NodesListComponent implements OnInit {
         });
     }
 
-	public showPersonalDescription(node: ParserNode): void {
+	public showNodePersonalDescription(node: ParsedNode): void {
 		if (!node.personalDescription)
 			return;
-	}
-
-	/**
-	 * Determines class for specified node based on status;
-	 *
-	 * @param node
-	 * @return string
-	 */
-	public getNodeClass(node: ParserNode): string {
-		let nodeClass = 'tile tile-250';
-
-		if (node.hasStatus(NodeStatus.Saved))
-			nodeClass += ' saved';
-
-		if (node.hasStatus(NodeStatus.Downloaded))
-			nodeClass += ' downloaded';
-
-		return nodeClass;
 	}
 
 	/**
@@ -124,7 +106,7 @@ export class NodesListComponent implements OnInit {
 	 * @param size
 	 * @return string
 	 */
-	public getNodeButtonClass(node: ParserNode, status: string, size: string = 'normal'): string {
+	public getNodeButtonClass(node: ParsedNode, status: string, size: string = 'normal'): string {
 		let buttonClasses = 'btn';
 
 		switch (size) {

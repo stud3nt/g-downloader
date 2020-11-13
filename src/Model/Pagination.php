@@ -69,7 +69,7 @@ class Pagination extends AbstractModel
 
     /**
      * @var PaginationSelector[]|null
-     * @ObjectVariable(class="App\Model\PaginationSelector")
+     * @ObjectVariable(class="App\Model\PaginationSelector[]")
      */
     public ?array $selectors = [];
 

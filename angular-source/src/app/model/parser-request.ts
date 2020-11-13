@@ -1,11 +1,11 @@
-import { ParserNode } from "./parser-node";
+import { ParsedNode } from "./parsed-node";
 import { ParsedFile } from "./parsed-file";
 import { Pagination } from "./pagination";
 import { BaseModel } from "./base/base-model";
 import { Status } from "./status";
 import { StatusCode } from "../enum/status-code";
-import {Category} from "./category";
-import {Tag} from "./tag";
+import { Category } from "./category";
+import { Tag } from "./tag";
 
 export class ParserRequest extends BaseModel {
 
@@ -22,7 +22,7 @@ export class ParserRequest extends BaseModel {
 
 		if (obj) {
 			if (obj.currentNode)
-				this._currentNode = new ParserNode(obj.currentNode);
+				this._currentNode = new ParsedNode(obj.currentNode);
 
 			if (obj.files)
 				for (let parsedFile of obj.files)
@@ -30,7 +30,7 @@ export class ParserRequest extends BaseModel {
 
 			if (obj.parsedNodes)
 				for (let parsedNode of obj.parsedNodes)
-					this._parsedNodes.push(new ParserNode(parsedNode));
+					this._parsedNodes.push(new ParsedNode(parsedNode));
 
 			if (obj.nodesCategories)
 				for (let cat of obj.nodesCategories)
@@ -41,17 +41,17 @@ export class ParserRequest extends BaseModel {
 		}
 	}
 
-	private _currentNode: ParserNode = null;
+	private _currentNode: ParsedNode = null;
 
-	private _parsedNodes: ParserNode[] = [];
+	private _parsedNodes: ParsedNode[] = [];
 
 	private _files: ParsedFile[] = [];
 
-	private _nextNode: ParserNode = null;
-	private _previousNode: ParserNode = null;
+	private _nextNode: ParsedNode = null;
+	private _previousNode: ParsedNode = null;
 
 	// breadcrumbs - object with nodes
-	private _breadcrumbNodes: ParserNode[] = [];
+	private _breadcrumbNodes: ParsedNode[] = [];
 
 	private _pagination: Pagination = new Pagination(null);
 
@@ -193,19 +193,19 @@ export class ParserRequest extends BaseModel {
 			.resetSorting();
 	}
 
-	get currentNode(): ParserNode {
+	get currentNode(): ParsedNode {
 		return this._currentNode;
 	}
 
-	set currentNode(value: ParserNode) {
+	set currentNode(value: ParsedNode) {
 		this._currentNode = value;
 	}
 
-	get parsedNodes(): ParserNode[] {
+	get parsedNodes(): ParsedNode[] {
 		return this._parsedNodes;
 	}
 
-	set parsedNodes(value: ParserNode[]) {
+	set parsedNodes(value: ParsedNode[]) {
 		this._parsedNodes = value;
 	}
 
@@ -217,27 +217,27 @@ export class ParserRequest extends BaseModel {
 		this._files = value;
 	}
 
-	get nextNode(): ParserNode {
+	get nextNode(): ParsedNode {
 		return this._nextNode;
 	}
 
-	set nextNode(value: ParserNode) {
+	set nextNode(value: ParsedNode) {
 		this._nextNode = value;
 	}
 
-	get previousNode(): ParserNode {
+	get previousNode(): ParsedNode {
 		return this._previousNode;
 	}
 
-	set previousNode(value: ParserNode) {
+	set previousNode(value: ParsedNode) {
 		this._previousNode = value;
 	}
 
-	get breadcrumbNodes(): ParserNode[] {
+	get breadcrumbNodes(): ParsedNode[] {
 		return this._breadcrumbNodes;
 	}
 
-	set breadcrumbNodes(value: ParserNode[]) {
+	set breadcrumbNodes(value: ParsedNode[]) {
 		this._breadcrumbNodes = value;
 	}
 

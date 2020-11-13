@@ -1,9 +1,10 @@
 import { BaseModel } from "./base/base-model";
 import { Category } from "./category";
 import { Tag } from "./tag";
-import {ParserNodeSettings} from "./parser-node-settings";
+import { ParserNodeSettings } from "./parser-node-settings";
+import { NodeStatus } from "../enum/node-status";
 
-export class ParserNode extends BaseModel {
+export class ParsedNode extends BaseModel {
 
 	constructor(obj?: any) {
 		super();
@@ -306,14 +307,14 @@ export class ParserNode extends BaseModel {
 	 * Adds tag to array
 	 * @param tag
 	 */
-	public addTag = (tag: Tag): ParserNode => {
+	public addTag = (tag: Tag): ParsedNode => {
 		if (!this.hasTag(tag))
 			this._tags.push(tag);
 
 		return this;
 	};
 
-	public removeTag = (tag: Tag): ParserNode => {
+	public removeTag = (tag: Tag): ParsedNode => {
 		if (this.hasTag(tag)) {
 			let tagsList = this._tags;
 
@@ -334,7 +335,7 @@ export class ParserNode extends BaseModel {
 	 * Toggles status (add if not exists, remove if exists);
 	 * @param status
 	 */
-	public toggleStatus = (status: string): ParserNode => {
+	public toggleStatus = (status: string): ParsedNode => {
 		if (this.hasStatus(status))
 			this.removeStatus(status);
 		else
@@ -343,12 +344,24 @@ export class ParserNode extends BaseModel {
 		return this;
 	};
 
+	public getTileClass(): string {
+        let nodeClass = 'tile tile-250';
+
+        if (this.hasStatus(NodeStatus.Saved))
+            nodeClass += ' saved';
+
+        if (this.hasStatus(NodeStatus.Downloaded))
+            nodeClass += ' downloaded';
+
+        return nodeClass;
+    }
+
 	/**
 	 * Adds status to library
 	 *
 	 * @param addedStatus
 	 */
-	private _addStatus = (addedStatus: string): ParserNode => {
+	private _addStatus = (addedStatus: string): ParsedNode => {
 		if (!this._hasStatus(addedStatus)) {
 			this._statuses.push(addedStatus);
 		}
@@ -364,7 +377,7 @@ export class ParserNode extends BaseModel {
 	 *
 	 * @param removedStatus
 	 */
-	private _removeStatus = (removedStatus: string): ParserNode => {
+	private _removeStatus = (removedStatus: string): ParsedNode => {
 		if (this._statuses.length > 0) {
 			for (let index in this._statuses) {
 				if (this._statuses[index] === removedStatus) {
@@ -396,19 +409,19 @@ export class ParserNode extends BaseModel {
 		return false;
 	};
 
-	get addStatus(): (addedStatus: string) => ParserNode {
+	get addStatus(): (addedStatus: string) => ParsedNode {
 		return this._addStatus;
 	}
 
-	set addStatus(value: (addedStatus: string) => ParserNode) {
+	set addStatus(value: (addedStatus: string) => ParsedNode) {
 		this._addStatus = value;
 	}
 
-	get removeStatus(): (removedStatus: string) => ParserNode {
+	get removeStatus(): (removedStatus: string) => ParsedNode {
 		return this._removeStatus;
 	}
 
-	set removeStatus(value: (removedStatus: string) => ParserNode) {
+	set removeStatus(value: (removedStatus: string) => ParsedNode) {
 		this._removeStatus = value;
 	}
 

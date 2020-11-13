@@ -3,7 +3,7 @@ import { ActivatedRoute, NavigationEnd, Router } from "@angular/router";
 import { ContentHeaderDataService } from "../../service/data/content-header-data.service";
 import { ParserService } from "../../service/parser.service";
 import { ParserType } from "../../enum/parser-type";
-import { ParserNode } from "../../model/parser-node";
+import { ParsedNode } from "../../model/parsed-node";
 import { ParserRequest } from "../../model/parser-request";
 import { ParsedFile } from "../../model/parsed-file";
 import { ConfigService } from "../../service/config.service";
@@ -64,7 +64,7 @@ export class ParserComponent implements OnInit {
 	protected scrollY = 0;
 
 	public parserRequest: ParserRequest = new ParserRequest();
-	public currentNode: ParserNode = new ParserNode();
+	public currentNode: ParsedNode = new ParsedNode();
 
 	public runningAction: boolean = false;
 	public parserRequestAction: boolean = false;
@@ -154,12 +154,12 @@ export class ParserComponent implements OnInit {
 	/**
 	 * Update node state
 	 *
-	 * @param node: ParserNode
+	 * @param node: ParsedNode
 	 */
-	public updateCurrentNode(node: ParserNode): void {
+	public updateCurrentNode(node: ParsedNode): void {
 		this.parserRequest.currentNode = node;
 
-		this.parserService.updateNode(node).subscribe((node: ParserNode) => {
+		this.parserService.updateNode(node).subscribe((node: ParsedNode) => {
             node.removeStatus(NodeStatus.Waiting);
 
             this.parserRequest.currentNode = node;
@@ -253,8 +253,8 @@ export class ParserComponent implements OnInit {
 	/**
 	 * Creates initial ParserNodeObject with absolutely basic datas;
 	 */
-	private initializeParserNodeObject() : ParserNode {
-		let node = new ParserNode();
+	private initializeParserNodeObject() : ParsedNode {
+		let node = new ParsedNode();
 
 		node.parser = this.parserName;
 		node.level = this.nodeLevel;
@@ -369,7 +369,7 @@ export class ParserComponent implements OnInit {
 									    break;
 
 									case StatusCode.OperationStarted:
-										this.pageLoaderDataService.show(true).setProgress(status.progress);
+										this.pageLoaderDataService.show().setProgress(status.progress);
 										this.parserRequestAction = true;
 										break;
 

@@ -17,57 +17,57 @@ class ParsedFile extends AbstractModel implements StatusInterface
     /**
      * @ObjectVariable(type="string")
      */
-    public string $title;
+    public ?string $title = null;
 
     /**
      * @ObjectVariable(type="string")
      */
-    public string $description;
+    public ?string $description = null;
 
     /**
      * @ObjectVariable(type="string")
      */
-    public string $domain;
+    public ?string $domain = null;
 
     /**
      * @ObjectVariable(type="string")
      */
-    public string $extension;
+    public ?string $extension = null;
 
     /**
      * @ObjectVariable(type="string")
      */
-    public string $url;
+    public ?string $url = null;
 
     /**
      * @ObjectVariable(type="string")
      */
-    public string $fileUrl;
+    public ?string $fileUrl = null;
 
     /**
      * @ObjectVariable(type="string")
      */
-    public string $localUrl;
+    public ?string $localUrl = null;
 
     /**
      * @ObjectVariable(type="string")
      */
-    public string $previewUrl;
+    public ?string $previewUrl = null;
 
     /**
      * @ObjectVariable(type="string")
      */
-    public string $mimeType;
+    public ?string $mimeType = null;
 
     /**
      * @ObjectVariable(type="string")
      */
-    public string $type;
+    public ?string $type = null;
 
     /**
-     * @ObjectVariable(type="datetime")
+     * @ObjectVariable(type="string")
      */
-    public ?\DateTime $uploadedAt;
+    public ?string $uploadedAt = null;
 
     /**
      * @ObjectVariable(type="integer")
@@ -77,7 +77,7 @@ class ParsedFile extends AbstractModel implements StatusInterface
     /**
      * @ObjectVariable(type="datetime")
      */
-    public ?\DateTime $downloadedAt;
+    public ?\DateTime $downloadedAt = null;
 
     /**
      * @ObjectVariable(type="integer")
@@ -117,7 +117,7 @@ class ParsedFile extends AbstractModel implements StatusInterface
     /**
      * @ObjectVariable(type="string")
      */
-    public $parser;
+    public string $parser;
 
     /**
      * @ObjectVariable(type="string")
@@ -147,7 +147,7 @@ class ParsedFile extends AbstractModel implements StatusInterface
     /**
      * @ObjectVariable(type="stdClass")
      */
-    public \stdClass $statuses;
+    public ?array $statuses = null;
 
     /**
      * @ObjectVariable(class="App\Model\ParsedNode")
@@ -157,12 +157,12 @@ class ParsedFile extends AbstractModel implements StatusInterface
     /**
      * @ObjectVariable(class="App\Model\Status")
      */
-    public Status $status;
+    public ?Status $status = null;
 
     /**
      * @ObjectVariable(type="string")
      */
-    protected $previewFilePath = null;
+    protected ?string $previewFilePath = null;
 
     public function __construct(string $parser = null, string $type = null)
     {

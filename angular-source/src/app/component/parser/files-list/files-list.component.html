@@ -46,13 +46,13 @@
                 </div>
 
                 <div class="tile-header-image">
-                    <div *ngIf="file.thumbnail !== null && file.thumbnail !== 'null'">
+                    <div *ngIf="file.hasThumbnail()">
                         <div [style.backgroundImage]="'url('+file.thumbnail+')'"></div>
                     </div>
-                    <div *ngIf="file.localThumbnail !== null && file.localThumbnail !== 'null'">
+                    <div *ngIf="file.hasLocalThumbnail()">
                         <div [style.backgroundImage]="'url('+file.localThumbnail+')'"></div>
                     </div>
-                    <div *ngIf="file.thumbnail === null && !file.localThumbnail === null">
+                    <div *ngIf="!file.hasThumbnail() && !file.hasLocalThumbnail()">
                         <div [style.backgroundImage]="'url(/app/assets/img/no-image.png)'"></div>
                     </div>
                 </div>

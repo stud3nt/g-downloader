@@ -3,7 +3,7 @@ import {ParserRequest} from "../../../model/parser-request";
 import {NodeStatus} from "../../../enum/node-status";
 import {Pagination} from "../../../model/pagination";
 import {PaginationMode} from "../../../enum/pagination-mode";
-import {ParserNode} from "../../../model/parser-node";
+import {ParsedNode} from "../../../model/parsed-node";
 import {Tag} from "../../../model/tag";
 import {ParserToolbarAction} from "../../../enum/parser-toolbar-action";
 import {CookieService} from "ngx-cookie-service";
@@ -30,7 +30,7 @@ export class ParserToolbarComponent implements OnInit, OnDestroy {
     public ModalSize = ModalSize;
 
 	public _parserRequest: ParserRequest = null;
-	public _currentNode: ParserNode = null;
+	public _currentNode: ParsedNode = null;
 	public _pagination: Pagination = null;
 
 	// modals ids;
@@ -90,7 +90,7 @@ export class ParserToolbarComponent implements OnInit, OnDestroy {
 		);
 	}
 
-	@Input() set currentNode(node: ParserNode) {
+	@Input() set currentNode(node: ParsedNode) {
 	    if (this._parserRequest)
 	        this._parserRequest.currentNode = node;
 

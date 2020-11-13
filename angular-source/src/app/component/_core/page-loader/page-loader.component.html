@@ -1,15 +1,5 @@
-<div class="page-loader-wrapper" *ngIf="preloaderData.visible">
-    <div class="page-loader-window">
-        <div class="progress-bar-wrapper">
-            <span class="progress-percentage">
-                {{ preloaderData.progress }} %
-            </span>
-            <div class="progress-bar-container">
-                <div class="progress-bar" [ngStyle]="{width:preloaderData.progress+'%'}"></div>
-            </div>
-        </div>
-        <div class="page-loader-description">
-            {{ preloaderData.description }}
-        </div>
+<div class="page-loader">
+    <div class="progress-box">
+        <div class="progress-belt" [ngStyle]="{width:progress+'%'}"></div>
     </div>
 </div>
